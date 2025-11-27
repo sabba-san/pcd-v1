@@ -1,0 +1,11 @@
+name: pcd
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - flask
+  - pip
+  - pip:
+    - flask_sqlalchemy
+    - flask-cors
+    # Add other pip dependencies here, e.g., pandas, numpy, etc.
