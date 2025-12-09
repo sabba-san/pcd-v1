@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-white mb-0">Housing Developer Portal</h2>
+                <p class="text-white-50 small">Contractor Defect Rectification Panel</p>
+            </div>
+            <div class="d-flex gap-2">
+                <span class="badge bg-info bg-opacity-10 text-info border border-info d-flex align-items-center px-3">
+                    <i class="bi bi-building me-2"></i> Project: Taman Universiti (Phase 1)
+                </span>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card p-3 border-0" style="background-color: #334155;">
+                    <p class="text-white-50 text-uppercase small mb-1">New Work Orders</p>
+                    <h3 class="fw-bold text-white m-0">3</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 border-0" style="background-color: #334155;">
+                    <p class="text-white-50 text-uppercase small mb-1">Rectification In-Progress</p>
+                    <h3 class="fw-bold text-warning m-0">5</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 border-0" style="background-color: #334155;">
+                    <p class="text-white-50 text-uppercase small mb-1">Overdue Repairs</p>
+                    <h3 class="fw-bold text-danger m-0">1</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 border-0" style="background-color: #334155;">
+                    <p class="text-white-50 text-uppercase small mb-1">Completed (This Month)</p>
+                    <h3 class="fw-bold text-success m-0">12</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-lg p-0 overflow-hidden" style="border: 1px solid #475569;">
+            <div class="card-header bg-transparent border-secondary p-3 d-flex justify-content-between">
+                <h6 class="text-white m-0 fw-bold">Active Rectification Works</h6>
+                <button class="btn btn-sm btn-outline-light"><i class="bi bi-printer me-2"></i>Print Batch</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle" style="background-color: #334155;">
+                    <thead style="background-color: #0f172a;">
+                        <tr>
+                            <th class="py-3 ps-4 text-white-50 small text-uppercase">Work Order Ref</th>
+                            <th class="py-3 text-white-50 small text-uppercase">Location / Unit</th>
+                            <th class="py-3 text-white-50 small text-uppercase">Priority</th>
+                            <th class="py-3 text-white-50 small text-uppercase">Target Date</th>
+                            <th class="py-3 text-end pe-4 text-white-50 small text-uppercase">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody style="border-top: none;">
+                        <tr style="border-bottom: 1px solid #475569;">
+                            <td class="ps-4 text-white font-monospace">WO-99281</td>
+                            <td>
+                                <div class="fw-bold text-white">Unit A-85</div>
+                                <div class="small text-danger">Roof Leak (Major)</div>
+                            </td>
+                            <td><span class="badge bg-danger">High</span></td>
+                            <td class="text-white-50 small">Due Tomorrow</td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-primary">Acknowledge</button>
+                            </td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #475569;">
+                            <td class="ps-4 text-white font-monospace">WO-99282</td>
+                            <td>
+                                <div class="fw-bold text-white">Unit B-12</div>
+                                <div class="small text-warning">Wall Crack (Hairline)</div>
+                            </td>
+                            <td><span class="badge bg-warning text-dark">Medium</span></td>
+                            <td class="text-white-50 small">Dec 15, 2025</td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-light">Update Status</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 text-white font-monospace">WO-99283</td>
+                            <td>
+                                <div class="fw-bold text-white">Unit C-05</div>
+                                <div class="small text-white-50">Tile Pop-up</div>
+                            </td>
+                            <td><span class="badge bg-secondary">Low</span></td>
+                            <td class="text-white-50 small">Dec 20, 2025</td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-light">Update Status</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -98,7 +98,7 @@
 
             {% if request.endpoint != 'module1.login_ui' %}
             <div class="dropdown">
-                <a href="#" class="d-flex align-items-center gap-3 text-decoration-none dropdown-toggle text-white" 
+        <a href="#" class="d-flex align-items-center gap-3 text-decoration-none dropdown-toggle text-white" 
                    data-bs-toggle="dropdown" aria-expanded="false">
                     
                     <div class="d-none d-md-block text-end">
@@ -106,21 +106,29 @@
                         
                         <div class="small text-muted" style="font-size: 0.75rem;">
                             {% if user == 'System Administrator' %}
-                                Access: Full
+                                Access: Full (Admin)
+                            {% elif user == 'EcoWorld Contractor' %}
+                                Role: Contractor
                             {% else %}
                                 Unit A-85
                             {% endif %}
                         </div>
                     </div>
 
-                    <div class="{{ 'bg-danger' if user == 'Admin' else 'bg-primary' }} text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
-                        {% if user == 'System Administrator' %}
+                    {% if user == 'System Administrator' %}
+                        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
                             <i class="bi bi-shield-lock-fill"></i>
-                        {% else %}
+                        </div>
+                    {% elif user == 'EcoWorld Contractor' %}
+                        <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                            <i class="bi bi-cone-striped"></i>
+                        </div>
+                    {% else %}
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
                             <span class="fw-bold small">A</span>
-                        {% endif %}
-                    </div>
-                </a>
+                        </div>
+                    {% endif %}
+                    </a>
                 
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark mt-3 shadow-lg">
                     <li><h6 class="dropdown-header text-muted">Account</h6></li>

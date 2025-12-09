@@ -20,6 +20,13 @@ def login_auth():
         session['user_name'] = 'System Administrator'
         return redirect(url_for('module1.admin_dashboard'))
     
+    # 2. HOUSING DEVELOPER LOGIN (New!)
+    elif email == 'developer@ecoworld.com' and password == 'dev123':
+        session['user_role'] = 'developer'
+        session['user_name'] = 'EcoWorld Contractor'
+        return redirect(url_for('module1.developer_portal'))
+    
+    
     # NORMAL USER CHECK
     else:
         session['user_role'] = 'user'
@@ -43,3 +50,12 @@ def admin_dashboard():
     # 2. Render the page WITH the Admin Name
     # (This 'user' variable tells base.html what to show in the top right)
     return render_template('admin_preview.html', user="System Administrator")
+
+# --- 5. Housing Developer Portal ---
+@bp.route('/developer-portal')
+def developer_portal():
+    # Security: Only allow Developers
+    if session.get('user_role') != 'developer':
+        return redirect(url_for('module1.login_ui'))
+    
+    return render_template('developer_portal.html', user=session.get('user_name'))
