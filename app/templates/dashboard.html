@@ -3,12 +3,12 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-10">
-        
+
         <h2 class="fw-bold text-white mb-1">Dashboard</h2>
         <p class="text-muted mb-5">Welcome back, {{ user if user else 'Abbas' }}.</p>
-        
+
         <div class="row g-4">
-            
+
             <div class="col-md-6">
                 <a href="{{ url_for('module2.chatbot_ui') }}" class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
@@ -53,7 +53,7 @@
                                 </div>
                                 <i class="bi bi-chevron-right text-muted"></i>
                             </div>
-                            <h4 class="fw-bold text-white mb-2">New Lidar Scan</h4>
+                            <h4 class="fw-bold text-white mb-2">Add New defect</h4>
                             <p class="text-white-50 small">Upload 3D model and PDF data.</p>
                         </div>
                     </div>
@@ -61,7 +61,8 @@
             </div>
 
             <div class="col-md-6">
-                <a href="#" class="text-decoration-none">
+                <a href="{{ url_for('module3.visualize', filename='TamanMerpauhRendered.glb', project_name='My Home Demo') }}"
+                    class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -86,24 +87,33 @@
                     <table class="table table-dark table-hover mb-0 align-middle" style="background-color: #334155;">
                         <thead>
                             <tr>
-                                <th class="ps-4 py-3 text-white-50 fw-normal small text-uppercase" style="background-color: #1e293b; border-bottom: 1px solid #475569;">Project</th>
-                                <th class="py-3 text-white-50 fw-normal small text-uppercase" style="background-color: #1e293b; border-bottom: 1px solid #475569;">Date</th>
-                                <th class="py-3 text-white-50 fw-normal small text-uppercase" style="background-color: #1e293b; border-bottom: 1px solid #475569;">Status</th>
+                                <th class="ps-4 py-3 text-white-50 fw-normal small text-uppercase"
+                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Project</th>
+                                <th class="py-3 text-white-50 fw-normal small text-uppercase"
+                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Date</th>
+                                <th class="py-3 text-white-50 fw-normal small text-uppercase"
+                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="ps-4 fw-bold text-white" style="background-color: #334155; border-bottom: none;">ASMARINDA12</td>
-                                <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">Today</td>
+                                <td class="ps-4 fw-bold text-white"
+                                    style="background-color: #334155; border-bottom: none;">ASMARINDA12</td>
+                                <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">
+                                    Today</td>
                                 <td style="background-color: #334155; border-bottom: none;">
-                                    <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Processing...</span>
+                                    <span
+                                        class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Processing...</span>
                                 </td>
                             </tr>
                             <tr>
-                                <td class="ps-4 fw-bold text-white" style="background-color: #334155; border-bottom: none;">Master Bedroom Leak</td>
-                                <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">Yesterday</td>
+                                <td class="ps-4 fw-bold text-white"
+                                    style="background-color: #334155; border-bottom: none;">Master Bedroom Leak</td>
+                                <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">
+                                    Yesterday</td>
                                 <td style="background-color: #334155; border-bottom: none;">
-                                    <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">PDF Generated</span>
+                                    <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">PDF
+                                        Generated</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -116,11 +126,12 @@
 </div>
 
 <style>
-    .hover-effect { 
-        transition: transform 0.2s ease, background-color 0.2s ease; 
+    .hover-effect {
+        transition: transform 0.2s ease, background-color 0.2s ease;
     }
-    .hover-effect:hover { 
-        background-color: #475569 !important; 
+
+    .hover-effect:hover {
+        background-color: #475569 !important;
         transform: translateY(-5px);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     }
