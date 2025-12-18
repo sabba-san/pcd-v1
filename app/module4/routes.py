@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 
-# Define the Blueprint
+# Define the Blueprint with the static folder registered
+# No static_folder needed since we are using the global app/static
 bp = Blueprint('module4', __name__, url_prefix='/module4')
 
 # --- ROUTE 1: Render the Chat Interface ---

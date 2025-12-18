@@ -59,3 +59,42 @@ def developer_portal():
         return redirect(url_for('module1.login_ui'))
     
     return render_template('developer_portal.html', user=session.get('user_name'))
+# --- MY PROJECTS ROUTE ---
+@bp.route('/projects')
+def my_projects():
+    # Dummy data to match your design (Source 15)
+    # In a real app, this would come from the database.
+    user_projects = [
+        {
+            "id": "40",
+            "name": "ASMARINDA12",
+            "date": "2025-12-14",
+            "unit": "A-85",
+            "address": "Sisiran Sintok 1b, 06050 Changlun, Kedah",
+            "defects": 5,
+            "status": "Processing",
+            "filename": "rumah sisiran.glb"  # The file you have in uploads
+        },
+        {
+            "id": "39",
+            "name": "Master Bedroom Leak",
+            "date": "2025-12-13",
+            "unit": "A-85",
+            "address": "Sisiran Sintok 1b, 06050 Changlun, Kedah",
+            "defects": 3,
+            "status": "In Progress",
+            "filename": "rumah sisiran.glb"
+        },
+        {
+            "id": "38",
+            "name": "SISIRAN 2",
+            "date": "2025-12-10",
+            "unit": "B-12",
+            "address": "Taman Teja, 06010 Changlun, Kedah",
+            "defects": 8,
+            "status": "Completed",
+            "filename": "rumah sisiran.glb"
+        }
+    ]
+    
+    return render_template('module1/projects.html', projects=user_projects)
