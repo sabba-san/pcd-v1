@@ -9,8 +9,7 @@
                 <i class="bi bi-arrow-left me-1"></i> Back to Console
             </a>
             <h2 class="fw-bold text-white mt-1">Evidence Review: {{ report.case_id }}</h2>
-            <p class="text-white-50">Client: <span class="text-info">{{ report.client }}</span> | Project: {{
-                report.project }}</p>
+            <p class="text-white-50">Client: <span class="text-info">{{ report.client }}</span> | Project: {{ report.project }}</p>
         </div>
         <div>
             <button class="btn btn-outline-light me-2"><i class="bi bi-printer me-2"></i>Export PDF</button>
@@ -19,7 +18,6 @@
     </div>
 
     <div class="row g-4">
-
         <div class="col-md-4">
             <div class="card border-0 shadow-lg text-white" style="background-color: #1e293b;">
                 <div class="card-header bg-transparent border-secondary fw-bold text-uppercase small py-3">
@@ -37,14 +35,11 @@
                     </div>
 
                     <h5 class="fw-bold">AI Detection Status</h5>
-                    <p class="text-white-50 small px-4">The system has detected <strong class="text-white">2 Critical
-                            Defects</strong> with high certainty. Requires manual verification.</p>
+                    <p class="text-white-50 small px-4">The system has detected defects with high certainty. Requires manual verification.</p>
 
-                    <div
-                        class="alert bg-danger bg-opacity-25 border-danger mx-3 mt-4 d-flex align-items-center justify-content-center">
+                    <div class="alert bg-danger bg-opacity-25 border-danger mx-3 mt-4 d-flex align-items-center justify-content-center">
                         <i class="bi bi-exclamation-triangle-fill text-danger me-2 fs-5"></i>
-                        <span class="text-white">Risk Level: <strong class="text-danger fw-bold ms-1 text-uppercase">{{
-                                report.risk_level }}</strong></span>
+                        <span class="text-white">Risk Level: <strong class="text-danger fw-bold ms-1 text-uppercase">{{ report.risk_level }}</strong></span>
                     </div>
                 </div>
             </div>
@@ -59,44 +54,50 @@
                     <table class="table table-dark table-hover mb-0 align-middle">
                         <thead>
                             <tr class="text-white-50 small">
-                                <th class="ps-4">Evidence</th>
-                                <th>Defect Type / Location</th>
-                                <th>AI Confidence</th>
-                                <th>Severity</th>
-                                <th class="text-end pe-4">Lawyer Validation</th>
+                                <th class="ps-4">Project / Unit</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for defect in report.defects %}
+                            {% for defect in defects %}
                             <tr>
                                 <td class="ps-4 py-3">
-                                    <img src="{{ url_for('static', filename='uploads/' + defect.img) }}"
-                                        class="rounded border border-secondary" width="60" height="60"
-                                        style="object-fit: cover;">
+                                    <div class="fw-bold text-white">{{ defect['project_name'] }}</div>
+                                    <small class="text-white-50">{{ defect['unit_no'] }}</small>
                                 </td>
                                 <td>
-                                    <div class="fw-bold text-white">{{ defect.type }}</div>
-                                    <small class="text-white-50">{{ defect.location }}</small>
+                                    <span class="text-white">{{ defect['description'] }}</span>
                                 </td>
                                 <td>
-                                    <div class="progress" style="height: 6px; width: 100px;">
-                                        <div class="progress-bar bg-success" role="progressbar"
-                                            style="width: {{ defect.confidence }}"></div>
-                                    </div>
-                                    <small class="text-success fw-bold">{{ defect.confidence }}</small>
-                                </td>
-                                <td>
-                                    {% if defect.severity == 'High' %}
-                                    <span class="badge bg-danger">High</span>
+                                    {% if defect['status'] == 'locked' %}
+                                        <span class="badge bg-secondary">LOCKED</span>
                                     {% else %}
-                                    <span class="badge bg-warning text-dark">Medium</span>
+                                        <span class="badge bg-warning text-dark">DRAFT</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-end pe-4">
-                                    <button class="btn btn-sm btn-outline-success me-1" title="Confirm"><i
-                                            class="bi bi-check-lg"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger" title="Reject"><i
-                                            class="bi bi-x-lg"></i></button>
+                                    
+                                    {% if defect['status'] == 'draft' %}
+                                        <form action="{{ url_for('module3.lock_evidence', id=defect['id']) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure? This will lock the evidence for the Tribunal.')">
+                                                <i class="bi bi-lock-fill me-1"></i> Lock Evidence
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-secondary" disabled>
+                                            <i class="bi bi-check-circle-fill me-1"></i> Submitted
+                                        </button>
+                                    {% endif %}
+
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-white-50">
+                                    No defects found in database. <br>
+                                    <small>Go to "Insert Defect" to add one.</small>
                                 </td>
                             </tr>
                             {% endfor %}
