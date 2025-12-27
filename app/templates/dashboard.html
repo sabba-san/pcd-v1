@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 <div class="row justify-content-center">
     <div class="col-lg-10">
 
         <h2 class="fw-bold text-white mb-1">Dashboard</h2>
-        <p class="text-muted mb-5">Welcome back, {{ user if user else 'Abbas' }}.</p>
+        <p class="text-muted mb-5">Welcome back, {{ user if user else 'Homeowner' }}.</p>
 
         <div class="row g-4">
 
             <div class="col-md-6">
-                <a href="{{ url_for('module2.chatbot_ui') }}" class="text-decoration-none">
+                <a href="{{ url_for('module4.chatbot_ui') }}" class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -61,8 +63,13 @@
             </div>
 
             <div class="col-md-6">
-                <a href="{{ url_for('module3.visualize', filename='sisiranRendered.glb', project_name='My Home Demo') }}"
-                    class="text-decoration-none">
+                {% if defects and defects|length > 0 %}
+                    <a href="{{ url_for('module3.visualize', filename=defects[0].filename, project_name=defects[0].project_name) }}"
+                        class="text-decoration-none">
+                {% else %}
+                    <a href="#" onclick="showNoProjectAlert(); return false;" class="text-decoration-none">
+                {% endif %}
+                
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -133,6 +140,28 @@
 
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function showNoProjectAlert() {
+        Swal.fire({
+            icon: 'info',
+            title: 'No Project Found',
+            text: 'You haven\'t uploaded any defect scans yet. Please submit a new defect to use the 3D Visualizer.',
+            background: '#1e293b',
+            color: '#fff',
+            confirmButtonColor: '#3b82f6',
+            confirmButtonText: 'Add a Defect',
+            showCancelButton: true,
+            cancelButtonText: 'Close'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect user to the upload page
+                window.location.href = "{{ url_for('module3.insert_defect') }}";
+            }
+        });
+    }
+</script>
 
 <style>
     .hover-effect {

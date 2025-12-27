@@ -8,8 +8,16 @@
     <style>
         body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
         .login-card { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; width: 100%; max-width: 400px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        .form-control { background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; color: white; }
-        .form-control:focus { background: rgba(15, 23, 42, 0.8); border-color: #3b82f6; color: white; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+        .form-control, .form-select { background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; color: white; }
+        .form-control:focus, .form-select:focus { background: rgba(15, 23, 42, 0.8); border-color: #3b82f6; color: white; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+        
+        /* Dropdown arrow fix */
+        .form-select { 
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+        }
     </style>
 </head>
 <body>
@@ -32,12 +40,34 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label small text-white-50">Project Name</label>
-                <select name="project_name" class="form-control" required>
+                <label class="form-label small text-white-50">I am a...</label>
+                <select name="role" id="roleSelect" class="form-select" onchange="toggleFields()" required>
+                    <option value="user">Homeowner</option>
+                    <option value="developer">Housing Developer</option>
+                    <option value="lawyer">Lawyer</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="homeownerField">
+                <label class="form-label small text-white-50">Select Your Housing Project</label>
+                <select name="project_name_select" id="projectSelect" class="form-select" onchange="toggleCustomProject()">
                     <option value="ASMARINDA12">ASMARINDA12</option>
                     <option value="SISIRAN 2">SISIRAN 2</option>
                     <option value="TAMAN MERPAUH">TAMAN MERPAUH</option>
+                    <option value="Other">Other (Enter Custom)</option>
                 </select>
+                <input type="text" name="custom_project_name" id="customProjectInput" 
+                       class="form-control mt-2" placeholder="Enter your Project Name..." style="display: none;">
+            </div>
+
+            <div class="mb-3" id="developerField" style="display: none;">
+                <label class="form-label small text-white-50">Company Name</label>
+                <input type="text" name="developer_company" class="form-control" placeholder="e.g. EcoWorld Sdn Bhd">
+            </div>
+
+            <div class="mb-3" id="lawyerField" style="display: none;">
+                <label class="form-label small text-white-50">Law Firm Name</label>
+                <input type="text" name="law_firm" class="form-control" placeholder="e.g. Zulaikha & Partners">
             </div>
             
             <div class="mb-4">
@@ -52,5 +82,39 @@
             </div>
         </form>
     </div>
+
+    <script>
+        function toggleFields() {
+            var role = document.getElementById("roleSelect").value;
+            var homeownerDiv = document.getElementById("homeownerField");
+            var developerDiv = document.getElementById("developerField");
+            var lawyerDiv = document.getElementById("lawyerField");
+
+            // Reset all first
+            homeownerDiv.style.display = "none";
+            developerDiv.style.display = "none";
+            lawyerDiv.style.display = "none";
+
+            // Show relevant field
+            if (role === "user") {
+                homeownerDiv.style.display = "block";
+            } else if (role === "developer") {
+                developerDiv.style.display = "block";
+            } else if (role === "lawyer") {
+                lawyerDiv.style.display = "block";
+            }
+        }
+
+        function toggleCustomProject() {
+            var select = document.getElementById("projectSelect");
+            var input = document.getElementById("customProjectInput");
+            
+            if (select.value === "Other") {
+                input.style.display = "block";
+            } else {
+                input.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>

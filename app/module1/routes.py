@@ -41,19 +41,15 @@ def get_db():
             )
         ''')
         
-        # --- 2. AUTO-SEED USERS ---
+        # --- 2. AUTO-SEED USERS (CLEAN VERSION) ---
         cursor = db.cursor()
         
-        # Abbas (Homeowner)
+        # Abbas (Homeowner) - Created WITHOUT static defects
         cursor.execute("SELECT * FROM users WHERE email = 'abbas@student.uum.edu.my'")
         if not cursor.fetchone():
             db.execute("INSERT INTO users (email, password, full_name, role, project_name) VALUES (?, ?, ?, ?, ?)",
                        ('abbas@student.uum.edu.my', 'password123', 'Abbas Abu Dzarr', 'user', 'ASMARINDA12'))
-            cursor.execute("SELECT id FROM users WHERE email = 'abbas@student.uum.edu.my'")
-            abbas_id = cursor.fetchone()[0]
-            # Sample Defect
-            db.execute("INSERT INTO defects (user_id, project_name, unit_no, description, status, severity, filename) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                       (abbas_id, 'ASMARINDA12', 'A-85', 'Cracked Wall in Master Bedroom', 'in_progress', 'Medium', 'sisiranRendered.glb'))
+            # NOTE: Static defect insertion removed here based on your request
 
         # Developer
         cursor.execute("SELECT * FROM users WHERE email = 'developer@ecoworld.com'")
@@ -95,16 +91,36 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         full_name = request.form.get('full_name')
-        project_name = request.form.get('project_name')
+        role = request.form.get('role')
+        
+        # Determine the "Project/Organization" based on Role
+        final_project_name = "General" # Default
+
+        if role == 'user':
+            # Homeowner Logic
+            selected_proj = request.form.get('project_name_select')
+            if selected_proj == 'Other':
+                final_project_name = request.form.get('custom_project_name')
+            else:
+                final_project_name = selected_proj
+        
+        elif role == 'developer':
+            # Developer Logic -> Company Name
+            final_project_name = request.form.get('developer_company')
+            
+        elif role == 'lawyer':
+            # Lawyer Logic -> Law Firm Name
+            final_project_name = request.form.get('law_firm')
         
         db = get_db()
         try:
             db.execute('INSERT INTO users (email, password, full_name, role, project_name) VALUES (?, ?, ?, ?, ?)',
-                       (email, password, full_name, 'user', project_name))
+                       (email, password, full_name, role, final_project_name))
             db.commit()
             return redirect(url_for('module1.login_ui'))
         except sqlite3.IntegrityError:
             return "Email already exists! <a href='/login'>Try logging in</a>."
+            
     return render_template('register.html')
 
 @bp.route('/auth', methods=['POST'])
@@ -114,12 +130,14 @@ def login_auth():
     db = get_db()
     cur = db.execute('SELECT * FROM users WHERE email = ? AND password = ?', (email, password))
     user = cur.fetchone()
+    
     if user:
         session['user_id'] = user['id']
         session['user_role'] = user['role']
         session['user_name'] = user['full_name']
         session['user_project'] = user['project_name'] 
         
+        # Redirect based on Role
         if user['role'] == 'developer': return redirect(url_for('module1.developer_portal'))
         elif user['role'] == 'lawyer': return redirect(url_for('module1.lawyer_dashboard'))
         elif user['role'] == 'admin': return redirect(url_for('module1.admin_dashboard'))
@@ -142,8 +160,10 @@ def dashboard():
     if 'user_id' not in session: return redirect(url_for('module1.login_ui'))
 
     db = get_db()
+    # Fetch ONLY logged-in user's defects
     cur = db.execute("SELECT * FROM defects WHERE user_id = ? ORDER BY id DESC LIMIT 5", (session['user_id'],))
     recent_defects = cur.fetchall()
+    
     return render_template('dashboard.html', user=session.get('user_name'), defects=recent_defects)
 
 @bp.route('/developer-portal')
@@ -153,7 +173,6 @@ def developer_portal():
     db = get_db()
     selected_project = request.args.get('project_name')
     
-    # --- FIX IS HERE: Changed 'as active' to 'as active_count' ---
     cur_projects = db.execute("""
         SELECT project_name, 
                COUNT(*) as total, 
@@ -163,6 +182,7 @@ def developer_portal():
     """)
     projects_raw = cur_projects.fetchall()
     
+    # Default to first project if none selected
     if not selected_project and projects_raw: selected_project = projects_raw[0]['project_name']
     
     query = "SELECT * FROM defects WHERE status != 'draft'"

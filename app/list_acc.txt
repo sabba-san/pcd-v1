@@ -1,0 +1,14 @@
+abbas@student.uum.edu.my
+password123
+
+admin@uum.edu.my
+admin123
+
+developer@ecoworld.com
+dev123
+
+lawyer@firm.com
+law123
+
+salman@dummy.com
+salman123
