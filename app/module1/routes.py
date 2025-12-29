@@ -44,12 +44,11 @@ def get_db():
         # --- 2. AUTO-SEED USERS (CLEAN VERSION) ---
         cursor = db.cursor()
         
-        # Abbas (Homeowner) - Created WITHOUT static defects
+        # Abbas (Homeowner)
         cursor.execute("SELECT * FROM users WHERE email = 'abbas@student.uum.edu.my'")
         if not cursor.fetchone():
             db.execute("INSERT INTO users (email, password, full_name, role, project_name) VALUES (?, ?, ?, ?, ?)",
                        ('abbas@student.uum.edu.my', 'password123', 'Abbas Abu Dzarr', 'user', 'ASMARINDA12'))
-            # NOTE: Static defect insertion removed here based on your request
 
         # Developer
         cursor.execute("SELECT * FROM users WHERE email = 'developer@ecoworld.com'")
@@ -149,6 +148,56 @@ def login_auth():
 def logout():
     session.clear()
     return redirect(url_for('module1.login_ui'))
+
+# --- NEW: PROFILE & SETTINGS ROUTES ---
+
+@bp.route('/profile')
+def profile():
+    if 'user_id' not in session: return redirect(url_for('module1.login_ui'))
+    db = get_db()
+    
+    # 1. Fetch User Data as 'account' (renamed to avoid conflict)
+    account_data = db.execute("SELECT * FROM users WHERE id = ?", (session['user_id'],)).fetchone()
+    
+    # 2. Fetch Activity Stats
+    if session.get('user_role') == 'user':
+        defects_count = db.execute("SELECT COUNT(*) FROM defects WHERE user_id = ?", (session['user_id'],)).fetchone()[0]
+    else:
+        defects_count = db.execute("SELECT COUNT(*) FROM defects").fetchone()[0]
+    
+    # 3. Pass 'user' (String) for Navbar, and 'account' (Object) for Profile Page
+    return render_template('profile.html', 
+                           user=session.get('user_name'), 
+                           account=account_data, 
+                           defects_count=defects_count)
+
+@bp.route('/settings')
+def settings():
+    if 'user_id' not in session: return redirect(url_for('module1.login_ui'))
+    return render_template('settings.html', user=session.get('user_name'))
+
+@bp.route('/settings/change_password', methods=['POST'])
+def change_password():
+    if 'user_id' not in session: return redirect(url_for('module1.login_ui'))
+    
+    current_pw = request.form.get('current_password')
+    new_pw = request.form.get('new_password')
+    confirm_pw = request.form.get('confirm_password')
+    
+    db = get_db()
+    user = db.execute("SELECT * FROM users WHERE id = ?", (session['user_id'],)).fetchone()
+    
+    # Validation
+    if user['password'] != current_pw:
+        flash("Incorrect current password!", "danger")
+    elif new_pw != confirm_pw:
+        flash("New passwords do not match!", "danger")
+    else:
+        db.execute("UPDATE users SET password = ? WHERE id = ?", (new_pw, session['user_id']))
+        db.commit()
+        flash("Password updated successfully!", "success")
+        
+    return redirect(url_for('module1.settings'))
 
 # --- DASHBOARDS ---
 
