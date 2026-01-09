@@ -15,7 +15,7 @@ bp = Blueprint('module4', __name__, url_prefix='/module4')
 
 # Initialize Groq Client
 client = Groq(
-    api_key=os.environ.get("GROQ_API_KEY"),
+    api_key=os.environ.get("GROQ_API_KEY"), #nnti letak api key here
 )
 
 # --- ROUTES ---
