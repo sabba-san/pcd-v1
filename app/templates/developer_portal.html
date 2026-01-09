@@ -3,19 +3,18 @@
 {% block content %}
 <div class="container-fluid px-0">
     <div class="row g-0" style="min-height: calc(100vh - 70px);">
-        
+
         <div class="col-md-3 col-xl-2 bg-dark border-end border-secondary p-0 d-print-none">
             <div class="p-3 border-bottom border-secondary bg-opacity-10 bg-white">
                 <small class="text-uppercase text-white-50 fw-bold" style="font-size: 0.7rem;">Project Portfolio</small>
                 <h6 class="text-white fw-bold mb-0 mt-1">Select Development</h6>
             </div>
-            
+
             <div class="list-group list-group-flush">
                 {% for p in projects %}
-                <a href="{{ url_for('module1.developer_portal', project_name=p.project_name) }}" 
-                   class="list-group-item list-group-item-action border-0 py-3 px-3 d-flex justify-content-between align-items-center
-                          {% if p.project_name == stats.current_project %}active-project{% else %}bg-transparent text-white-50{% endif %}"
-                   style="transition: all 0.2s;">
+                <a href="{{ url_for('module1.developer_portal', project_name=p.project_name) }}"
+                    class="list-group-item list-group-item-action border-0 py-3 px-3 d-flex justify-content-between align-items-center
+                          {% if p.project_name == stats.current_project %}active-project{% else %}bg-transparent text-white-50{% endif %}" style="transition: all 0.2s;">
                     <div>
                         <div class="fw-bold {% if p.project_name == stats.current_project %}text-white{% endif %}">
                             <i class="bi bi-building me-2"></i>{{ p.project_name }}
@@ -23,9 +22,9 @@
                         <small style="font-size: 0.75rem;">{{ p.active_count }} Active Issues</small>
                     </div>
                     {% if p.active_count > 0 %}
-                        <span class="badge bg-danger rounded-pill">{{ p.active_count }}</span>
+                    <span class="badge bg-danger rounded-pill">{{ p.active_count }}</span>
                     {% else %}
-                        <i class="bi bi-check-circle-fill text-success"></i>
+                    <i class="bi bi-check-circle-fill text-success"></i>
                     {% endif %}
                 </a>
                 {% else %}
@@ -37,11 +36,12 @@
         </div>
 
         <div class="col-md-9 col-xl-10 p-4 print-container" style="background-color: #0f172a;">
-            
+
             <div class="d-flex justify-content-between align-items-end mb-4">
                 <div>
                     <h2 class="fw-bold text-white mb-0 print-text-black">{{ stats.current_project }}</h2>
-                    <p class="text-info small mb-0 print-text-black"><i class="bi bi-tools me-1"></i> Contractor Rectification Job Sheet</p>
+                    <p class="text-info small mb-0 print-text-black"><i class="bi bi-tools me-1"></i> Contractor
+                        Rectification Job Sheet</p>
                 </div>
                 <div class="d-flex gap-2 d-print-none">
                     <div class="px-3 py-2 bg-secondary bg-opacity-25 rounded border border-secondary text-center">
@@ -60,8 +60,9 @@
             </div>
 
             <div class="card shadow-lg border-0 overflow-hidden print-no-shadow" style="background-color: #1e293b;">
-                
-                <div class="card-header bg-transparent border-secondary p-3 d-flex justify-content-between align-items-center d-print-none">
+
+                <div
+                    class="card-header bg-transparent border-secondary p-3 d-flex justify-content-between align-items-center d-print-none">
                     <h6 class="text-white m-0 fw-bold"><i class="bi bi-list-task me-2"></i>Prioritized Task List</h6>
                     <button class="btn btn-sm btn-outline-light" onclick="window.print()">
                         <i class="bi bi-printer me-2"></i>Print Job Sheet
@@ -73,72 +74,102 @@
                         <thead class="bg-dark border-bottom border-secondary">
                             <tr>
                                 <th class="py-3 ps-4 text-white-50 small text-uppercase print-text-black">Ref ID</th>
+                                <th class="py-3 text-white-50 small text-uppercase print-text-black">Owner</th>
                                 <th class="py-3 text-white-50 small text-uppercase print-text-black">Defect Detail</th>
                                 <th class="py-3 text-white-50 small text-uppercase print-text-black">Severity</th>
                                 <th class="py-3 text-white-50 small text-uppercase print-text-black">Current Status</th>
                                 <th class="py-3 text-white-50 small text-uppercase d-print-none">Verification</th>
-                                <th class="py-3 text-end pe-4 text-white-50 small text-uppercase d-print-none">Action</th>
+                                <th class="py-3 text-end pe-4 text-white-50 small text-uppercase d-print-none">Action
+                                </th>
                                 <th class="d-none d-print-table-cell text-end pe-4">Signature</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for defect in defects %}
                             <tr>
-                                <td class="ps-4 text-white-50 font-monospace small print-text-black">#{{ defect.id }}</td>
+                                <td class="ps-4 text-white-50 font-monospace small print-text-black">#{{ defect.id }}
+                                </td>
+
+                                <td class="text-white fw-bold print-text-black">
+                                    <i class="bi bi-person-circle me-2 text-secondary"></i>{{ defect.full_name }}
+                                </td>
+
                                 <td>
                                     <div class="fw-bold text-white print-text-black">{{ defect.unit_no }}</div>
                                     <div class="text-white-50 small print-text-black">{{ defect.description }}</div>
+                                    <div class="text-info small fst-italic mt-1" style="font-size: 0.7rem;">
+                                        <i class="bi bi-paperclip"></i> {{ defect.filename }}
+                                    </div>
                                 </td>
                                 <td>
                                     {% if defect.severity == 'High' %}
-                                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger print-badge-high">High Priority</span>
+                                    <span
+                                        class="badge bg-danger bg-opacity-25 text-danger border border-danger print-badge-high">High
+                                        Priority</span>
                                     {% elif defect.severity == 'Medium' %}
-                                        <span class="badge bg-warning bg-opacity-25 text-warning border border-warning print-badge-med">Medium</span>
+                                    <span
+                                        class="badge bg-warning bg-opacity-25 text-warning border border-warning print-badge-med">Medium</span>
                                     {% else %}
-                                        <span class="badge bg-secondary print-badge-low">Low</span>
+                                    <span class="badge bg-secondary print-badge-low">Low</span>
                                     {% endif %}
                                 </td>
-                                
+
                                 <td>
-                                    {% if defect.status == 'locked' %}
-                                        <span class="badge bg-secondary text-white border border-secondary">Processing</span>
+                                    {% if defect.status == 'draft' %}
+                                    <span class="badge bg-info text-dark border border-info">New / Draft</span>
+                                    {% elif defect.status == 'locked' %}
+                                    <span
+                                        class="badge bg-secondary text-white border border-secondary">Processing</span>
                                     {% elif defect.status == 'in_progress' %}
-                                        <span class="badge bg-primary text-white border border-primary">Repair in Progress</span>
+                                    <span class="badge bg-primary text-white border border-primary">Repair in
+                                        Progress</span>
                                     {% elif defect.status == 'completed' %}
-                                        <span class="badge bg-success text-white">Resolved</span>
+                                    <span class="badge bg-success text-white">Resolved</span>
                                     {% endif %}
                                 </td>
 
                                 <td class="d-print-none">
-                                    <a href="{{ url_for('module3.visualize', filename=defect.filename, project_name=defect.project_name, back_to='developer') }}" 
-                                       class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                    {% if defect.filename and defect.filename != 'No File' %}
+                                    <a href="{{ url_for('module3.visualize', filename=defect.filename, project_name=defect.project_name, back_to='developer') }}"
+                                        class="btn btn-sm btn-outline-info rounded-pill px-3">
                                         <i class="bi bi-badge-3d-fill me-1"></i> Verify Model
                                     </a>
-                                </td>
-                                <td class="text-end pe-4 d-print-none">
-                                    {% if defect.status == 'locked' %}
-                                        <a href="{{ url_for('module1.update_status', id=defect.id, new_status='in_progress') }}" 
-                                           class="btn btn-sm btn-primary fw-bold px-3 shadow-sm">
-                                           <i class="bi bi-play-fill me-1"></i>Start Job
-                                        </a>
-                                    {% elif defect.status == 'in_progress' %}
-                                        <a href="{{ url_for('module1.update_status', id=defect.id, new_status='completed') }}" 
-                                           class="btn btn-sm btn-success fw-bold px-3 shadow-sm">
-                                           <i class="bi bi-check-lg me-1"></i>Finish
-                                        </a>
-                                    {% elif defect.status == 'completed' %}
-                                        <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Complete</span>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>
+                                        <i class="bi bi-slash-circle me-1"></i> No Model
+                                    </button>
                                     {% endif %}
                                 </td>
-                                <td class="d-none d-print-table-cell text-end pe-4" style="border-bottom: 1px solid #ccc;">
-                                    <div style="height: 30px; width: 150px; border-bottom: 1px solid black; display:inline-block;"></div>
+                                <td class="text-end pe-4 d-print-none">
+                                    {% if defect.status == 'locked' or defect.status == 'draft' %}
+                                    <a href="{{ url_for('module1.update_status', id=defect.id, new_status='in_progress') }}"
+                                        class="btn btn-sm btn-primary fw-bold px-3 shadow-sm">
+                                        <i class="bi bi-play-fill me-1"></i>Start Job
+                                    </a>
+                                    {% elif defect.status == 'in_progress' %}
+                                    <a href="{{ url_for('module1.update_status', id=defect.id, new_status='completed') }}"
+                                        class="btn btn-sm btn-success fw-bold px-3 shadow-sm">
+                                        <i class="bi bi-check-lg me-1"></i>Finish
+                                    </a>
+                                    {% elif defect.status == 'completed' %}
+                                    <span class="text-success small fw-bold"><i
+                                            class="bi bi-check-circle-fill me-1"></i> Complete</span>
+                                    {% endif %}
+                                </td>
+                                <td class="d-none d-print-table-cell text-end pe-4"
+                                    style="border-bottom: 1px solid #ccc;">
+                                    <div
+                                        style="height: 30px; width: 150px; border-bottom: 1px solid black; display:inline-block;">
+                                    </div>
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="7" class="text-center py-5">
-                                    <div class="text-white-50 opacity-50 mb-2"><i class="bi bi-clipboard-check fs-1"></i></div>
-                                    <p class="text-white-50 mb-0">No active work orders for {{ stats.current_project }}</p>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="text-white-50 opacity-50 mb-2"><i
+                                            class="bi bi-clipboard-check fs-1"></i></div>
+                                    <p class="text-white-50 mb-0">No active work orders for {{ stats.current_project }}
+                                    </p>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -157,23 +188,80 @@
         border-left: 3px solid #3b82f6 !important;
         color: white !important;
     }
+
     .list-group-item:hover {
         background-color: #1e293b !important;
     }
 
     @media print {
-        @page { size: landscape; margin: 1cm; }
-        body { background-color: white !important; color: black !important; }
-        .col-md-9, .col-xl-10, .print-container { background-color: white !important; width: 100% !important; padding: 0 !important; }
-        .col-md-3, .d-print-none, .btn, .navbar, .sidebar { display: none !important; }
-        .d-print-table-cell { display: table-cell !important; }
-        .text-white, .text-white-50, .text-info { color: black !important; }
-        .print-text-black { color: black !important; font-weight: bold; }
-        .card { border: 1px solid #ccc !important; box-shadow: none !important; }
-        .table-dark { --bs-table-bg: white; --bs-table-color: black; border-color: #000; }
-        .table-dark th, .table-dark td { border-bottom: 1px solid #000 !important; color: black !important; }
-        .badge { border: 1px solid black !important; color: black !important; background: transparent !important; }
-        .print-badge-high { font-weight: 900; text-decoration: underline; }
+        @page {
+            size: landscape;
+            margin: 1cm;
+        }
+
+        body {
+            background-color: white !important;
+            color: black !important;
+        }
+
+        .col-md-9,
+        .col-xl-10,
+        .print-container {
+            background-color: white !important;
+            width: 100% !important;
+            padding: 0 !important;
+        }
+
+        .col-md-3,
+        .d-print-none,
+        .btn,
+        .navbar,
+        .sidebar {
+            display: none !important;
+        }
+
+        .d-print-table-cell {
+            display: table-cell !important;
+        }
+
+        .text-white,
+        .text-white-50,
+        .text-info {
+            color: black !important;
+        }
+
+        .print-text-black {
+            color: black !important;
+            font-weight: bold;
+        }
+
+        .card {
+            border: 1px solid #ccc !important;
+            box-shadow: none !important;
+        }
+
+        .table-dark {
+            --bs-table-bg: white;
+            --bs-table-color: black;
+            border-color: #000;
+        }
+
+        .table-dark th,
+        .table-dark td {
+            border-bottom: 1px solid #000 !important;
+            color: black !important;
+        }
+
+        .badge {
+            border: 1px solid black !important;
+            color: black !important;
+            background: transparent !important;
+        }
+
+        .print-badge-high {
+            font-weight: 900;
+            text-decoration: underline;
+        }
     }
 </style>
 {% endblock %}

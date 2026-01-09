@@ -10,11 +10,14 @@ COPY environment.yml .
 # Create conda environment from environment.yml (creates env named 'pcd')
 RUN conda env create -f environment.yml
 
-# --- THE FIX STARTS HERE ---
-# We must install fpdf2 into the 'pcd' environment because it's likely missing from environment.yml
-# We use 'conda run' to ensure it installs INSIDE the pcd environment
-RUN conda run -n pcd pip install fpdf2 flask
-# --- THE FIX ENDS HERE ---
+# --- THE FIX IS HERE ---
+# 1. We COPY your requirements.txt into the container
+COPY requirements.txt .
+
+# 2. We tell pip to install EVERYTHING listed in requirements.txt
+# (This includes groq, openai, flask, psycopg2, etc.)
+RUN conda run -n pcd pip install -r requirements.txt
+# -----------------------
 
 # Use a bash shell for subsequent RUN/CMD
 SHELL ["/bin/bash", "-lc"]
@@ -22,7 +25,7 @@ SHELL ["/bin/bash", "-lc"]
 # Copy the entire project into the container
 COPY . /usr/src/app
 
-# Expose the port (Your SV used 5000, so we will use 5000)
+# Expose the port
 EXPOSE 5000
 
 # Set environment variables

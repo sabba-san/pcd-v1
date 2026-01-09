@@ -18,4 +18,5 @@ dependencies:
     - requests
     - pytest
     - black
+    - groq               # <--- ADDED: AI Library for Chatbot
     # add other pip deps here

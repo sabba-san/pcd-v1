@@ -1,0 +1,95 @@
+/* SOFT SLATE THEME */
+:root {
+    --bg-body: #1e293b;       /* Deep Slate Blue */
+    --bg-card: #334155;       /* Lighter Slate */
+    --bg-input: #0f172a;      /* Darker for inputs */
+    --text-main: #ffffff;     /* PURE WHITE TEXT */
+    --text-secondary: #e2e8f0; 
+    --accent: #3b82f6;        /* Bright Blue */
+}
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    background-color: var(--bg-body); 
+    color: var(--text-main) !important;
+}
+
+/* FORCE WHITE TEXT HEADERS */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+/* Make "Muted" text lighter/visible */
+.text-muted, .text-white-50 { 
+    color: #cbd5e1 !important; /* Light Slate (Readable) */
+}
+
+.navbar { 
+    background-color: #0f172a !important; 
+    border-bottom: 1px solid #334155; 
+}
+.navbar-brand { color: #ffffff !important; font-weight: 700; }
+
+.card { 
+    background-color: var(--bg-card); 
+    border: 1px solid #475569; 
+    border-radius: 12px; 
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+label { color: #ffffff !important; font-weight: 500; }
+
+/* --- INPUT FIELD VISIBILITY FIXES --- */
+.form-control, .form-select {
+    background-color: var(--bg-input);
+    border: 1px solid #475569;
+    color: #ffffff !important; /* Force Bright White Text */
+    padding: 12px;
+}
+
+/* Fix for DISABLED Inputs (Profile Page) */
+.form-control:disabled, .form-control[readonly], fieldset[disabled] .form-control {
+    background-color: #334155 !important; /* Lighter background for contrast */
+    color: #ffffff !important; /* Keep text white */
+    opacity: 1 !important; /* Prevent browser from dimming text */
+    border-color: #64748b;
+}
+
+.form-control:focus {
+    background-color: var(--bg-input);
+    color: #ffffff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* Lighter Placeholder Text */
+.form-control::placeholder { 
+    color: #94a3b8 !important; /* Light Grey */
+    opacity: 1;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: #60a5fa; text-decoration: underline; }
+
+.btn-primary {
+    background-color: var(--accent);
+    border: none;
+    color: white;
+    padding: 10px 24px;
+    font-weight: 600;
+}
+.btn-primary:hover { background-color: #2563eb; }
+
+/* Dropdown Styling */
+.dropdown-menu-dark {
+    background-color: #334155;
+    border: 1px solid #475569;
+}
+.dropdown-item:hover {
+    background-color: #475569;
+}
+.dropdown-item {
+    color: #ffffff !important;
+}

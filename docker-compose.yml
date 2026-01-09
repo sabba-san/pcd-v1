@@ -4,16 +4,23 @@ services:
     build:
       context: .  # This refers to the current directory, where your Dockerfile is located
       dockerfile: Dockerfile  # You can specify a different Dockerfile name if necessary
-    container_name: flask_app  # Name of the running container
+    container_name: flask_app   # Name of the running container
     working_dir: /usr/src/app  # Add this line
+    
+    # --- FIX: Load the .env file here ---
+    env_file:
+      - .env
+    # ------------------------------------
+
     environment:
       - PYTHONPATH=/usr/src/app
-      - FLASK_APP=app:app  # Assuming your Flask app instance is named 'app' in app/__init__.py
+      - FLASK_APP=app  # <--- FIX 1: Point to the package 'app', not 'app:app'
       - FLASK_ENV=development
     volumes:
       - ./:/usr/src/app    # mount project root so /usr/src/app/app is the package
     ports:
-      - "5100:5000"  # Expose Flask app on port 5000
+      - "5000:5000"  # Expose Flask app on port 5000 (I changed 5001 back to 5000 to match your internal port)
+    # <--- FIX 2: Internal command MUST be 5000 to match the mapping above
     command: ["conda", "run", "--no-capture-output", "-n", "pcd", "flask", "run", "--host=0.0.0.0", "--port=5000", "--reload"]
     restart: unless-stopped
     depends_on:

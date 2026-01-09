@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container-fluid">
-    
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-white mb-1"><i class="bi bi-folder-fill me-2 text-primary"></i>My Projects</h2>
@@ -17,18 +17,19 @@
         <div class="card-body p-2">
             <div class="input-group">
                 <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control bg-transparent border-0 text-white" placeholder="Search projects by name, ID, or location...">
+                <input type="text" class="form-control bg-transparent border-0 text-white"
+                    placeholder="Search projects by name, ID, or location...">
             </div>
         </div>
     </div>
 
     <div class="row g-4">
-        
+
         {% for p in projects %}
         <div class="col-md-6 col-lg-4">
             <div class="card h-100 border-0 shadow-sm" style="background-color: #334155; transition: transform 0.2s;">
                 <div class="card-body">
-                    
+
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-box-seam fs-4 text-info me-2"></i>
@@ -37,13 +38,13 @@
                                 <small class="text-white-50">ID: #{{ p.id }}</small>
                             </div>
                         </div>
-                        
+
                         {% if p.status == 'Processing' %}
-                            <span class="badge bg-warning text-dark">{{ p.status }}</span>
+                        <span class="badge bg-warning text-dark">{{ p.status }}</span>
                         {% elif p.status == 'Completed' %}
-                            <span class="badge bg-success">{{ p.status }}</span>
+                        <span class="badge bg-success">{{ p.status }}</span>
                         {% else %}
-                            <span class="badge bg-info">{{ p.status }}</span>
+                        <span class="badge bg-info">{{ p.status }}</span>
                         {% endif %}
                     </div>
 
@@ -66,10 +67,11 @@
 
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-warning small">
-                            <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>{{ p.defects }}</strong> defects
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>{{ p.defects }}</strong>
+                            defects
                         </div>
-                        
-                        <a href="{{ url_for('module3.visualize', filename=p.filename, project_name=p.name) }}" class="btn btn-sm btn-outline-light">
+                        <a href="http://localhost:5003/visualize_direct?model_url=http://localhost:5001/static/uploads/{{ p.filename }}&project_name={{ p.name }}"
+                            target="_blank" class="btn btn-sm btn-light w-50">
                             <i class="bi bi-box-fill me-1"></i> 3D Model
                         </a>
                     </div>

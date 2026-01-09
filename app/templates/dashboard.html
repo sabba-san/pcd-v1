@@ -6,13 +6,13 @@
 <div class="row justify-content-center">
     <div class="col-lg-10">
 
-        <h2 class="fw-bold text-white mb-1">Dashboard</h2>
+        <h2 class="fw-bold text-dark mb-1">Dashboard</h2>
         <p class="text-muted mb-5">Welcome back, {{ user if user else 'Homeowner' }}.</p>
 
         <div class="row g-4">
 
             <div class="col-md-6">
-                <a href="{{ url_for('module4.chatbot_ui') }}" class="text-decoration-none">
+                <a href="{{ url_for('module4.index') }}" class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -64,8 +64,8 @@
 
             <div class="col-md-6">
                 {% if defects and defects|length > 0 %}
-                    <a href="{{ url_for('module3.visualize', filename=defects[0].filename, project_name=defects[0].project_name) }}"
-                        class="text-decoration-none">
+                    <a href="{{ url_for('module3.visualize', filename=defects[0]['filename'], project_name=defects[0]['project_name']) }}"
+                       class="text-decoration-none">
                 {% else %}
                     <a href="#" onclick="showNoProjectAlert(); return false;" class="text-decoration-none">
                 {% endif %}
@@ -88,7 +88,7 @@
         </div>
 
         <div class="mt-5">
-            <h6 class="fw-bold text-white-50 text-uppercase small mb-3">Recent Activity</h6>
+            <h6 class="fw-bold text-muted text-uppercase small mb-3">Recent Activity</h6>
             <div class="card p-0 overflow-hidden border-0 shadow-lg" style="background-color: #334155;">
                 <div class="table-responsive">
                     <table class="table table-dark table-hover mb-0 align-middle" style="background-color: #334155;">
@@ -107,21 +107,23 @@
                             <tr>
                                 <td class="ps-4 fw-bold text-white"
                                     style="background-color: #334155; border-bottom: none;">
-                                    {{ defect.project_name if defect.project_name else 'General' }}
+                                    {{ defect['project_name'] if defect['project_name'] else 'General' }}
                                 </td>
                                 <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">
-                                    <div class="text-white">{{ defect.description }}</div>
-                                    <small class="text-white-50">Unit: {{ defect.unit_no }}</small>
+                                    <div class="text-white">{{ defect['description'] }}</div>
+                                    <small class="text-white-50">Unit: {{ defect['unit_no'] }}</small>
                                 </td>
                                 <td style="background-color: #334155; border-bottom: none;">
-                                    {% if defect.status == 'draft' %}
+                                    {% if defect['status'] == 'draft' %}
                                         <span class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill px-3">Draft</span>
-                                    {% elif defect.status == 'locked' %}
+                                    {% elif defect['status'] == 'locked' %}
                                         <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Processing...</span>
-                                    {% elif defect.status == 'in_progress' %}
+                                    {% elif defect['status'] == 'in_progress' %}
                                         <span class="badge bg-primary bg-opacity-25 text-primary rounded-pill px-3">Repairing</span>
-                                    {% elif defect.status == 'completed' %}
+                                    {% elif defect['status'] == 'completed' %}
                                         <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Resolved</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark rounded-pill px-3">{{ defect['status'] }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -156,7 +158,6 @@
             cancelButtonText: 'Close'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Redirect user to the upload page
                 window.location.href = "{{ url_for('module3.insert_defect') }}";
             }
         });
@@ -166,6 +167,7 @@
 <style>
     .hover-effect {
         transition: transform 0.2s ease, background-color 0.2s ease;
+        cursor: pointer;
     }
 
     .hover-effect:hover {

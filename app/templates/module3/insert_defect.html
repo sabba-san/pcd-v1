@@ -45,11 +45,11 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label class="form-label text-white">Owner Name</label>
-                        <input type="text" class="form-control" name="owner_name" value="{{ user if user else '' }}" placeholder="e.g. Abbas Abu Dzarr">
+                        <input type="text" class="form-control" value="{{ session['user_name'] }}" readonly style="background-color: #1e293b; color: #94a3b8;">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-white">Unit No. <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="unit_no" placeholder="e.g. A-85">
+                        <input type="text" class="form-control" name="unit_no" placeholder="e.g. A-85" required>
                         <div class="form-text text-white-50 small fst-italic">
                             <i class="bi bi-link-45deg"></i> Linked to Grant No. in backend
                         </div>
@@ -60,11 +60,13 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-12">
                         <label class="form-label text-white">Project Name / Title</label>
-                        <input type="text" class="form-control" name="project_name" value="Master Bedroom Crack" placeholder="e.g. Kitchen Leak">
+                        <input type="text" class="form-control" name="project_name" 
+                               value="{{ user_project if user_project else session.get('user_project', '') }}" 
+                               readonly style="background-color: #1e293b; color: #94a3b8;">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label text-white">Detailed Description</label>
-                        <textarea class="form-control" name="description" rows="3" placeholder="Describe the defect location and severity..."></textarea>
+                        <textarea class="form-control" name="description" rows="3" placeholder="Describe the defect location (e.g., Master Bedroom Ceiling)..." required></textarea>
                     </div>
                 </div>
 
@@ -90,9 +92,16 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end gap-3 mt-4">
-                    <button type="button" class="btn btn-outline-secondary border-0 text-white-50">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-5 fw-bold">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a href="{{ url_for('module1.dashboard') }}" class="btn btn-outline-secondary border-0 text-white-50 fw-bold px-4">
+                        Cancel
+                    </a>
+                    
+                    <button type="submit" name="action" value="visualize" class="btn btn-info text-white fw-bold px-4">
+                        <i class="bi bi-box-seam me-2"></i>Preview 3D
+                    </button>
+                    
+                    <button type="submit" name="action" value="submit" class="btn btn-primary fw-bold px-5">
                         Submit Claim <i class="bi bi-send-fill ms-2"></i>
                     </button>
                 </div>
@@ -102,4 +111,17 @@
         
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.file-input-hidden').forEach(input => {
+        input.addEventListener('change', function() {
+            const fileName = this.files[0]?.name;
+            if (fileName) {
+                this.parentElement.querySelector('h6').textContent = fileName;
+                this.parentElement.querySelector('h6').classList.add('text-info');
+                this.parentElement.querySelector('.upload-icon').classList.replace('text-muted', 'text-info');
+            }
+        });
+    });
+</script>
 {% endblock %}

@@ -13,6 +13,7 @@ env/
 venv/
 .venv/
 env.bak/
+.env
 
 # Ignore Conda environment (miniforge) related directories
 .conda/
