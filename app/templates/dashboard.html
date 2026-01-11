@@ -29,7 +29,7 @@
             </div>
 
             <div class="col-md-6">
-                <a href="{{ url_for('module1.my_projects') }}" class="text-decoration-none">
+                <a href="#" class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -64,25 +64,25 @@
 
             <div class="col-md-6">
                 {% if defects and defects|length > 0 %}
-                    <a href="{{ url_for('module3.visualize', filename=defects[0]['filename'], project_name=defects[0]['project_name']) }}"
-                       class="text-decoration-none">
-                {% else %}
+                <a href="{{ url_for('module3.visualize', filename=defects[0]['filename'], project_name=defects[0]['project_name']) }}"
+                    class="text-decoration-none">
+                    {% else %}
                     <a href="#" onclick="showNoProjectAlert(); return false;" class="text-decoration-none">
-                {% endif %}
-                
-                    <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
-                        <div class="card-body">
-                            <div class="mb-4 d-flex justify-content-between align-items-center">
-                                <div class="bg-warning bg-opacity-10 p-3 rounded-3">
-                                    <i class="bi bi-box-fill fs-3 text-warning"></i>
+                        {% endif %}
+
+                        <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                            <div class="card-body">
+                                <div class="mb-4 d-flex justify-content-between align-items-center">
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded-3">
+                                        <i class="bi bi-box-fill fs-3 text-warning"></i>
+                                    </div>
+                                    <i class="bi bi-chevron-right text-muted"></i>
                                 </div>
-                                <i class="bi bi-chevron-right text-muted"></i>
+                                <h4 class="fw-bold text-white mb-2">3D Visualizer</h4>
+                                <p class="text-white-50 small">Interact with defects in 3D space.</p>
                             </div>
-                            <h4 class="fw-bold text-white mb-2">3D Visualizer</h4>
-                            <p class="text-white-50 small">Interact with defects in 3D space.</p>
                         </div>
-                    </div>
-                </a>
+                    </a>
             </div>
 
         </div>
@@ -97,7 +97,8 @@
                                 <th class="ps-4 py-3 text-white-50 fw-normal small text-uppercase"
                                     style="background-color: #1e293b; border-bottom: 1px solid #475569;">Project</th>
                                 <th class="py-3 text-white-50 fw-normal small text-uppercase"
-                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Defect Detail</th>
+                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Defect Detail
+                                </th>
                                 <th class="py-3 text-white-50 fw-normal small text-uppercase"
                                     style="background-color: #1e293b; border-bottom: 1px solid #475569;">Status</th>
                             </tr>
@@ -115,21 +116,27 @@
                                 </td>
                                 <td style="background-color: #334155; border-bottom: none;">
                                     {% if defect['status'] == 'draft' %}
-                                        <span class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill px-3">Draft</span>
+                                    <span
+                                        class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill px-3">Draft</span>
                                     {% elif defect['status'] == 'locked' %}
-                                        <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Processing...</span>
+                                    <span
+                                        class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Processing...</span>
                                     {% elif defect['status'] == 'in_progress' %}
-                                        <span class="badge bg-primary bg-opacity-25 text-primary rounded-pill px-3">Repairing</span>
+                                    <span
+                                        class="badge bg-primary bg-opacity-25 text-primary rounded-pill px-3">Repairing</span>
                                     {% elif defect['status'] == 'completed' %}
-                                        <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Resolved</span>
+                                    <span
+                                        class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Resolved</span>
                                     {% else %}
-                                        <span class="badge bg-light text-dark rounded-pill px-3">{{ defect['status'] }}</span>
+                                    <span class="badge bg-light text-dark rounded-pill px-3">{{ defect['status']
+                                        }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="3" class="text-center py-4 text-white-50" style="background-color: #334155;">
+                                <td colspan="3" class="text-center py-4 text-white-50"
+                                    style="background-color: #334155;">
                                     No recent activity found.
                                 </td>
                             </tr>

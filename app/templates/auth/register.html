@@ -27,16 +27,26 @@
             <h3 class="fw-bold mt-2">Create Account</h3>
             <p class="text-white-50">Join the DLP Advisor Platform</p>
         </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} small py-2 mb-3">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         
-        <form action="{{ url_for('module1.register') }}" method="POST">
+        <form action="{{ url_for('auth.register') }}" method="POST">
             <div class="mb-3">
                 <label class="form-label small text-white-50">Full Name</label>
                 <input type="text" name="full_name" class="form-control" placeholder="e.g. Ali Baba" required>
             </div>
             
             <div class="mb-3">
-                <label class="form-label small text-white-50">Email Address</label>
-                <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+                <label class="form-label small text-white-50">Username / Email</label>
+                <input type="text" name="username" class="form-control" placeholder="name@example.com" required>
             </div>
 
             <div class="mb-3">
@@ -78,7 +88,7 @@
             <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mb-3">Register</button>
             
             <div class="text-center">
-                <small class="text-white-50">Already have an account? <a href="{{ url_for('module1.login_ui') }}" class="text-info text-decoration-none">Login</a></small>
+                <small class="text-white-50">Already have an account? <a href="{{ url_for('auth.login') }}" class="text-info text-decoration-none">Login</a></small>
             </div>
         </form>
     </div>

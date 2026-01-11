@@ -1,11 +1,20 @@
 from flask import Flask
-
+from app.db import close_db 
 def create_app():
     app = Flask(__name__)
     
     # REQUIRED for session to work (keeps users logged in)
-    app.config['SECRET_KEY'] = 'dev_secret_key_123' 
-
+    app.config['SECRET_KEY'] = 'dev_secret_key_123'
+     
+    # --- ADD THIS LINE HERE ---
+    app.teardown_appcontext(close_db)
+    # --------------------------
+    
+    # --- NEW: Register Auth (Login/Register) ---
+    from app.auth.routes import bp as auth_bp
+    app.register_blueprint(auth_bp)
+    # -------------------------------------------
+    
     # 1. Register Login / Dashboard
     from app.module1.routes import bp as module1_bp
     app.register_blueprint(module1_bp)
@@ -22,11 +31,10 @@ def create_app():
     from app.module4.routes import bp as module4_bp
     app.register_blueprint(module4_bp)
 
-    # Root Redirect: Send localhost:5001/ -> Login Page
+# Root Redirect
     from flask import redirect, url_for
     @app.route('/')
     def index():
-        # Redirects to the login logic in Module 1
-        return redirect(url_for('module1.login_ui'))
-
+        return redirect(url_for('auth.login'))  # <--- Make sure this says 'auth.login'
+    
     return app

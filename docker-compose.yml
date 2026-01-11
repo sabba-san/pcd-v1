@@ -33,10 +33,11 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: flaskdb
+      PGDATA: /var/lib/postgresql/data/pgdata 
     ports:
       - "5432:5432"  # Expose the PostgreSQL port
     volumes:
-      - flask_db_data:/var/lib/postgresql/data  # Store data persistently
+      - flask_db_data_v2:/var/lib/postgresql/data  # Store data persistently
 
 volumes:
-  flask_db_data:  # This is for persistent storage of your database data
+  flask_db_data_v2:  # This is for persistent storage of your database data
