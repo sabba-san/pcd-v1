@@ -12,7 +12,7 @@
 
             <div class="list-group list-group-flush">
                 {% for p in projects %}
-                <a href="{{ url_for('module1.developer_portal', project_name=p.project_name) }}"
+                <a href="{{ url_for('module3.developer_portal', project_name=p.project_name) }}"
                     class="list-group-item list-group-item-action border-0 py-3 px-3 d-flex justify-content-between align-items-center
                           {% if p.project_name == stats.current_project %}active-project{% else %}bg-transparent text-white-50{% endif %}" style="transition: all 0.2s;">
                     <div>
@@ -142,12 +142,12 @@
                                 </td>
                                 <td class="text-end pe-4 d-print-none">
                                     {% if defect.status == 'locked' or defect.status == 'draft' %}
-                                    <a href="{{ url_for('module1.update_status', id=defect.id, new_status='in_progress') }}"
+                                    <a href="{{ url_for('module3.update_status', id=defect.id, new_status='in_progress') }}"
                                         class="btn btn-sm btn-primary fw-bold px-3 shadow-sm">
                                         <i class="bi bi-play-fill me-1"></i>Start Job
                                     </a>
                                     {% elif defect.status == 'in_progress' %}
-                                    <a href="{{ url_for('module1.update_status', id=defect.id, new_status='completed') }}"
+                                    <a href="{{ url_for('module3.update_status', id=defect.id, new_status='completed') }}"
                                         class="btn btn-sm btn-success fw-bold px-3 shadow-sm">
                                         <i class="bi bi-check-lg me-1"></i>Finish
                                     </a>

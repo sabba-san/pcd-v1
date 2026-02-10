@@ -19,13 +19,14 @@
 <div class="row justify-content-center">
     <div class="col-lg-10">
 
-        <h2 class="fw-bold text-dark mb-1">Dashboard</h2>
-        <p class="text-muted mb-5">Welcome back, {{ user if user else 'Homeowner' }}.</p>
+        <h2 class="fw-bold text-white mb-1">Dashboard</h2>
+        <p class="text-white-50 mb-5">Welcome back, {{ user if user else 'Homeowner' }}.</p>
 
         <div class="row g-4">
 
             <div class="col-md-6">
-                <a href="{{ url_for('module4.index') }}" class="text-decoration-none">
+                <!-- EXTERNAL LINK TO CHATBOT SERVICE -->
+                <a href="http://localhost:5002/" class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -59,7 +60,7 @@
             </div>
 
             <div class="col-md-6">
-                <a href="{{ url_for('module3.insert_defect') }}" class="text-decoration-none">
+                <a href="{{ url_for('module2.insert_defect') }}" class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -180,7 +181,7 @@
             cancelButtonText: 'Close'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = "{{ url_for('module3.insert_defect') }}";
+                window.location.href = "{{ url_for('module2.insert_defect') }}";
             }
         });
     }

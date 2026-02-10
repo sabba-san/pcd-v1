@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLP Chatbot - Malaysian Property Law Assistant</title>
+    <!-- Combined Premium CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='shared/css/main.css') }}">
+    <!-- Local Overrides if needed -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">DLP Chatbot</h1>
+                <p class="sidebar-subtitle">Malaysian Property Law</p>
+                <button id="newChatBtn" class="btn-new-chat">+ New Chat</button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-tab active" data-tab="chat">💬 Current Chat</button>
+                <button class="nav-tab" data-tab="guidelines">📋 Guidelines</button>
+                <button class="nav-tab" data-tab="assessment">⚖️ Assessment</button>
+                <button class="nav-tab" data-tab="legal">⚖️ Legal Refs</button>
+                <button class="nav-tab" data-tab="feedback">💭 Feedback</button>
+            </nav>
+
+            <div class="conversation-history-section">
+                <h3 class="history-label">Recent Chats</h3>
+                <div id="conversationList" class="conversation-list"></div>
+            </div>
+
+            <div class="sidebar-footer" style="padding-top: 1rem; border-top: 1px solid var(--border);">
+                <button id="clearAllData" class="btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem; justify-content: flex-start;">🗑️ Clear Data</button>
+                <button id="toggleTheme" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">🌙 Theme</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Chat Tab -->
+            <section id="chat" class="tab-content active">
+                <div class="chat-container">
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="message bot">
+                            Hello! I am your DLP Assistant. How can I help you with your property defects today?
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <textarea 
+                            id="userInput" 
+                            class="chat-input" 
+                            placeholder="Ask a question..."
+                            rows="1"
+                        ></textarea>
+                        <button id="sendBtn" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other Tabs (Guidelines, Assessment, etc) -->
+            <section id="guidelines" class="tab-content">
+                <div class="container">
+                    <div class="card">
+                        <h1>Defect Liability Guidelines</h1>
+                        <p>Detailed reference for HDA and DLP periods.</p>
+                        <!-- Content remains similar but styled with 'card' -->
+                        <div class="guide-section">
+                            <h3>Standard Duration</h3>
+                            <p><strong>Residential:</strong> 24 Months from Vacant Possession.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="assessment" class="tab-content">
+                <div class="container">
+                    <div class="card">
+                        <h2>DLP Assessment Tool</h2>
+                        <form id="assessmentForm">
+                            <div class="form-group">
+                                <label class="form-label">Defect Type</label>
+                                <select id="defectType" class="form-control" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="structural">Structural</option>
+                                    <option value="finishing">Finishing</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Run Assessment</button>
+                        </form>
+                        <div id="assessmentResult" class="mt-4"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="legal" class="tab-content">
+                <div class="container">
+                    <h2>Legal References</h2>
+                    <div class="dashboard-grid">
+                        <a href="#" class="card stat-card">
+                            <div class="stat-icon">HDA</div>
+                            <div class="stat-info"><h3>Housing Dev Act</h3></div>
+                        </a>
+                        <a href="#" class="card stat-card">
+                             <div class="stat-icon">SMA</div>
+                             <div class="stat-info"><h3>Strata Mgmt Act</h3></div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="feedback" class="tab-content">
+                 <div class="container">
+                    <div class="card">
+                        <h2>Send Feedback</h2>
+                        <form id="feedbackForm">
+                            <div class="form-group">
+                                <textarea id="feedbackText" class="form-control" rows="4" placeholder="Your feedback..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Linked correct JS -->
+    <script src="{{ url_for('static', filename='shared/js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/usr/src/app/init_db.py", line 1, in <module>
+    from app import create_app
+  File "/usr/src/app/app/__init__.py", line 1, in <module>
+    from flask import Flask, redirect, url_for
+ModuleNotFoundError: No module named 'flask'

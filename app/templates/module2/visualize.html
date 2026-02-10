@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualization - 3D Defect Scanner</title>
+    <!-- Babylon.js Core and Loaders -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --border: #334155;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 320px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+        }
+
+        .defect-count-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-left: auto;
+        }
+
+        .defect-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .defect-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .defect-card:hover {
+            border-color: var(--border);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .defect-card.active {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .defect-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .defect-type {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .defect-status {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .status-Reported {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .status-Fixed {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .status-Review {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .defect-location {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-dark);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .btn-back:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        /* Main Viewport */
+        .viewer-container {
+            flex: 1;
+            position: relative;
+            background: black;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            outline: none;
+        }
+
+        /* Toolbar overlay */
+        .toolbar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .tool-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-panel);
+            width: 400px;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-cancel:hover {
+            color: var(--text-primary);
+        }
+
+        /* Loading */
+        #loadingLayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            color: var(--accent);
+            font-size: 1.5rem;
+            flex-direction: column;
+            gap: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <i class="fas fa-cube"></i> Defects
+                <span class="defect-count-badge" id="defectCountBadge">0</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">
+                {{ project_name }}
+            </div>
+        </div>
+
+        <div class="defect-list" id="defectList">
+            <!-- Items injected via JS -->
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-primary" onclick="toggleAddMode()">
+                <i class="fas fa-plus"></i> Add New Defect
+            </button>
+            <a href="{{ url_for('module3.dashboard') }}" class="btn btn-back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- 3D Viewer -->
+    <div class="viewer-container">
+        <canvas id="renderCanvas"></canvas>
+        <div id="loadingLayer">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <span style="font-size: 1rem; color: var(--text-secondary);">Loading 3D Model...</span>
+        </div>
+
+        <div class="toolbar">
+            <button class="tool-btn" id="addModeBtn" onclick="toggleAddMode()" title="Add Defect Mode">
+                <i class="fas fa-map-pin"></i>
+            </button>
+            <button class="tool-btn" onclick="camera.zoomOnFactor(1.5)" title="Zoom In">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="tool-btn" onclick="camera.zoomOnFactor(0.6)" title="Zoom Out">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="defectModal">
+        <div class="modal">
+            <h2 id="modalTitle"><i class="fas fa-exclamation-triangle"></i> New Defect</h2>
+            <form id="defectForm" onsubmit="handleFormSubmit(event)">
+                <input type="hidden" id="defectId">
+                <input type="hidden" id="coordX">
+                <input type="hidden" id="coordY">
+                <input type="hidden" id="coordZ">
+
+                <div class="form-group">
+                    <label>Defect Type</label>
+                    <select class="form-select" id="defectType" required>
+                        <option value="Crack">Crack</option>
+                        <option value="Leak">Leakage</option>
+                        <option value="Paint">Paint Issue</option>
+                        <option value="Electrical">Electrical</option>
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Severity</label>
+                    <select class="form-select" id="defectSeverity">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea class="form-textarea" id="defectDesc" required
+                        placeholder="Describe the issue..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select class="form-select" id="defectStatus">
+                        <option value="Reported">Reported</option>
+                        <option value="Review">Under Review</option>
+                        <option value="Fixed">Fixed</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="width: auto; padding: 0 20px;">Save
+                        Defect</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const SCAN_ID = {{ scan_id }};
+        const MODEL_URL = "{{ model_url }}"; // URL to GLB file
+
+        // --- BABYLON SETUP ---
+        const canvas = document.getElementById("renderCanvas");
+        const engine = new BABYLON.Engine(canvas, true);
+        let scene, camera;
+        let defects = [];
+        let isAddMode = false;
+        let markers = [];
+
+        const createScene = async function () {
+            scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color4(0.06, 0.09, 0.16, 1); // Dark blueish bg
+
+            // Camera
+            camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
+            camera.attachControl(canvas, true);
+            camera.wheelPrecision = 50;
+
+            // Light
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            light.intensity = 0.7;
+
+            // Load Model
+            if (MODEL_URL && MODEL_URL !== "None") {
+                try {
+                    const result = await BABYLON.SceneLoader.ImportMeshAsync("", "", MODEL_URL, scene, undefined, ".glb");
+                    // Center model
+                    const bounds = result.meshes[0].getHierarchyBoundingVectors();
+                    const center = bounds.max.add(bounds.min).scale(0.5);
+                    camera.setTarget(center);
+
+                    document.getElementById('loadingLayer').style.display = 'none';
+                } catch (e) {
+                    console.error("Error loading model", e);
+                    document.getElementById('loadingLayer').innerHTML = `<span style="color:red">Error loading model</span>`;
+                }
+            } else {
+                // Fallback box if no model
+                const box = BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
+                document.getElementById('loadingLayer').style.display = 'none';
+            }
+
+            // Click Event (for adding defects)
+            scene.onPointerDown = function (evt, pickResult) {
+                if (isAddMode && pickResult.hit) {
+                    openAddModal(pickResult.pickedPoint);
+                }
+            };
+
+            return scene;
+        };
+
+        // --- APP LOGIC ---
+
+        function init() {
+            createScene().then(() => {
+                engine.runRenderLoop(function () {
+                    scene.render();
+                });
+
+                // Fetch existing defects
+                loadDefects();
+            });
+
+            window.addEventListener("resize", function () {
+                engine.resize();
+            });
+        }
+
+        async function loadDefects() {
+            try {
+                const res = await fetch(`/module2/api/scans/${SCAN_ID}/defects`);
+                defects = await res.json();
+                updateDefectList();
+                renderMarkers();
+            } catch (err) {
+                console.error("Failed to load defects", err);
+            }
+        }
+
+        function renderMarkers() {
+            // Clear old markers
+            markers.forEach(m => m.dispose());
+            markers = [];
+
+            defects.forEach(d => {
+                // Create a marker (using a small sphere for now, could be sprite)
+                const sphere = BABYLON.MeshBuilder.CreateSphere("m_" + d.id, { diameter: 0.2 }, scene);
+                sphere.position = new BABYLON.Vector3(d.x, d.y, d.z);
+
+                // Color based on status
+                const mat = new BABYLON.StandardMaterial("mat_" + d.id, scene);
+                if (d.status === 'Fixed') mat.diffuseColor = BABYLON.Color3.Green();
+                else if (d.status === 'Review') mat.diffuseColor = new BABYLON.Color3(1, 0.6, 0); // Orange
+                else mat.diffuseColor = BABYLON.Color3.Red(); // Reported
+
+                sphere.material = mat;
+
+                // Action Manager for click
+                sphere.actionManager = new BABYLON.ActionManager(scene);
+                sphere.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
+                        openEditModal(d);
+                    })
+                );
+
+                markers.push(sphere);
+            });
+        }
+
+        function updateDefectList() {
+            const list = document.getElementById('defectList');
+            document.getElementById('defectCountBadge').innerText = defects.length;
+
+            list.innerHTML = defects.map(d => `
+                <div class="defect-card" onclick="panToDefect(${d.id})">
+                    <div class="defect-header">
+                        <span class="defect-type">${d.defect_type}</span>
+                        <span class="defect-status status-${d.status}">${d.status}</span>
+                    </div>
+                    <div class="defect-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        ${d.description.substring(0, 30)}${d.description.length > 30 ? '...' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function panToDefect(id) {
+            const d = defects.find(x => x.id === id);
+            if (d) {
+                const target = new BABYLON.Vector3(d.x, d.y, d.z);
+
+                // Animate camera
+                const anim = BABYLON.Animation.CreateAndStartAnimation("anim", camera, "target", 30, 30, camera.target, target, 2, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                camera.radius = 4; // Zoom in
+            }
+        }
+
+        // --- INTERACTION ---
+
+        function toggleAddMode() {
+            isAddMode = !isAddMode;
+            const btn = document.getElementById('addModeBtn');
+            if (isAddMode) {
+                document.body.style.cursor = "crosshair";
+                btn.classList.add('active');
+            } else {
+                document.body.style.cursor = "default";
+                btn.classList.remove('active');
+            }
+        }
+
+        function openAddModal(point) {
+            document.getElementById('modalTitle').innerText = "New Defect";
+            document.getElementById('defectId').value = "";
+            document.getElementById('defectDesc').value = "";
+            document.getElementById('coordX').value = point.x;
+            document.getElementById('coordY').value = point.y;
+            document.getElementById('coordZ').value = point.z;
+
+            document.getElementById('defectModal').classList.add('open');
+            toggleAddMode(); // Turn off add mode after click
+        }
+
+        function openEditModal(d) {
+            document.getElementById('modalTitle').innerText = "Edit Defect";
+            document.getElementById('defectId').value = d.id;
+            document.getElementById('defectDesc').value = d.description;
+            document.getElementById('defectType').value = d.defect_type;
+            document.getElementById('defectStatus').value = d.status;
+            document.getElementById('defectSeverity').value = d.severity;
+
+            document.getElementById('defectModal').classList.add('open');
+        }
+
+        function closeModal() {
+            document.getElementById('defectModal').classList.remove('open');
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('defectId').value;
+            const isNew = !id;
+
+            const payload = {
+                defect_type: document.getElementById('defectType').value,
+                severity: document.getElementById('defectSeverity').value,
+                description: document.getElementById('defectDesc').value,
+                status: document.getElementById('defectStatus').value
+            };
+
+            if (isNew) {
+                payload.x = parseFloat(document.getElementById('coordX').value);
+                payload.y = parseFloat(document.getElementById('coordY').value);
+                payload.z = parseFloat(document.getElementById('coordZ').value);
+
+                await fetch(`/module2/api/scans/${SCAN_ID}/defects`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                await fetch(`/module2/api/defects/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            closeModal();
+            loadDefects(); // Reload to refresh list/markers
+        }
+
+        // Initialize
+        init();
+
+    </script>
+</body>
+
+</html>

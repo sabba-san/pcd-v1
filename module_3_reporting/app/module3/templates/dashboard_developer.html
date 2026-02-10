@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ role }} Compliance Dashboard</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ================= HEADER ================= -->
+    <div class="header">
+        <div>
+            <h1>{{ role }} <span>Repair Compliance</span></h1>
+
+            <label>Select Role:
+                <select onchange="changeRole(this)">
+                    <option value="Developer" {{ 'selected' if role=='Developer' }}>Developer</option>
+                    <option value="Homeowner" {{ 'selected' if role=='Homeowner' }}>Homeowner</option>
+                    <option value="Legal" {{ 'selected' if role=='Legal' }}>Legal</option>
+                </select>
+            </label>
+
+            <label style="margin-left: 15px;">Report Language:
+                <select id="language-select">
+                    <option value="ms" selected>Bahasa Malaysia</option>
+                    <option value="en">English</option>
+                </select>
+            </label>
+
+            <p style="color:#aaa;">
+                Logged in as:
+                <strong style="color:white">{{ role }}</strong>
+            </p>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-secondary" onclick="viewGanttChart()">
+                <i class="fas fa-chart-bar"></i> View Repair Timeline
+            </button>
+
+            <!-- ✅ AI REPORT GENERATION (KEPT) -->
+            <button class="btn btn-primary" onclick="generateReport()">
+                Generate AI Compliance Report
+            </button>
+
+            <form id="pdf-form" action="{{ url_for('routes.export_pdf') }}" method="POST" style="display:inline;">
+                <input type="hidden" name="role" value="{{ role }}">
+                <input type="hidden" name="language" id="pdf-language" value="ms">
+                <input type="hidden" name="ai_report" id="pdf-ai-report" value="">
+                <button class="btn btn-success" id="export-btn" disabled>
+                    Export PDF
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= STATS ================= -->
+    <div class="stats-grid">
+        <div class="stat-card status-pending">
+            <div class="stat-number">{{ stats.pending }}</div>
+            <div class="stat-label">Pending Repairs</div>
+        </div>
+
+        <div class="stat-card status-warning">
+            <div class="stat-number">{{ stats.critical }}</div>
+            <div class="stat-label">Critical / LAD Risk</div>
+        </div>
+
+        <div class="stat-card status-completed">
+            <div class="stat-number">{{ stats.completed }}</div>
+            <div class="stat-label">Completed Repairs</div>
+        </div>
+    </div>
+
+    <!-- ================= AI REPORT PREVIEW ================= -->
+    <div id="report-output" style="display:none;">
+        <h2>AI Report Preview</h2>
+
+        <div class="report-meta">
+            <small>
+                Generated on:
+                <span id="timestamp-placeholder"></span>
+                | Language: <span id="language-placeholder"></span>
+            </small>
+        </div>
+
+        <pre id="report-json" style="white-space: pre-wrap; background: #1e1e1e; padding: 15px; border-radius: 8px; color: #e0e0e0; font-size: 13px; line-height: 1.6;"></pre>
+    </div>
+
+    <!-- ================= DEFECT TABLE ================= -->
+    <div class="card">
+        <div class="card-header"
+             style="display:flex; justify-content:space-between; align-items:center;">
+
+            <h2>Assigned Defects & Compliance</h2>
+
+            <div class="filters">
+                <select id="filter-status" onchange="filterTable()">
+                    <option value="all">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Delayed">Delayed</option>
+                </select>
+
+                <select id="filter-urgency" onchange="filterTable()">
+                    <option value="all">All Urgency</option>
+                    <option value="High">High (LAD Risk)</option>
+                    <option value="Low">Normal</option>
+                </select>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Unit</th>
+                    <th>Description</th>
+                    <th>Deadline</th>
+                    <th>Compliance</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for defect in defects %}
+                <tr data-status="{{ defect.status }}"
+                    data-urgency="{{ defect.urgency }}">
+
+                    <td>#{{ defect.id }}</td>
+                    <td>{{ defect.unit }}</td>
+                    <td>{{ defect.desc }}</td>
+
+                    <td style="color: {{ 'red' if defect.is_overdue else 'white' }}">
+                        {{ defect.deadline }}
+                    </td>
+
+                    <td>
+                        <span class="badge
+                            {{ 'status-completed' if defect.hda_compliant else 'status-warning' }}">
+                            {{ 'HDA Compliant' if defect.hda_compliant else 'Non-Compliant' }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="badge
+                            {{ 'status-completed' if defect.status=='Completed'
+                               else 'status-pending' }}">
+                            {{ defect.status }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {% if defect.status != 'Completed' %}
+                        <button class="btn btn-sm btn-primary"
+                                onclick="updateStatus({{ defect.id }})">
+                            Update
+                        </button>
+                        {% else %}
+                        <button class="btn btn-sm btn-secondary" disabled>
+                            Locked
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- ================= UPDATE MODAL ================= -->
+<div id="update-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <h3>Update Repair Status</h3>
+        <p>Defect ID: <span id="modal-defect-id"></span></p>
+
+        <select id="new-status-select"
+                style="width:100%; padding:10px; margin-bottom:15px;">
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Delayed">Delayed (LAD Risk)</option>
+        </select>
+
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmUpdate()">Save Update</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+
+<script>
+function changeRole(select) {
+    window.location.href = "/?role=" + select.value;
+}
+
+function updateStatus(id) {
+    document.getElementById('modal-defect-id').innerText = id;
+    document.getElementById('update-modal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('update-modal').style.display = 'none';
+}
+
+function confirmUpdate() {
+    const defectId = document.getElementById("modal-defect-id").innerText;
+    const newStatus = document.getElementById("new-status-select").value;
+
+    fetch("/update_status", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            id: defectId,
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        closeModal();
+        location.reload(); // reload to reflect update
+    })
+    .catch(err => {
+        alert("Failed to update status.");
+        console.error(err);
+    });
+}
+
+function viewGanttChart() {
+    alert("Opening Gantt Chart View (future enhancement).");
+}
+
+/* AI REPORT GENERATION HANDLER */
+function generateReport() {
+    const language = document.getElementById("language-select").value;
+    
+    // Update PDF form language
+    document.getElementById("pdf-language").value = language;
+    
+    fetch("/generate_ai_report", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            role: "{{ role }}",
+            language: language
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            alert("Error: " + data.error);
+            return;
+        }
+        
+        // Show report section
+        document.getElementById("report-output").style.display = "block";
+
+        // Timestamp from backend (important for tribunal)
+        document.getElementById("timestamp-placeholder").innerText =
+            data.generated_at;
+        
+        // Language indicator
+        document.getElementById("language-placeholder").innerText =
+            data.language === "ms" ? "Bahasa Malaysia" : "English";
+
+        // AI report text
+        document.getElementById("report-json").innerText =
+            data.report;
+        
+        // Store AI report for PDF export
+        document.getElementById("pdf-ai-report").value = data.report;
+
+        // Enable PDF export ONLY after AI report exists
+        document.getElementById("export-btn").disabled = false;
+    })
+    .catch(err => {
+        alert("Failed to generate AI report.");
+        console.error(err);
+    });
+}
+
+function filterTable() {
+    const statusFilter = document.getElementById("filter-status").value;
+    const urgencyFilter = document.getElementById("filter-urgency").value;
+
+    const rows = document.querySelectorAll("tbody tr");
+
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute("data-status");
+        const rowUrgency = row.getAttribute("data-urgency");
+
+        let showRow = true;
+
+        // Filter by status
+        if (statusFilter !== "all" && rowStatus !== statusFilter) {
+            showRow = false;
+        }
+
+        // Filter by urgency
+        if (urgencyFilter !== "all" && rowUrgency !== urgencyFilter) {
+            showRow = false;
+        }
+
+        row.style.display = showRow ? "" : "none";
+    });
+}
+</script>
+
+</body>
+</html>

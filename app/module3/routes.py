@@ -30,188 +30,9 @@ def list_projects():
         
     return render_template('module3/projects.html', projects=projects)
 
-@bp.route('/insert_defect', methods=['GET', 'POST'])
-@login_required
-def insert_defect():
-    if request.method == 'POST':
-        try:
-            # 1. Handle File Upload (Create new Scan or use existing)
-            lidar_file = request.files.get('lidar_file')
-            pdf_file = request.files.get('pdf_file') # For future use
-            
-            if lidar_file and lidar_file.filename:
-                # Save the new file
-                filename = secure_filename(lidar_file.filename)
-                # Ensure uploads directory exists
-                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-                os.makedirs(upload_folder, exist_ok=True)
-                
-                lidar_path = os.path.join(upload_folder, filename)
-                lidar_file.save(lidar_path)
-                
-                # Create a NEW Scan record for this upload
-                project_name = request.form.get('project_name') or "New Project Scan"
-                scan = Scan(
-                    name=f"{project_name} - {filename}",
-                    model_path=f"uploads/{filename}" # Relative path for static folder
-                )
-                db.session.add(scan)
-                db.session.flush() # Get ID
-            else:
-                # Fallback URL or error? For now, fallback to default if exists
-                scan = Scan.query.first()
-                if not scan:
-                    scan = Scan(name="Default Project Scan")
-                    db.session.add(scan)
-                    db.session.flush()
+# Defect insertion logic moved to Module 2
 
-            # 2. Create the defect linked to this specific scan
-            new_defect = Defect(
-                scan_id=scan.id,
-                user_id=current_user.id,
-                description=request.form.get('description'),
-                location=request.form.get('unit_no'),
-                status='Reported',
-                x=0, y=0, z=0
-            )
-            
-            db.session.add(new_defect)
-            
-            # 3. Log the activity
-            log = ActivityLog(
-                defect_id=new_defect.id,
-                scan_id=scan.id,
-                action=f"Claim submitted by {current_user.username}",
-                new_value="Reported"
-            )
-            db.session.add(log)
-            
-            db.session.commit()
-            
-            # 4. Trigger the success message
-            flash('Defect claim submitted successfully!', 'success')
-            return redirect(url_for('module1.dashboard'))
-            
-        except Exception as e:
-            db.session.rollback()
-            print(f"DATABASE ERROR: {e}")
-            flash(f'Error saving defect: {str(e)}', 'danger')
-            return redirect(url_for('module3.insert_defect'))
-
-    return render_template('module3/insert_defect.html')
-
-@bp.route('/api/scans/<int:scan_id>/defects', methods=['GET'])
-@login_required
-def get_scan_defects(scan_id):
-    scan = Scan.query.get_or_404(scan_id)
-    
-    # Filter by user if they are a homeowner (role='user')
-    if current_user.role == 'user':
-        defects = Defect.query.filter_by(scan_id=scan_id, user_id=current_user.id).all()
-    else:
-        # Developers/Lawyers/Admin see all
-        defects = Defect.query.filter_by(scan_id=scan_id).all()
-    
-    defect_list = [{
-        'id': d.id,
-        'x': d.x, 
-        'y': d.y, 
-        'z': d.z,
-        'element': d.element,
-        'location': d.location,
-        'defect_type': d.defect_type,
-        'severity': d.severity,
-        'status': d.status,
-        'description': d.description,
-        'created_at': d.created_at.strftime('%Y-%m-%d') if d.created_at else None
-    } for d in defects]
-    
-    return jsonify(defect_list)
-
-@bp.route('/api/scans/<int:scan_id>/defects', methods=['POST'])
-@login_required
-def create_defect(scan_id):
-    scan = Scan.query.get_or_404(scan_id)
-    data = request.get_json()
-    
-    try:
-        new_defect = Defect(
-            scan_id=scan_id,
-            user_id=current_user.id,
-            x=data.get('x', 0),
-            y=data.get('y', 0),
-            z=data.get('z', 0),
-            element=data.get('element', ''),
-            location=data.get('location', ''),
-            defect_type=data.get('defect_type', 'Unknown'),
-            severity=data.get('severity', 'Medium'),
-            description=data.get('description', ''),
-            status=data.get('status', 'Reported'),
-            notes=data.get('notes', '')
-        )
-        
-        db.session.add(new_defect)
-        db.session.flush() # Get ID
-        
-        # Log activity
-        log = ActivityLog(
-            defect_id=new_defect.id,
-            scan_id=scan.id,
-            action=f"Defect created by {current_user.username}",
-            new_value="Reported"
-        )
-        db.session.add(log)
-        
-        db.session.commit()
-        return jsonify({'message': 'Defect created', 'defectId': new_defect.id}), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-@bp.route('/api/defects/<int:defect_id>', methods=['PUT'])
-@login_required
-def update_defect(defect_id):
-    defect = Defect.query.get_or_404(defect_id)
-    data = request.get_json()
-    
-    try:
-        if 'status' in data:
-            old_status = defect.status
-            defect.status = data['status']
-            if old_status != defect.status:
-                log = ActivityLog(
-                    defect_id=defect.id,
-                    scan_id=defect.scan_id,
-                    action=f"Status updated by {current_user.username}",
-                    old_value=old_status,
-                    new_value=defect.status
-                )
-                db.session.add(log)
-                
-        if 'notes' in data: defect.notes = data['notes']
-        if 'description' in data: defect.description = data['description']
-        if 'severity' in data: defect.severity = data['severity']
-        if 'location' in data: defect.location = data['location']
-        if 'defect_type' in data: defect.defect_type = data['defect_type']
-        
-        db.session.commit()
-        return jsonify({'message': 'Defect updated successfully'})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-@bp.route('/api/defects/<int:defect_id>', methods=['DELETE'])
-@login_required
-def delete_defect(defect_id):
-    defect = Defect.query.get_or_404(defect_id)
-    try:
-        db.session.delete(defect)
-        db.session.commit()
-        return jsonify({'message': 'Defect deleted successfully'})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+# Defect API logic moved to Module 2
 
 @bp.route('/visualize/<int:scan_id>')
 @login_required
@@ -250,3 +71,92 @@ def serve_model(scan_id):
         return send_from_directory(directory, filename)
         
     return "Model file not found", 404
+
+# --- Dashboard & User Routes (Merged from Module 1) ---
+# Note: Ensure these routes use the module3 blueprint ('bp') defined at the top of this file.
+
+# 1. PROFILE VIEW (Read Only)
+@bp.route('/profile')
+@login_required
+def profile():
+    # Fetching count of activity logs
+    activity_count = ActivityLog.query.count() 
+    return render_template('profile.html', user=current_user, activity_count=activity_count)
+
+# 2. SETTINGS (Update Name/Email)
+@bp.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        current_user.full_name = request.form.get('full_name')
+        current_user.email = request.form.get('email')
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('module3.profile'))
+    
+    return render_template('settings.html', user=current_user)
+
+# 3. PASSWORD CHANGE (Security logic)
+@bp.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    current_pw = request.form.get('current_password')
+    new_pw = request.form.get('new_password')
+    confirm_pw = request.form.get('confirm_password')
+
+    # Verification checks
+    if not current_user.check_password(current_pw):
+        flash('Current password is incorrect.', 'danger')
+        return redirect(url_for('module3.settings'))
+
+    if new_pw != confirm_pw:
+        flash('New passwords do not match.', 'danger')
+        return redirect(url_for('module3.settings'))
+
+    # Hashing and saving
+    current_user.set_password(new_pw)
+    db.session.commit()
+    
+    flash('Password changed successfully!', 'success')
+    return redirect(url_for('module3.profile'))
+
+# 4. DASHBOARDS
+@bp.route('/dashboard')
+@login_required
+def dashboard():
+    # 1. Role-Based Redirects
+    if current_user.role == 'developer':
+        return redirect(url_for('module3.developer_portal'))
+    elif current_user.role == 'lawyer':
+        return redirect(url_for('module3.lawyer_dashboard'))
+    
+    # 2. Fetch Defects for the Homeowner
+    if current_user.role == 'user':
+        defects = Defect.query.filter_by(user_id=current_user.id).order_by(Defect.created_at.desc()).all()
+    else:
+        defects = Defect.query.order_by(Defect.created_at.desc()).all()
+    
+    # 3. Fetch Latest Scan (for 3D Visualizer button)
+    from app.module3.models import Scan
+    latest_scan = Scan.query.order_by(Scan.created_at.desc()).first()
+    
+    # 4. Fetch Recent Activity
+    # This pulls the log entries created by your 'insert_defect' route
+    activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(5).all()
+    
+    # 5. Render the Dashboard with the data
+    return render_template(
+        'dashboard.html', 
+        defects=defects, 
+        latest_scan=latest_scan,
+        activity=activities
+    )
+@bp.route('/developer_portal')
+@login_required
+def developer_portal():
+    return render_template('developer_portal.html', projects=[], stats={}, defects=[])
+
+@bp.route('/lawyer_dashboard')
+@login_required
+def lawyer_dashboard():
+    return render_template('module3/lawyer_dashboard.html', user=current_user.full_name, cases=[])

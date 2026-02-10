@@ -5,11 +5,12 @@
 
     <div class="d-flex justify-content-between align-items-center my-4">
         <div>
-            <a href="{{ url_for('module1.lawyer_dashboard') }}" class="text-white-50 text-decoration-none small">
+            <a href="{{ url_for('module3.lawyer_dashboard') }}" class="text-white-50 text-decoration-none small">
                 <i class="bi bi-arrow-left me-1"></i> Back to Console
             </a>
             <h2 class="fw-bold text-white mt-1">Evidence Review: {{ report.case_id }}</h2>
-            <p class="text-white-50">Client: <span class="text-info">{{ report.client }}</span> | Project: {{ report.project }}</p>
+            <p class="text-white-50">Client: <span class="text-info">{{ report.client }}</span> | Project: {{
+                report.project }}</p>
         </div>
         <div>
             <button class="btn btn-outline-light me-2"><i class="bi bi-printer me-2"></i>Export PDF</button>
@@ -35,11 +36,14 @@
                     </div>
 
                     <h5 class="fw-bold">AI Detection Status</h5>
-                    <p class="text-white-50 small px-4">The system has detected defects with high certainty. Requires manual verification.</p>
+                    <p class="text-white-50 small px-4">The system has detected defects with high certainty. Requires
+                        manual verification.</p>
 
-                    <div class="alert bg-danger bg-opacity-25 border-danger mx-3 mt-4 d-flex align-items-center justify-content-center">
+                    <div
+                        class="alert bg-danger bg-opacity-25 border-danger mx-3 mt-4 d-flex align-items-center justify-content-center">
                         <i class="bi bi-exclamation-triangle-fill text-danger me-2 fs-5"></i>
-                        <span class="text-white">Risk Level: <strong class="text-danger fw-bold ms-1 text-uppercase">{{ report.risk_level }}</strong></span>
+                        <span class="text-white">Risk Level: <strong class="text-danger fw-bold ms-1 text-uppercase">{{
+                                report.risk_level }}</strong></span>
                     </div>
                 </div>
             </div>
@@ -72,23 +76,25 @@
                                 </td>
                                 <td>
                                     {% if defect['status'] == 'locked' %}
-                                        <span class="badge bg-secondary">LOCKED</span>
+                                    <span class="badge bg-secondary">LOCKED</span>
                                     {% else %}
-                                        <span class="badge bg-warning text-dark">DRAFT</span>
+                                    <span class="badge bg-warning text-dark">DRAFT</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-end pe-4">
-                                    
+
                                     {% if defect['status'] == 'draft' %}
-                                        <form action="{{ url_for('module3.lock_evidence', id=defect['id']) }}" method="POST" style="display:inline;">
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure? This will lock the evidence for the Tribunal.')">
-                                                <i class="bi bi-lock-fill me-1"></i> Lock Evidence
-                                            </button>
-                                        </form>
-                                    {% else %}
-                                        <button class="btn btn-sm btn-secondary" disabled>
-                                            <i class="bi bi-check-circle-fill me-1"></i> Submitted
+                                    <form action="{{ url_for('module3.lock_evidence', id=defect['id']) }}" method="POST"
+                                        style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Are you sure? This will lock the evidence for the Tribunal.')">
+                                            <i class="bi bi-lock-fill me-1"></i> Lock Evidence
                                         </button>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-secondary" disabled>
+                                        <i class="bi bi-check-circle-fill me-1"></i> Submitted
+                                    </button>
                                     {% endif %}
 
                                 </td>

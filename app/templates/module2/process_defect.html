@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-white mb-1">Processing Report</h3>
+                <p class="text-muted small">Review extracted defect data before saving to database.</p>
+            </div>
+            <a href="{{ url_for('module3.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="card p-4 border-0 shadow-lg mb-4" style="background-color: #334155;">
+            <h6 class="text-info fw-bold text-uppercase small mb-3"><i class="bi bi-file-earmark-text me-2"></i>Upload
+                Summary</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="text-white-50 small">Project Name</label>
+                    <div class="text-white fw-bold">{{ project_name }}</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="text-white-50 small">Owner Name</label>
+                    <div class="text-white fw-bold">{{ owner_name }}</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="text-white-50 small">Unit No</label>
+                    <div class="text-white fw-bold">{{ unit_no }}</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="text-white-50 small">Lidar File</label>
+                    <div class="text-white fw-bold">{{ filename }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-0 border-0 shadow-lg overflow-hidden" style="background-color: #334155;">
+            <div class="p-4 border-bottom border-secondary">
+                <h6 class="text-warning fw-bold text-uppercase small mb-0"><i class="bi bi-robot me-2"></i>AI Extracted
+                    Defects</h6>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle" style="background-color: #334155;">
+                    <thead>
+                        <tr>
+                            <td class="ps-4">1</td>
+                            <td>Wall Crack (Vertical) - Master Bedroom</td>
+                            <td><span class="badge bg-danger">High</span></td>
+                            <td>98%</td>
+                            <td>
+                                <a href="http://127.0.0.1:5002/?defect=Wall%20Crack&severity=High" target="_blank"
+                                    class="btn btn-sm btn-outline-info me-1" title="Check HDA Coverage">
+                                    <i class="bi bi-robot"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-light">Verify</button>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ps-4">1</td>
+                            <td>Wall Crack (Vertical) - Master Bedroom</td>
+                            <td><span class="badge bg-danger">High</span></td>
+                            <td>98%</td>
+                            <td><button class="btn btn-sm btn-outline-light">Verify</button></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">2</td>
+                            <td>Water Stain - Ceiling Corner</td>
+                            <td><span class="badge bg-warning text-dark">Medium</span></td>
+                            <td>85%</td>
+                            <td><button class="btn btn-sm btn-outline-light">Verify</button></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">3</td>
+                            <td>Tile Grouting Issue - Bathroom</td>
+                            <td><span class="badge bg-info text-dark">Low</span></td>
+                            <td>92%</td>
+                            <td><button class="btn btn-sm btn-outline-light">Verify</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-3 mt-4">
+
+            <a href="{{ url_for('module2.visualize', filename=filename, project_name=project_name) }}"
+                class="btn btn-info px-4 py-2 fw-bold text-white">
+                <i class="bi bi-box-fill me-2"></i> Visualize 3D
+            </a>
+
+            <button class="btn btn-success px-4 py-2 fw-bold" onclick="alert('Defects saved to Database!')">
+                <i class="bi bi-save me-2"></i> Confirm & Save
+            </button>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

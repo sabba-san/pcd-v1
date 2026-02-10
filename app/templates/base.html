@@ -17,12 +17,12 @@
         <div class="container">
 
             <a class="navbar-brand d-flex align-items-center gap-2"
-                href="{{ url_for('module1.dashboard') if session.get('user_id') else '#' }}">
+                href="{{ url_for('module3.dashboard') if session.get('user_id') else '#' }}">
                 <i class="bi bi-building-check text-primary"></i>
                 DLP Advisor
             </a>
 
-            {% if session.get('user_id') and request.endpoint != 'auth.login' %}
+            {% if current_user.is_authenticated %}
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center gap-3 text-decoration-none dropdown-toggle text-white"
                     data-bs-toggle="dropdown" aria-expanded="false">
@@ -65,12 +65,12 @@
                     </li>
 
                     <li>
-                        <a class="dropdown-item" href="{{ url_for('module1.profile') }}">
+                        <a class="dropdown-item" href="{{ url_for('module3.profile') }}">
                             <i class="bi bi-person me-2"></i> My Profile
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ url_for('module1.settings') }}">
+                        <a class="dropdown-item" href="{{ url_for('module3.settings') }}">
                             <i class="bi bi-gear me-2"></i> Settings
                         </a>
                     </li>

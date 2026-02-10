@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- SweetAlert2 CSS success send db -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }} alert-dismissible fade show border-0 mb-4 shadow-sm" role="alert">
+    <i class="bi {{ 'bi-check-circle-fill' if category == 'success' else 'bi-exclamation-triangle-fill' }} me-2"></i>
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+
+        <h2 class="fw-bold text-dark mb-1">Dashboard</h2>
+        <p class="text-muted mb-5">Welcome back, {{ user if user else 'Homeowner' }}.</p>
+
+        <div class="row g-4">
+
+            <div class="col-md-6">
+                <a href="http://localhost:5002/" class="text-decoration-none" target="_blank">
+                    <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                        <div class="card-body">
+                            <div class="mb-4 d-flex justify-content-between align-items-center">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-3">
+                                    <i class="bi bi-chat-text-fill fs-3 text-primary"></i>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">Legal AI Consultation</h4>
+                            <p class="text-white-50 small">Instant HDA analysis for your defects.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="{{ url_for('module3.list_projects') }}" class="text-decoration-none">
+                    <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                        <div class="card-body">
+                            <div class="mb-4 d-flex justify-content-between align-items-center">
+                                <div class="bg-info bg-opacity-10 p-3 rounded-3">
+                                    <i class="bi bi-grid-fill fs-3 text-info"></i>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">My Projects</h4>
+                            <p class="text-white-50 small">View all properties and defect status.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="{{ url_for('module2.insert_defect') }}" class="text-decoration-none">
+                    <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                        <div class="card-body">
+                            <div class="mb-4 d-flex justify-content-between align-items-center">
+                                <div class="bg-success bg-opacity-10 p-3 rounded-3">
+                                    <i class="bi bi-cloud-arrow-up-fill fs-3 text-success"></i>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">Add New Defect</h4>
+                            <p class="text-white-50 small">Upload 3D model and PDF data.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="{{ url_for('module3.list_projects') }}" class="text-decoration-none">
+                    <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                        <div class="card-body">
+                            <div class="mb-4 d-flex justify-content-between align-items-center">
+                                <div class="bg-warning bg-opacity-10 p-3 rounded-3">
+                                    <i class="bi bi-box-fill fs-3 text-warning"></i>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </div>
+                            <h4 class="fw-bold text-white mb-2">3D Visualizer</h4>
+                            <p class="text-white-50 small">Select a project to view in 3D space.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="mt-5">
+            <h6 class="fw-bold text-muted text-uppercase small mb-3">Recent Activity</h6>
+            <div class="card p-0 overflow-hidden border-0 shadow-lg" style="background-color: #334155;">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle" style="background-color: #334155;">
+                        <thead>
+                            <tr>
+                                <th class="ps-4 py-3 text-white-50 fw-normal small text-uppercase"
+                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Project</th>
+                                <th class="py-3 text-white-50 fw-normal small text-uppercase"
+                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Defect Detail
+                                </th>
+                                <th class="py-3 text-white-50 fw-normal small text-uppercase"
+                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for defect in defects %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-white"
+                                    style="background-color: #334155; border-bottom: none;">
+                                    {{ defect['project_name'] if defect['project_name'] else 'General' }}
+                                </td>
+                                <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">
+                                    <div class="text-white">{{ defect['description'] }}</div>
+                                    <small class="text-white-50">Unit: {{ defect['unit_no'] }}</small>
+                                </td>
+                                <td style="background-color: #334155; border-bottom: none;">
+                                    {% if defect['status'] == 'draft' %}
+                                    <span
+                                        class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill px-3">Draft</span>
+                                    {% elif defect['status'] == 'locked' %}
+                                    <span
+                                        class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Processing...</span>
+                                    {% elif defect['status'] == 'in_progress' %}
+                                    <span
+                                        class="badge bg-primary bg-opacity-25 text-primary rounded-pill px-3">Repairing</span>
+                                    {% elif defect['status'] == 'completed' %}
+                                    <span
+                                        class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Resolved</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-dark rounded-pill px-3">{{ defect['status']
+                                        }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center py-4 text-white-50"
+                                    style="background-color: #334155;">
+                                    No recent activity found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function showNoProjectAlert() {
+        Swal.fire({
+            icon: 'info',
+            title: 'No Project Found',
+            text: 'You haven\'t uploaded any defect scans yet. Please submit a new defect to use the 3D Visualizer.',
+            background: '#1e293b',
+            color: '#fff',
+            confirmButtonColor: '#3b82f6',
+            confirmButtonText: 'Add a Defect',
+            showCancelButton: true,
+            cancelButtonText: 'Close'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{{ url_for('module2.insert_defect') }}";
+            }
+        });
+    }
+</script>
+
+<style>
+    .hover-effect {
+        transition: transform 0.2s ease, background-color 0.2s ease;
+        cursor: pointer;
+    }
+
+    .hover-effect:hover {
+        background-color: #475569 !important;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+</style>
+{% endblock %}

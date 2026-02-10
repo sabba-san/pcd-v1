@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.db import get_db
-import psycopg2.extras
+from flask_login import login_user, logout_user, login_required
+from app.module3.extensions import db
+from app.module3.models import User
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -9,69 +10,67 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 def register():
     if request.method == 'POST':
         username = request.form['username']
+        email = request.form['username'] # Using username as email logic
         password = request.form['password']
         full_name = request.form['full_name']
         role = request.form['role']
         
-        # Logic to determine "Organization" based on Role
-        organization = None
+        # Logic to determine "Project Name"
+        project_name = None
         
         if role == 'user':
             if request.form.get('project_name_select') == 'Other':
-                organization = request.form.get('custom_project_name')
+                project_name = request.form.get('custom_project_name')
             else:
-                organization = request.form.get('project_name_select')       
+                project_name = request.form.get('project_name_select')       
         elif role == 'developer':
-            organization = request.form.get('developer_company')    
+            project_name = request.form.get('developer_company')    
         elif role == 'lawyer':
-            organization = request.form.get('law_firm')
+            project_name = request.form.get('law_firm')
 
-        hashed_pw = generate_password_hash(password)
+        # Check if user exists
+        if User.query.filter_by(username=username).first():
+            flash("Error: Username already taken.", "error")
+            return redirect(url_for('auth.register'))
+
+        new_user = User(
+            username=username,
+            email=email,
+            full_name=full_name,
+            role=role,
+            project_name=project_name
+        )
+        new_user.set_password(password)
         
         try:
-            db = get_db()
-            cur = db.cursor()
-            cur.execute(
-                "INSERT INTO users (username, password_hash, role, full_name, organization) VALUES (%s, %s, %s, %s, %s)",
-                (username, hashed_pw, role, full_name, organization)
-            )
-            db.commit()
-            cur.close()
+            db.session.add(new_user)
+            db.session.commit()
             flash("Registration successful! Please login.", "success")
             return redirect(url_for('auth.login'))
         except Exception as e:
+            db.session.rollback()
             print(e)
-            flash(f"Error: Username might already be taken.", "error")
+            flash(f"Error: {e}", "error")
             return redirect(url_for('auth.register'))
     
     return render_template('auth/register.html')
 
 @bp.route('/login', methods=['GET', 'POST'])
-
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
-        db = get_db()
-        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        user = User.query.filter_by(username=username).first()
         
-        # 1. Fetch the User AND their Organization (Project Name)
-        cur.execute("SELECT * FROM users WHERE username = %s", (username,))
-        user = cur.fetchone()
-        cur.close()
-        
-        if user and check_password_hash(user['password_hash'], password):
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            session['user_role'] = user['role']
+        if user and user.check_password(password):
+            login_user(user)
             
-            # --- THE FIX IS HERE ---
-            # Save the Project Name into the session so other pages can see it
-            session['user_project'] = user['organization'] 
-            # -----------------------
+            # Optional: Keep session variables if needed by legacy code, 
+            # but current_user.project_name is now available everywhere
+            session['user_project'] = user.project_name 
             
-            return redirect(url_for('module1.dashboard'))
+            return redirect(url_for('module3.dashboard'))
         else:
             flash("Invalid username or password", "error")
             
@@ -79,5 +78,6 @@ def login():
 
 @bp.route('/logout')
 def logout():
+    logout_user()
     session.clear()
     return redirect(url_for('auth.login'))

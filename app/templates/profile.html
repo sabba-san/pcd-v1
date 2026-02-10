@@ -6,10 +6,10 @@
 
         <div class="card shadow-lg border-0 mb-4" style="background-color: #1e293b;">
             <div class="card-body text-center py-5">
-                
-                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                     style="width: 80px; height: 80px; font-size: 2rem; border: 2px solid rgba(59,130,246,0.3);">
-                     {{ user['full_name'][0].upper() if user['full_name'] else user['username'][0].upper() }}
+
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style="width: 80px; height: 80px; font-size: 2rem; border: 2px solid rgba(59,130,246,0.3);">
+                    {{ user['full_name'][0].upper() if user['full_name'] else user['username'][0].upper() }}
                 </div>
 
                 <h3 class="text-white fw-bold mb-1">
@@ -24,10 +24,12 @@
                     </div>
                     <div class="col-4 border-end border-secondary">
                         <div class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem;">PROJECT</div>
-                        <div class="text-white fw-bold mt-1">{{ user['organization'] if user['organization'] else 'Not Assigned' }}</div>
+                        <div class="text-white fw-bold mt-1">{{ user['organization'] if user['organization'] else 'Not
+                            Assigned' }}</div>
                     </div>
                     <div class="col-4">
-                        <div class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem;">TOTAL ACTIVITY</div>
+                        <div class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem;">TOTAL
+                            ACTIVITY</div>
                         <div class="text-white fw-bold mt-1">{{ activity_count }} Records</div>
                     </div>
                 </div>
@@ -40,28 +42,28 @@
                 <i class="bi bi-person-lines-fill me-2 text-primary"></i> Account Details
             </div>
             <div class="card-body p-4">
-                
+
                 <form>
                     <div class="mb-3">
                         <label class="form-label text-white-50 small text-uppercase fw-bold">Full Name</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary" 
-                               value="{{ user['full_name'] }}" readonly>
+                        <input type="text" class="form-control bg-dark text-white border-secondary"
+                            value="{{ user['full_name'] }}" readonly>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label text-white-50 small text-uppercase fw-bold">Email / Username</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary" 
-                               value="{{ user['username'] }}" readonly>
+                        <input type="text" class="form-control bg-dark text-white border-secondary"
+                            value="{{ user['username'] }}" readonly>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label text-white-50 small text-uppercase fw-bold">Account ID</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary" 
-                               value="{{ 'USER-%04d' | format(user['id']) }}" readonly>
+                        <input type="text" class="form-control bg-dark text-white border-secondary"
+                            value="{{ 'USER-%04d' | format(user['id']) }}" readonly>
                     </div>
 
                     <div class="d-grid">
-                        <a href="{{ url_for('module1.settings') }}" class="btn btn-outline-light py-2">
+                        <a href="{{ url_for('module3.settings') }}" class="btn btn-outline-light py-2">
                             <i class="bi bi-gear-fill me-2"></i> Edit Profile & Settings
                         </a>
                     </div>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ role }} Compliance Dashboard</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ================= HEADER ================= -->
+    <div class="header">
+        <div>
+            <h1>Full <span>Compliance Dashboard</span></h1>
+
+            <label>Select Role:
+                <select onchange="changeRole(this)">
+                    <option value="Legal" {{ 'selected' if role=='Legal' }}>Legal</option>
+                    <option value="Homeowner" {{ 'selected' if role=='Homeowner' }}>Homeowner</option>
+                    <option value="Developer" {{ 'selected' if role=='Developer' }}>Developer</option>
+                </select>
+            </label>
+
+            <label style="margin-left: 15px;">Report Language:
+                <select id="language-select">
+                    <option value="ms" selected>Bahasa Malaysia</option>
+                    <option value="en">English</option>
+                </select>
+            </label>
+
+            <p style="color:#aaa;">
+                Logged in as:
+                <strong style="color:white">{{ role }}</strong>
+            </p>
+        </div>
+
+        <div class="buttons">
+            <!-- ✅ AI REPORT GENERATION -->
+            <button class="btn btn-primary" onclick="generateReport()">
+                Generate Full Compliance Report
+            </button>
+
+            <form id="pdf-form" action="{{ url_for('routes.export_pdf') }}" method="POST" style="display:inline;">
+                <input type="hidden" name="role" value="{{ role }}">
+                <input type="hidden" name="language" id="pdf-language" value="ms">
+                <input type="hidden" name="ai_report" id="pdf-ai-report" value="">
+                <button class="btn btn-success" id="export-btn" disabled>
+                    Export PDF
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= STATS ================= -->
+    <div class="stats-grid">
+        <div class="stat-card status-total">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">Total Defects</div>
+        </div>
+
+        <div class="stat-card status-pending">
+            <div class="stat-number">{{ stats.pending }}</div>
+            <div class="stat-label">Pending Compliance</div>
+        </div>
+
+        <div class="stat-card status-completed">
+            <div class="stat-number">{{ stats.completed }}</div>
+            <div class="stat-label">Resolved</div>
+        </div>
+    </div>
+
+    <!-- ================= AI REPORT PREVIEW ================= -->
+    <div id="report-output" style="display:none;">
+        <h2>AI Report Preview</h2>
+
+        <div class="report-meta">
+            <small>
+                Generated on:
+                <span id="timestamp-placeholder"></span>
+                | Language: <span id="language-placeholder"></span>
+            </small>
+        </div>
+
+        <pre id="report-json" style="white-space: pre-wrap; background: #1e1e1e; padding: 15px; border-radius: 8px; color: #e0e0e0; font-size: 13px; line-height: 1.6;"></pre>
+    </div>
+
+    <!-- ================= READ-ONLY TABLE ================= -->
+    <div class="card">
+        <h2>Compliance Overview (Read-Only)</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Unit</th>
+                    <th>Defect Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for defect in defects %}
+                <tr>
+                    <td>#{{ defect.id }}</td>
+                    <td>{{ defect.unit }}</td>
+                    <td>{{ defect.desc }}</td>
+                    <td>
+                        <span class="badge
+                            {{ 'status-completed' if defect.status=='Completed'
+                               else 'status-pending' }}">
+                            {{ defect.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+
+<script>
+function changeRole(select) {
+    window.location.href = "/?role=" + select.value;
+}
+
+/* AI REPORT GENERATION HOOK */
+function generateReport() {
+    const language = document.getElementById("language-select").value;
+    
+    // Update PDF form language
+    document.getElementById("pdf-language").value = language;
+    
+    fetch("/generate_ai_report", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            role: "{{ role }}",
+            language: language
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            alert("Error: " + data.error);
+            return;
+        }
+        
+        // Show report section
+        document.getElementById("report-output").style.display = "block";
+
+        // Timestamp from backend (important for tribunal)
+        document.getElementById("timestamp-placeholder").innerText =
+            data.generated_at;
+        
+        // Language indicator
+        document.getElementById("language-placeholder").innerText =
+            data.language === "ms" ? "Bahasa Malaysia" : "English";
+
+        // AI report text
+        document.getElementById("report-json").innerText =
+            data.report;
+        
+        // Store AI report for PDF export
+        document.getElementById("pdf-ai-report").value = data.report;
+
+        // Enable PDF export ONLY after AI report exists
+        document.getElementById("export-btn").disabled = false;
+    })
+    .catch(err => {
+        alert("Failed to generate AI report.");
+        console.error(err);
+    });
+}
+</script>
+
+</body>
+</html>
