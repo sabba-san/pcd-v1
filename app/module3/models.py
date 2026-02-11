@@ -32,6 +32,7 @@ class Defect(db.Model):
     __tablename__ = 'defects'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # Linked to User
+    user = db.relationship('User', backref='defects', lazy=True)
     scan_id = db.Column(db.Integer, db.ForeignKey('scans.id'), nullable=False)
     x = db.Column(db.Float, nullable=False)
     y = db.Column(db.Float, nullable=False)

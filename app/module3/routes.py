@@ -94,7 +94,8 @@ def settings():
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('module3.profile'))
     
-    return render_template('settings.html', user=current_user)
+    taman_name = current_user.project_name if current_user.project_name else "Tiada Taman Ditetapkan"
+    return render_template('settings.html', user=current_user, taman_name=taman_name)
 
 # 3. PASSWORD CHANGE (Security logic)
 @bp.route('/change_password', methods=['POST'])
