@@ -2,20 +2,21 @@ version: '3.8'
 
 services:
   chatbot_service:
-    build: .
+    build: 
+      context: ./module_1_chatbot
     container_name: chatbot_service
-    command: /opt/conda/envs/pcd/bin/flask run --host=0.0.0.0 --port=5002
+    # Use conda to run flask on port 5002
+    command: conda run --no-capture-output -n pcd flask run --host=0.0.0.0 --port=5002
     ports:
       - "5002:5002"
     environment:
-      - FLASK_APP=app
-      - FLASK_ENV=development
-      - SERVICE_TYPE=chatbot
       - GROQ_API_KEY=${GROQ_API_KEY}
+      - FLASK_APP=app:app
     networks:
-      - app_network
+      - pcd_network
     volumes:
-      - ./:/usr/src/app
+      # Mount the module directory to /usr/src/app (WORKDIR in Dockerfile)
+      - ./module_1_chatbot:/usr/src/app
 
   web_service:
     build: .
@@ -29,7 +30,7 @@ services:
       - SERVICE_TYPE=web
       - GROQ_API_KEY=${GROQ_API_KEY}
     networks:
-      - app_network
+      - pcd_network
     volumes:
       - ./:/usr/src/app
     depends_on:
@@ -46,12 +47,12 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - app_network
+      - pcd_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
 networks:
-  app_network:
+  pcd_network:
     driver: bridge
 
 volumes:

@@ -11,8 +11,8 @@ class DLPChatbotApp {
         this.apiBaseUrl = '/api';
         this.selectedRating = 0;
         this.currentUtterance = null; // Track current speech object
-        
-        
+
+
         this.init();
     }
 
@@ -21,13 +21,13 @@ class DLPChatbotApp {
         this.attachEventListeners();
         this.loadSavedData(); // Loads all chats from LocalStorage
     }
-cacheElements() {
+    cacheElements() {
         // Navigation & Sidebar
         this.navTabs = document.querySelectorAll('.nav-tab');
         this.tabContents = document.querySelectorAll('.tab-content');
         this.conversationListEl = document.getElementById('conversationList');
         this.newChatBtn = document.getElementById('newChatBtn');
-        
+
         // Chat Area
         this.userInput = document.getElementById('userInput');
         this.sendBtn = document.getElementById('sendBtn');
@@ -46,7 +46,7 @@ cacheElements() {
 
         // Legal Section
         this.legalContent = document.getElementById('legalContent');
-        
+
         // General UI
         this.clearDataBtn = document.getElementById('clearAllData');
         this.toggleThemeBtn = document.getElementById('toggleTheme');
@@ -65,14 +65,14 @@ cacheElements() {
 
         // Enter Key to Send
         this.userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { 
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 this.sendMessage();
             }
         });
 
         // Auto-resize Textarea
-        this.userInput.addEventListener('input', function() {
+        this.userInput.addEventListener('input', function () {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
         });
@@ -129,7 +129,7 @@ cacheElements() {
         } else {
             this.startNewChat();
         }
-        
+
         this.renderSidebarHistory();
     }
 
@@ -146,9 +146,22 @@ cacheElements() {
             messages: []
         };
 
+        // 1. Update Data
         this.conversations.unshift(newChat);
-        this.loadChat(newChatId);
+        this.activeChatId = newChatId;
+
+        // 2. Clear Chat Area & Stop Speech
+        this.stopSpeaking();
+        this.chatMessages.innerHTML = '';
+
+        // 3. Force UI Update (Manual Append) to fix "blank sidebar" bug
+        this.manuallyAddSidebarItem(newChat);
+
+        // 4. Save (Persist)
+        // Note: saveData calls renderSidebarHistory, but our manual update gives immediate feedback.
         this.saveData();
+
+        // 5. Switch Tab
         this.switchTab('chat');
     }
 
@@ -162,67 +175,112 @@ cacheElements() {
         chat.messages.forEach(msg => {
             this.renderMessageHTML(msg.text, msg.sender);
         });
-        
+
         this.renderSidebarHistory();
     }
 
     renderSidebarHistory() {
-        if(!this.conversationListEl) return;
+        if (!this.conversationListEl) return;
         this.conversationListEl.innerHTML = '';
 
+        // Handle Empty State
+        if (this.conversations.length === 0) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'no-chats-message';
+            emptyMsg.textContent = 'No chats available';
+            emptyMsg.style.textAlign = 'center';
+            emptyMsg.style.padding = '1rem';
+            emptyMsg.style.color = 'var(--text-muted)';
+            emptyMsg.style.fontStyle = 'italic';
+            this.conversationListEl.appendChild(emptyMsg);
+            return;
+        }
+
         this.conversations.forEach(chat => {
-            const row = document.createElement('div');
-            row.className = `history-item-row ${chat.id === this.activeChatId ? 'active' : ''}`;
-            
-            row.addEventListener('click', (e) => {
-                if (e.target.closest('.history-actions') || e.target.tagName === 'INPUT') return;
-                this.loadChat(chat.id);
-                this.switchTab('chat');
-            });
-
-            const titleSpan = document.createElement('span');
-            titleSpan.className = 'history-title-text';
-            titleSpan.textContent = chat.title || 'New Chat';
-            titleSpan.addEventListener('dblclick', () => this.enableRenaming(chat.id, titleSpan));
-
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'history-actions';
-
-            const editBtn = document.createElement('button');
-            editBtn.className = 'btn-icon-action';
-            editBtn.innerHTML = '✏️';
-            editBtn.title = "Rename Chat";
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.enableRenaming(chat.id, titleSpan);
-            });
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'btn-icon-action btn-delete';
-            deleteBtn.innerHTML = '🗑️';
-            deleteBtn.title = "Delete Chat";
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.deleteChat(chat.id);
-            });
-
-            actionsDiv.appendChild(editBtn);
-            actionsDiv.appendChild(deleteBtn);
-            row.appendChild(titleSpan);
-            row.appendChild(actionsDiv);
+            const row = this.createHistoryRow(chat);
             this.conversationListEl.appendChild(row);
         });
+    }
+
+    /**
+     * Helper to create a sidebar row DOM element
+     */
+    createHistoryRow(chat) {
+        const row = document.createElement('div');
+        row.className = `history-item-row ${chat.id === this.activeChatId ? 'active' : ''}`;
+        row.dataset.id = chat.id; // Helpful for finding it later
+
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('.history-actions') || e.target.tagName === 'INPUT') return;
+            this.loadChat(chat.id);
+            this.switchTab('chat');
+        });
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'history-title-text';
+        titleSpan.textContent = chat.title || 'New Chat';
+        titleSpan.addEventListener('dblclick', () => this.enableRenaming(chat.id, titleSpan));
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'history-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn-icon-action';
+        editBtn.innerHTML = '✏️';
+        editBtn.title = "Rename Chat";
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.enableRenaming(chat.id, titleSpan);
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-icon-action btn-delete';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.title = "Delete Chat";
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.deleteChat(chat.id);
+        });
+
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+        row.appendChild(titleSpan);
+        row.appendChild(actionsDiv);
+
+        return row;
+    }
+
+    /**
+     * Manually add a new chat item to the sidebar (Optimistic UI)
+     */
+    manuallyAddSidebarItem(chat) {
+        if (!this.conversationListEl) return;
+
+        // 1. Remove "No chats" message if it exists
+        const noChatsMsg = this.conversationListEl.querySelector('.no-chats-message');
+        if (noChatsMsg) noChatsMsg.remove();
+
+        // 2. Remove .active from all existing rows
+        const activeItems = this.conversationListEl.querySelectorAll('.history-item-row.active');
+        activeItems.forEach(item => item.classList.remove('active'));
+
+        // 3. Create and Prepend the new row
+        const row = this.createHistoryRow(chat);
+        this.conversationListEl.prepend(row);
     }
 
     deleteChat(chatId) {
         if (!confirm('Are you sure you want to delete this conversation?')) return;
         this.conversations = this.conversations.filter(c => c.id !== chatId);
-        
+
         if (chatId === this.activeChatId) {
             if (this.conversations.length > 0) {
                 this.loadChat(this.conversations[0].id);
             } else {
-                this.startNewChat();
+                // If it was the last chat, just reset UI
+                this.activeChatId = null;
+                this.chatMessages.innerHTML = '';
+                this.renderSidebarHistory(); // Will show "No chats available"
                 return;
             }
         }
@@ -235,7 +293,7 @@ cacheElements() {
         input.type = 'text';
         input.className = 'history-rename-input';
         input.value = currentTitle;
-        
+
         const save = () => {
             const newTitle = input.value.trim();
             if (newTitle) {
@@ -267,7 +325,7 @@ cacheElements() {
     // ==========================================================
     // 2. MESSAGING LOGIC
     // ==========================================================
-     async sendMessage() {
+    async sendMessage() {
         const text = this.userInput.value.trim();
         if (!text) return;
 
@@ -284,14 +342,14 @@ cacheElements() {
         try {
             // FIX IS HERE: We interpret the URL directly as '/api/chat'
             // We removed the ${endpoint} variable that was causing the error.
-            const response = await fetch('/api/chat', { 
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: text })
             });
 
             const data = await response.json();
-            
+
             if (data.error) {
                 throw new Error(data.error);
             }
@@ -350,12 +408,12 @@ cacheElements() {
         const messageDiv = this.createMessageStructure('', 'bot'); // Empty text first
         const bubble = messageDiv.querySelector('.message-bubble');
         const readBtn = messageDiv.querySelector('.btn-read-aloud');
-        
+
         // Hide the speaker icon while typing
-        if(readBtn) readBtn.classList.add('hidden');
+        if (readBtn) readBtn.classList.add('hidden');
 
         this.chatMessages.appendChild(messageDiv);
-        
+
         // 2. Start Typing Loop
         let i = 0;
         const speed = 15; // Speed in ms (lower is faster)
@@ -368,8 +426,8 @@ cacheElements() {
                 setTimeout(typeLoop, speed);
             } else {
                 // Done typing: Show speaker button
-                if(readBtn) readBtn.classList.remove('hidden');
-                
+                if (readBtn) readBtn.classList.remove('hidden');
+
                 // Re-attach the click listener for the speaker (since we just revealed it)
                 // Note: The listener is already attached in createMessageStructure, 
                 // we just need to update the text payload if needed, but here it's static.
@@ -406,14 +464,14 @@ cacheElements() {
             readBtn.className = 'btn-read-aloud';
             readBtn.innerHTML = '🔊';
             readBtn.title = "Read Aloud";
-            
+
             // Attach Speech Event (using the full text passed in initially)
             // Note: For typewriter, the text variable here is empty initially, 
             // so we need to ensure the click handler grabs the *current* text from the bubble.
             readBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 // Grab text dynamically from the bubble in case it was typed in later
-                const finalText = bubble.textContent; 
+                const finalText = bubble.textContent;
                 this.toggleSpeech(finalText, readBtn, messageDiv);
             });
 
@@ -457,7 +515,7 @@ cacheElements() {
 
     async handleAssessment(e) {
         e.preventDefault();
-        
+
         // Basic data gathering
         const formData = {
             defect_type: document.getElementById('defectType').value,
@@ -505,16 +563,16 @@ cacheElements() {
         this.stopSpeaking();
         this.navTabs.forEach(tab => tab.classList.remove('active'));
         const activeBtn = document.querySelector(`.nav-tab[data-tab="${tabName}"]`);
-        if(activeBtn) activeBtn.classList.add('active');
+        if (activeBtn) activeBtn.classList.add('active');
 
         this.tabContents.forEach(content => content.classList.remove('active'));
         const activeContent = document.getElementById(tabName);
-        if(activeContent) activeContent.classList.add('active');
+        if (activeContent) activeContent.classList.add('active');
 
         // Scroll to bottom if opening chat
         if (tabName === 'chat') {
             const chatContainer = document.querySelector('.chat-container');
-            if(chatContainer) {
+            if (chatContainer) {
                 setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 50);
             }
         }
@@ -527,7 +585,7 @@ cacheElements() {
     }
 
     clearAllData() {
-        if(confirm("Delete all chat history?")) {
+        if (confirm("Delete all chat history?")) {
             this.conversations = [];
             localStorage.removeItem('dlp_conversations');
             this.startNewChat();
@@ -546,7 +604,7 @@ cacheElements() {
     // Rating Logic
     setRating(value) {
         this.selectedRating = parseInt(value);
-        if(this.ratingInput) this.ratingInput.value = this.selectedRating;
+        if (this.ratingInput) this.ratingInput.value = this.selectedRating;
         this.updateStarDisplay();
     }
     hoverRating(value) {
@@ -576,7 +634,7 @@ cacheElements() {
         if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
             window.speechSynthesis.cancel();
         }
-        
+
         // Reset all icons back to speaker
         document.querySelectorAll('.btn-read-aloud').forEach(btn => {
             btn.textContent = '🔊';
@@ -607,7 +665,7 @@ cacheElements() {
 
         // Create new speech utterance
         const utterance = new SpeechSynthesisUtterance(text);
-        
+
         // Optional: Select a voice (usually the default is fine, but you can customize)
         // const voices = window.speechSynthesis.getVoices();
         // utterance.voice = voices.find(voice => voice.lang.includes('en')) || null;

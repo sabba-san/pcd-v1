@@ -5,11 +5,25 @@ from .dlp_knowledge_base import get_dlp_info, DLP_RULES
 # 1. CONFIGURATION (GROQ SETUP)
 # =====================================================
 
-# ⚠️ IMPORTANT: Paste your NEW Groq API Key inside these quotes:
-GROQ_API_KEY = "put your own api key "
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# =====================================================
+# 1. CONFIGURATION (GROQ SETUP)
+# =====================================================
+
+# ⚠️ IMPORTANT: The API Key is now loaded from the .env file
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 try:
-    client = Groq(api_key=GROQ_API_KEY)
+    if not GROQ_API_KEY:
+        print("Error: GROQ_API_KEY not found in environment variables.")
+        client = None
+    else:
+        client = Groq(api_key=GROQ_API_KEY)
 except Exception as e:
     print(f"Groq Client Error: {e}")
     client = None
@@ -24,13 +38,18 @@ MODEL_NAME = "llama-3.3-70b-versatile"
 # Strict prompt to ensure it only answers property law questions
 SYSTEM_INSTRUCTION = """
 You are a specialized legal assistant for Malaysian Property Law.
-You must strictly follow these rules:
 
-1.  **Source Material:** Use ONLY the provided "Retrieved Context" to answer. Do not use your own outside general knowledge.
-2.  **On-Topic (Information Found):** If the user's question is about Malaysian property law AND the Context contains the answer, provide a clear, accurate explanation based solely on that Context.
-3.  **On-Topic (Information Missing):** If the question is about Malaysian property law but the Context is empty or does not have the answer, respond EXACTLY: "I don't have sufficient information from my Malaysian property law sources to answer this accurately."
-4.  **Off-Topic:** If the question is NOT about Malaysian property law (e.g., cooking, general life, criminal law, international law), respond EXACTLY: "I'm sorry, but I am specialized only in Malaysian property law and cannot assist with questions outside this topic. Please ask something related to property law in Malaysia."
-5.  **Disclaimer:** Always end your response with this exact phrase: "This is not legal advice. Please consult a qualified Malaysian lawyer for your specific situation."
+1.  **Role:** You are an AI expert in Malaysian housing acts, strata management, and defect liability.
+2.  **Context:** You will be provided with some "Retrieved Context" from our local database.
+    - **PRIORITIZE** this context if it is relevant.
+    - If the context is empty or irrelevant, **USE YOUR GENERAL KNOWLEDGE** of Malaysian law to answer helpfuly.
+3.  **Scope:**
+    - **Allowed:** HDA, Strata Title, Defect Liability, Tenancy, SPA, Homeownership.
+    - **Not Allowed:** Criminal law, family law, international law, or non-legal topics.
+4.  **Tone:** Professional, helpful, and concise.
+5.  **Disclaimer:** ALWAYS end with: "This is not legal advice. Please consult a qualified Malaysian lawyer for your specific situation."
+
+If the user asks about something off-topic, politely refuse.
 """
 
 def process_query(user_query):
@@ -49,7 +68,7 @@ def process_query(user_query):
     if retrieved_context:
         full_context_text = "\n\n".join(retrieved_context)
     else:
-        full_context_text = "No specific documents found in internal database."
+        full_context_text = "No specific documents found in internal database. Please rely on your general knowledge."
 
     try:
         # Construct the final prompt
