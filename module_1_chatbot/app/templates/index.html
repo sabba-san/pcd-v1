@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,16 +10,23 @@
     <!-- Local Overrides if needed -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h1 class="sidebar-title">DLP Chatbot</h1>
+                <a href="{{ url_for('module3.dashboard') }}" class="btn-back-dashboard"
+                    style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none; margin-bottom: 1rem; font-size: 0.9rem; background-color: rgba(255, 255, 255, 0.1); color: #fff; padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.2s ease;">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <a href="{{ url_for('module3.dashboard') }}" style="text-decoration: none; color: inherit;">
+                    <h1 class="sidebar-title">DLP Chatbot</h1>
+                </a>
                 <p class="sidebar-subtitle">Malaysian Property Law</p>
                 <button id="newChatBtn" class="btn-new-chat">+ New Chat</button>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <button class="nav-tab active" data-tab="chat">💬 Current Chat</button>
                 <button class="nav-tab" data-tab="guidelines">📋 Guidelines</button>
@@ -33,8 +41,10 @@
             </div>
 
             <div class="sidebar-footer" style="padding-top: 1rem; border-top: 1px solid var(--border);">
-                <button id="clearAllData" class="btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem; justify-content: flex-start;">🗑️ Clear Data</button>
-                <button id="toggleTheme" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">🌙 Theme</button>
+                <button id="clearAllData" class="btn btn-secondary"
+                    style="width: 100%; margin-bottom: 0.5rem; justify-content: flex-start;">🗑️ Clear Data</button>
+                <button id="toggleTheme" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">🌙
+                    Theme</button>
             </div>
         </aside>
 
@@ -49,12 +59,7 @@
                         </div>
                     </div>
                     <div class="chat-input-area">
-                        <textarea 
-                            id="userInput" 
-                            class="chat-input" 
-                            placeholder="Ask a question..."
-                            rows="1"
-                        ></textarea>
+                        <textarea id="userInput" class="chat-input" placeholder="Ask a question..." rows="1"></textarea>
                         <button id="sendBtn" class="btn btn-primary">Send</button>
                     </div>
                 </div>
@@ -74,7 +79,7 @@
                     </div>
                 </div>
             </section>
-            
+
             <section id="assessment" class="tab-content">
                 <div class="container">
                     <div class="card">
@@ -101,23 +106,28 @@
                     <div class="dashboard-grid">
                         <a href="#" class="card stat-card">
                             <div class="stat-icon">HDA</div>
-                            <div class="stat-info"><h3>Housing Dev Act</h3></div>
+                            <div class="stat-info">
+                                <h3>Housing Dev Act</h3>
+                            </div>
                         </a>
                         <a href="#" class="card stat-card">
-                             <div class="stat-icon">SMA</div>
-                             <div class="stat-info"><h3>Strata Mgmt Act</h3></div>
+                            <div class="stat-icon">SMA</div>
+                            <div class="stat-info">
+                                <h3>Strata Mgmt Act</h3>
+                            </div>
                         </a>
                     </div>
                 </div>
             </section>
-            
+
             <section id="feedback" class="tab-content">
-                 <div class="container">
+                <div class="container">
                     <div class="card">
                         <h2>Send Feedback</h2>
                         <form id="feedbackForm">
                             <div class="form-group">
-                                <textarea id="feedbackText" class="form-control" rows="4" placeholder="Your feedback..."></textarea>
+                                <textarea id="feedbackText" class="form-control" rows="4"
+                                    placeholder="Your feedback..."></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>
@@ -132,4 +142,5 @@
     <script src="{{ url_for('static', filename='shared/js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
+
 </html>

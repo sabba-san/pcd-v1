@@ -1,22 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project {{ scan.name }}</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        .metadata { background: #f4f4f4; padding: 10px; margin-bottom: 20px; }
-        .defects { margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .metadata {
+            background: #f4f4f4;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .defects {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
+
 <body>
     <h1>Project: {{ scan.name }}</h1>
-    
+
     {% if upload_metadata %}
     <div class="metadata">
         <h2>Project Details</h2>
@@ -28,7 +57,7 @@
         {% endif %}
     </div>
     {% endif %}
-    
+
     <div class="defects">
         <h2>Defects ({{ defects|length }})</h2>
         {% if defects %}
@@ -62,10 +91,12 @@
         <p>No defects found for this project.</p>
         {% endif %}
     </div>
-    
+
     <div style="margin-top: 20px;">
         <a href="{{ url_for('defects.visualize_scan', scan_id=scan_id) }}">Visualize 3D Model</a> |
-        <a href="{{ url_for('defects.list_projects') }}">Back to Projects</a>
+        <a href="{{ url_for('defects.list_projects') }}">Back to Projects</a> |
+        <a href="{{ url_for('module3.dashboard') }}">Back to Dashboard</a>
     </div>
 </body>
+
 </html>

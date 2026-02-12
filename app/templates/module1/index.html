@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* --- SIDEBAR CHAT STYLES --- */
+    .chat-container {
+        height: calc(100vh - 140px);
+        border: 1px solid #475569;
+        border-radius: 12px;
+        overflow: hidden;
+        background-color: #1e293b;
+    }
+
+    .chat-sidebar {
+        background-color: #0f172a;
+        border-right: 1px solid #475569;
+    }
+
+    .chat-list-item {
+        color: #94a3b8;
+        border-radius: 8px;
+        transition: 0.2s;
+        border: 1px solid transparent;
+        text-decoration: none;
+    }
+
+    .chat-list-item:hover,
+    .chat-list-item.active {
+        background-color: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.3);
+        color: #3b82f6;
+    }
+
+    .chat-messages {
+        background-color: #0f172a;
+        overflow-y: auto;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background-color: #475569;
+        border-radius: 3px;
+    }
+
+    .msg {
+        max-width: 75%;
+        width: fit-content;
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        line-height: 1.5;
+        font-size: 0.95rem;
+        word-wrap: break-word;
+    }
+
+    .msg-bot {
+        background-color: #1e293b;
+        color: #f1f5f9;
+        border: 1px solid #475569;
+        border-top-left-radius: 2px;
+        margin-right: auto;
+    }
+
+    .msg-user {
+        background-color: #3b82f6;
+        color: white;
+        border-top-right-radius: 2px;
+        margin-left: auto;
+    }
+
+    /* Chips */
+    .quick-actions {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        scrollbar-width: none;
+    }
+
+    .quick-actions::-webkit-scrollbar {
+        display: none;
+    }
+
+    .chip {
+        background-color: #1e293b;
+        border: 1px solid #475569;
+        color: #94a3b8;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chip:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+        background-color: rgba(59, 130, 246, 0.1);
+    }
+
+    .chip i {
+        color: #3b82f6;
+    }
+
+    .chat-input-area {
+        background-color: #0f172a;
+        border-top: 1px solid #475569;
+    }
+</style>
+
+<div class="row justify-content-center h-100">
+    <div class="col-lg-12">
+        <div class="chat-container d-flex">
+
+            <div class="chat-sidebar d-none d-md-flex flex-column p-3" style="width: 280px; flex-shrink: 0;">
+                <button class="btn btn-primary w-100 mb-4 d-flex align-items-center justify-content-center gap-2"
+                    onclick="startNewConsultation()">
+                    <i class="bi bi-plus-lg"></i> New Consultation
+                </button>
+
+                <p class="text-muted small fw-bold text-uppercase mb-2" style="font-size: 0.7rem;">Recent Inquiries</p>
+                <div class="d-flex flex-column gap-1">
+                    <div class="chat-list-item p-2 active d-flex align-items-center justify-content-between gap-2">
+                        <a href="#" class="text-decoration-none text-reset d-flex align-items-center gap-2 flex-grow-1">
+                            <i class="bi bi-chat-dots-fill"></i> <span class="text-truncate">Roof Leaking Issue</span>
+                        </a>
+                        <i class="bi bi-trash text-danger" style="cursor: pointer; font-size: 0.9rem;"
+                            onclick="deleteChat(this)"></i>
+                    </div>
+                </div>
+
+                <div class="mt-auto">
+                    <div class="p-3 rounded-3"
+                        style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);">
+                        <small class="text-primary fw-bold d-block mb-1"><i class="bi bi-info-circle me-1"></i> Did you
+                            know?</small>
+                        <small class="text-muted" style="font-size: 0.75rem;">Your DLP coverage is 24 months from Vacant
+                            Possession.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column flex-grow-1">
+
+                <div class="p-3 border-bottom border-secondary d-flex align-items-center justify-content-between"
+                    style="background: #1e293b;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-circle text-primary">
+                            <i class="bi bi-robot fs-5"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 text-white">DLP Legal Assistant</h6>
+                            <small class="text-success">
+                                <i class="bi bi-circle-fill" style="font-size: 8px;"></i> Online • {{ user }} ({{ badge
+                                }})
+                            </small>
+                        </div>
+                    </div>
+
+                    {% if user == 'Pn. Zulaikha' %}
+                    <a href="{{ url_for('module3.lawyer_dashboard') }}"
+                        class="btn btn-outline-secondary btn-sm border-0"><i class="bi bi-x-lg"></i></a>
+                    {% else %}
+                    <a href="{{ url_for('module3.dashboard') }}" class="btn btn-outline-secondary btn-sm border-0"><i
+                            class="bi bi-x-lg"></i></a>
+                    {% endif %}
+                </div>
+
+                <div class="chat-messages flex-grow-1 p-4" id="chatBox">
+                    <div class="msg msg-bot">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-robot text-primary"></i> <small class="fw-bold opacity-75">AI
+                                Assistant</small>
+                        </div>
+                        Hello <b>{{ user }}</b>. I am your automated legal consultant.<br><br>
+                        I can explain your rights regarding defects, the timeline for repairs, and Tribunal procedures.
+                        How can I help?
+                    </div>
+                </div>
+
+                <div class="chat-input-area p-3">
+                    <div class="quick-actions">
+                        <div class="chip" onclick="submitMessage('Is a cracked wall covered?')"><i
+                                class="bi bi-bricks"></i> Cracked Wall</div>
+                        <div class="chip" onclick="submitMessage('How long is the DLP?')"><i
+                                class="bi bi-clock-history"></i> DLP Duration</div>
+                        <div class="chip" onclick="submitMessage('Developer refuses to fix')"><i
+                                class="bi bi-exclamation-triangle"></i> Dispute</div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="userInput" class="form-control border-secondary"
+                            placeholder="Type your legal question here..." style="background: #1e293b; color: white;">
+                        <button class="btn btn-primary px-4" onclick="handleSendClick()"><i
+                                class="bi bi-send-fill"></i></button>
+                    </div>
+                    <div class="text-center mt-2">
+                        <small class="text-muted" style="font-size: 0.7rem;">AI can make mistakes. Please verify with a
+                            real lawyer.</small>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- CHAT HISTORY LOGIC ---
+    const STORAGE_KEY = 'dlp_chat_history';
+    let currentChatId = null;
+
+    function loadHistory() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    }
+
+    function saveHistory(history) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        renderSidebar();
+    }
+
+    function createNewChat() {
+        const history = loadHistory();
+        const newChat = {
+            id: Date.now().toString(),
+            title: "New Consultation " + new Date().toLocaleTimeString(),
+            messages: []
+        };
+        history.unshift(newChat);
+        saveHistory(history);
+        currentChatId = newChat.id;
+
+        // Reset UI
+        document.getElementById('chatBox').innerHTML = `
+                <div class="msg msg-bot">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-robot text-primary"></i> <small class="fw-bold opacity-75">AI Assistant</small>
+                    </div>
+                    Hello <b>{{ user }}</b>. I am your automated legal consultant.<br><br>
+                    I can explain your rights regarding defects, the timeline for repairs, and Tribunal procedures.
+                    How can I help?
+                </div>
+            `;
+        // Unset active class from all sidebar items except the new one (handled by render)
+        renderSidebar();
+    }
+
+    function switchChat(id) {
+        currentChatId = id;
+        const history = loadHistory();
+        const chat = history.find(c => c.id === id);
+
+        if (!chat) return; // Should not happen
+
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML = `
+                 <div class="msg msg-bot">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-robot text-primary"></i> <small class="fw-bold opacity-75">AI Assistant</small>
+                    </div>
+                    Hello <b>{{ user }}</b>. I am your automated legal consultant.<br><br>
+                    I can explain your rights regarding defects, the timeline for repairs, and Tribunal procedures.
+                    How can I help?
+                </div>
+            `;
+
+        // Replay messages
+        chat.messages.forEach(msg => {
+            const div = document.createElement('div');
+            if (msg.role === 'user') {
+                div.className = 'msg msg-user';
+                div.innerText = msg.content;
+            } else {
+                div.className = 'msg msg-bot';
+                const botHeader = `<div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-robot text-primary"></i> <small class="fw-bold opacity-75">AI Assistant</small></div>`;
+                div.innerHTML = botHeader + msg.content;
+            }
+            chatBox.appendChild(div);
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
+        renderSidebar();
+    }
+
+    function renderSidebar() {
+        const history = loadHistory();
+        const container = document.querySelector('.chat-sidebar .d-flex.flex-column.gap-1');
+        container.innerHTML = '';
+
+        history.forEach(chat => {
+            const div = document.createElement('div');
+            const isActive = chat.id === currentChatId ? 'active' : '';
+            div.className = `chat-list-item p-2 ${isActive} d-flex align-items-center justify-content-between gap-2`;
+
+            // Allow clicking to switch
+            div.onclick = (e) => {
+                // Prevent switching if clicking trash
+                if (e.target.classList.contains('bi-trash')) return;
+                switchChat(chat.id);
+            }
+
+            div.innerHTML = `
+                    <a href="#" class="text-decoration-none text-reset d-flex align-items-center gap-2 flex-grow-1">
+                        <i class="bi bi-chat-dots-fill"></i> <span class="text-truncate">${chat.title}</span>
+                    </a>
+                    <i class="bi bi-trash text-danger" style="cursor: pointer; font-size: 0.9rem;"
+                        onclick="deleteChat(this, '${chat.id}')"></i>
+                `;
+            container.appendChild(div);
+        });
+    }
+
+    function appendMessageToHistory(role, content) {
+        if (!currentChatId) createNewChat();
+
+        const history = loadHistory();
+        const chatIndex = history.findIndex(c => c.id === currentChatId);
+
+        if (chatIndex !== -1) {
+            history[chatIndex].messages.push({ role, content });
+
+            // Update title if it's the first user message
+            if (role === 'user' && history[chatIndex].messages.filter(m => m.role === 'user').length === 1) {
+                history[chatIndex].title = content.substring(0, 25) + (content.length > 25 ? '...' : '');
+            }
+
+            saveHistory(history);
+        }
+    }
+
+    // --- EXISTING LOGIC MODIFIED ---
+
+    // 1. Handle Send
+    function handleSendClick() {
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
+        if (text) {
+            submitMessage(text);
+            input.value = "";
+        }
+    }
+
+    // 2. Handle Enter Key
+    document.getElementById("userInput").addEventListener("keypress", function (event) {
+        if (event.key === "Enter") handleSendClick();
+    });
+
+    // 3. MAIN LOGIC
+    function submitMessage(text) {
+        const chatBox = document.getElementById('chatBox');
+
+        // Add User Message UI
+        const userDiv = document.createElement('div');
+        userDiv.className = 'msg msg-user';
+        userDiv.innerText = text;
+        chatBox.appendChild(userDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Save to history
+        appendMessageToHistory('user', text);
+
+        // Send to Backend
+        fetch("{{ url_for('module1.chat') }}", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Add Bot Response UI
+                const botDiv = document.createElement('div');
+                botDiv.className = 'msg msg-bot';
+                const botHeader = `<div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-robot text-primary"></i> <small class="fw-bold opacity-75">AI Assistant</small></div>`;
+                botDiv.innerHTML = botHeader + data.reply;
+                chatBox.appendChild(botDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Save to history
+                appendMessageToHistory('assistant', data.reply);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'msg msg-bot text-danger';
+                errorDiv.innerText = "Error: Could not connect to backend.";
+                chatBox.appendChild(errorDiv);
+            });
+    }
+
+    // 4. New Consultation
+    function startNewConsultation() {
+        createNewChat();
+    }
+
+    // 5. Delete Chat
+    function deleteChat(element, id) {
+        if (confirm("Are you sure you want to delete this inquiry?")) {
+            let history = loadHistory();
+            history = history.filter(c => c.id !== id);
+            saveHistory(history);
+
+            // If we deleted the current chat, create a new one or switch
+            if (currentChatId === id) {
+                if (history.length > 0) {
+                    switchChat(history[0].id);
+                } else {
+                    // Just clear UI and unset currentChatId, effectively a "new" state waiting for input
+                    currentChatId = null;
+                    createNewChat();
+                }
+            }
+        }
+    }
+
+    // Init
+    window.addEventListener('load', () => {
+        const history = loadHistory();
+        if (history.length > 0) {
+            // Load most recent
+            switchChat(history[0].id);
+        } else {
+            createNewChat();
+        }
+    });
+</script>
+
+{% endblock %}
