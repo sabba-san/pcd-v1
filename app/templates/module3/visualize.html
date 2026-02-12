@@ -453,7 +453,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const SCAN_ID = {{ scan_id }};
+        const SCAN_ID = "{{ scan_id if scan_id else '0' }}";
         const MODEL_URL = "{{ model_url }}"; // URL to GLB file
 
         // --- BABYLON SETUP ---
@@ -463,6 +463,8 @@
         let defects = [];
         let isAddMode = false;
         let markers = [];
+        let ghostMarker = null; // Follows mouse
+        let tempMarker = null;  // Placed on click
 
         const createScene = async function () {
             scene = new BABYLON.Scene(engine);
@@ -497,10 +499,50 @@
                 document.getElementById('loadingLayer').style.display = 'none';
             }
 
+            // Ghost Marker (for Add Mode)
+            ghostMarker = BABYLON.MeshBuilder.CreateSphere("ghostMarker", { diameter: 0.2 }, scene);
+            ghostMarker.material = new BABYLON.StandardMaterial("ghostMat", scene);
+            ghostMarker.material.diffuseColor = new BABYLON.Color3(0, 1, 1); // Cyan
+            ghostMarker.material.alpha = 0.5;
+            ghostMarker.isVisible = false;
+            ghostMarker.isPickable = false; // Raycast should ignore it
+
+            // Pointer Move (Update Ghost)
+            scene.onPointerMove = function () {
+                if (isAddMode) {
+                    const pickResult = scene.pick(scene.pointerX, scene.pointerY, (mesh) => {
+                        // Ignore markers and ghost
+                        return mesh.isPickable && mesh !== ghostMarker && !mesh.name.startsWith("m_");
+                    });
+
+                    if (pickResult.hit) {
+                        ghostMarker.position = pickResult.pickedPoint;
+                        ghostMarker.isVisible = true;
+                    } else {
+                        ghostMarker.isVisible = false;
+                    }
+                } else {
+                    ghostMarker.isVisible = false;
+                }
+            };
+
+            // Click Event (for adding defects)
             // Click Event (for adding defects)
             scene.onPointerDown = function (evt, pickResult) {
-                if (isAddMode && pickResult.hit) {
-                    openAddModal(pickResult.pickedPoint);
+                // Only act if left click (button 0)
+                if (evt.button !== 0) return;
+
+                if (isAddMode) {
+                    // check if we hit a mesh and NOT a marker
+                    if (pickResult.hit && pickResult.pickedMesh) {
+                        // Avoid clicking on existing defect markers (which are spheres)
+                        if (pickResult.pickedMesh.name.startsWith("m_")) {
+                            return;
+                        }
+
+                        console.log("Defect Point Picked:", pickResult.pickedPoint);
+                        openAddModal(pickResult.pickedPoint);
+                    }
                 }
             };
 
@@ -599,11 +641,15 @@
         function toggleAddMode() {
             isAddMode = !isAddMode;
             const btn = document.getElementById('addModeBtn');
+            const canvas = document.getElementById('renderCanvas'); // Target canvas directly
+
             if (isAddMode) {
                 document.body.style.cursor = "crosshair";
+                if (canvas) canvas.style.cursor = "crosshair";
                 btn.classList.add('active');
             } else {
                 document.body.style.cursor = "default";
+                if (canvas) canvas.style.cursor = "default";
                 btn.classList.remove('active');
             }
         }
@@ -633,6 +679,12 @@
 
         function closeModal() {
             document.getElementById('defectModal').classList.remove('open');
+            // Check if we were adding a new defect (not editing)
+            // If we have a temp marker, remove it
+            if (tempMarker) {
+                tempMarker.dispose();
+                tempMarker = null;
+            }
         }
 
         async function handleFormSubmit(e) {

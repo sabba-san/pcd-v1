@@ -26,6 +26,7 @@ class Scan(db.Model):
     name = db.Column(db.String(255), nullable=False)
     model_path = db.Column(db.String(500)) 
     created_at = db.Column(db.DateTime, default=db.func.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # Added for isolation
     defects = db.relationship('Defect', backref='scan', lazy=True)
 
 class Defect(db.Model):
@@ -48,6 +49,18 @@ class Defect(db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=db.func.now())
     activities = db.relationship('ActivityLog', backref='defect', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'x': self.x,
+            'y': self.y,
+            'z': self.z,
+            'description': self.description,
+            'status': self.status,
+            'defect_type': self.defect_type,
+            'severity': self.severity
+        }
 
 class ActivityLog(db.Model):
     __tablename__ = 'activity_logs'

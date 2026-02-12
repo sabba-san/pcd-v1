@@ -11,7 +11,8 @@ bp = Blueprint('module3', __name__, url_prefix='/module3')
 @login_required
 def list_projects():
     """List all scans/projects in the database"""
-    scans = Scan.query.order_by(Scan.created_at.desc()).all()
+    # Filter projects by the current user
+    scans = Scan.query.filter_by(user_id=current_user.id).order_by(Scan.created_at.desc()).all()
     
     # Enhance scan data with defect counts
     projects = []

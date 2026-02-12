@@ -20,7 +20,8 @@
     <div class="col-lg-10">
 
         <h2 class="fw-bold text-white mb-1">Dashboard</h2>
-        <p class="text-white-50 mb-5">Welcome back, {{ user if user else 'Homeowner' }}.</p>
+        <p class="text-white-50 mb-5">Welcome back, {{ current_user.full_name if current_user.full_name else
+            current_user.username }}.</p>
 
         <div class="row g-4">
 

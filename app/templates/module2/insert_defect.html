@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Babylon.js Core and Loaders -->
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
 <style>
     .upload-zone {
         border: 2px dashed #475569;
@@ -33,6 +37,37 @@
         opacity: 0;
         cursor: pointer;
     }
+
+    /* 3D Viewer Styles */
+    #canvasZone {
+        width: 100%;
+        height: 400px;
+        background: #0f172a;
+        border-radius: 12px;
+        border: 1px solid #334155;
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    #renderCanvas {
+        width: 100%;
+        height: 100%;
+        outline: none;
+    }
+
+    .instruction-overlay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(15, 23, 42, 0.8);
+        padding: 8px 12px;
+        border-radius: 6px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        pointer-events: none;
+        border: 1px solid #334155;
+    }
 </style>
 
 <div class="row justify-content-center">
@@ -41,7 +76,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h3 class="fw-bold text-white mb-1">New Defect Submission</h3>
-                <p class="text-muted small">One-step form: Upload scan and provide details.</p>
+                <p class="text-muted small">Click on the model to pinpoint the defect location.</p>
             </div>
             <div
                 class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill border border-primary border-opacity-25">
@@ -52,8 +87,24 @@
         <div class="card shadow-lg p-4 border-0" style="background-color: #334155;">
             <form action="{{ url_for('module2.insert_defect') }}" method="POST" enctype="multipart/form-data">
 
+                <!-- Hidden Coordinates -->
+                <input type="hidden" name="x" id="coordX" value="0">
+                <input type="hidden" name="y" id="coordY" value="0">
+                <input type="hidden" name="z" id="coordZ" value="0">
+                <!-- Pass Project Name if needed for new scans -->
+                <input type="hidden" name="project_name" value="{{ current_user.project_name or 'Default Project' }}">
+
                 <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">1.
-                    Ownership Details</h6>
+                    Defect Location</h6>
+
+                <!-- 3D Viewer -->
+                <div id="canvasZone">
+                    <canvas id="renderCanvas"></canvas>
+                    <div class="instruction-overlay">
+                        <i class="fas fa-mouse-pointer me-1"></i> Click model to set location (Cyan Marker)
+                    </div>
+                </div>
+
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label class="form-label text-white">Owner Name</label>
@@ -71,12 +122,6 @@
                     Defect Description</h6>
                 <div class="row g-3 mb-4">
                     <div class="col-md-12">
-                        <label class="form-label text-white">Project Name / Title</label>
-                        <input type="text" class="form-control" name="project_name"
-                            value="{{ current_user.project_name or 'Default Project' }}" readonly
-                            style="background-color: #1e293b; color: #94a3b8;">
-                    </div>
-                    <div class="col-md-12">
                         <label class="form-label text-white">Detailed Description</label>
                         <textarea class="form-control bg-dark text-white border-secondary" name="description" rows="3"
                             placeholder="Describe the defect location..." required></textarea>
@@ -91,8 +136,9 @@
                         <div class="upload-zone">
                             <i class="bi bi-box-seam upload-icon"></i>
                             <h6 class="text-white small">Drag Lidar Scan Here</h6>
-                            <p class="text-muted small mb-0">Max 50MB</p>
-                            <input type="file" name="lidar_file" class="file-input-hidden" accept=".glb,.gltf">
+                            <p class="text-muted small mb-0">Max 50MB (Updates Viewer)</p>
+                            <input type="file" name="lidar_file" id="lidarInput" class="file-input-hidden"
+                                accept=".glb,.gltf">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -122,6 +168,28 @@
 </div>
 
 <script>
+    // --- Configuration ---
+    // 'model_url' and 'defects' are passed from routes.py
+    const MODEL_URL = "{{ model_url or '' }}";
+
+    // Use JSON.parse with string interpolation to satisfy linters and ensure safe parsing
+    // We default to '[]' string if defects is undefined/null in template
+    let defectsData;
+    try {
+        defectsData = JSON.parse('{{ defects | tojson | safe }}');
+    } catch (e) {
+        console.error("Error parsing defects JSON:", e);
+        defectsData = [];
+    }
+    const EXISTING_DEFECTS = defectsData || [];
+
+    // --- DOM Elements ---
+    const canvas = document.getElementById("renderCanvas");
+    const lidarInput = document.getElementById("lidarInput");
+    const coordX = document.getElementById("coordX");
+    const coordY = document.getElementById("coordY");
+    const coordZ = document.getElementById("coordZ");
+
     document.querySelectorAll('.file-input-hidden').forEach(input => {
         input.addEventListener('change', function () {
             const fileName = this.files[0]?.name;
@@ -132,5 +200,160 @@
             }
         });
     });
+
+    // --- Babylon.js Setup ---
+    const engine = new BABYLON.Engine(canvas, true);
+    let scene, camera;
+    let currentMarker = null; // The new defect marker (Cyan)
+
+    const createScene = function () {
+        scene = new BABYLON.Scene(engine);
+        scene.clearColor = new BABYLON.Color4(0.06, 0.09, 0.16, 1);
+
+        // Camera
+        camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
+        camera.attachControl(canvas, true);
+        camera.wheelPrecision = 50;
+        camera.minZ = 0.1;
+
+        // Light
+        const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+        light.intensity = 0.8;
+
+        // Click Event -> Place Marker
+        scene.onPointerDown = function (evt, pickResult) {
+            if (evt.button !== 0) return; // Left click only
+
+            if (pickResult.hit && pickResult.pickedMesh) {
+                // Determine if we clicked the model or an existing marker
+                // Existing markers will start with "m_"
+                if (pickResult.pickedMesh.name.startsWith("m_")) {
+                    return; // Don't place a new marker on top of an old one
+                }
+
+                placeNewMarker(pickResult.pickedPoint);
+            }
+        };
+
+        return scene;
+    };
+
+    function placeNewMarker(point) {
+        if (currentMarker) {
+            currentMarker.dispose();
+        }
+
+        currentMarker = BABYLON.MeshBuilder.CreateSphere("newDefect", { diameter: 0.25 }, scene);
+        currentMarker.position = point;
+
+        const mat = new BABYLON.StandardMaterial("newMat", scene);
+        mat.diffuseColor = new BABYLON.Color3(0, 1, 1); // Cyan
+        mat.emissiveColor = new BABYLON.Color3(0, 0.2, 0.2);
+        currentMarker.material = mat;
+
+        // Update Hidden Inputs
+        if (coordX && coordY && coordZ) {
+            coordX.value = point.x.toFixed(4);
+            coordY.value = point.y.toFixed(4);
+            coordZ.value = point.z.toFixed(4);
+        }
+    }
+
+    async function loadModel(url) {
+        if (!url) {
+            // Fallback box
+            BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
+            return;
+        }
+
+        try {
+            // Dispose old meshes except markers/camera/light if needed
+            // Actually, keep it simple: import into scene. 
+            const result = await BABYLON.SceneLoader.ImportMeshAsync("", "", url, scene, undefined, ".glb");
+
+            // Focus camera on model
+            if (result.meshes.length > 0) {
+                const bounds = result.meshes[0].getHierarchyBoundingVectors();
+                const center = bounds.max.add(bounds.min).scale(0.5);
+                camera.setTarget(center);
+            }
+        } catch (e) {
+            console.error("Error loading model:", e);
+        }
+    }
+
+    function renderExistingDefects() {
+        if (!EXISTING_DEFECTS || EXISTING_DEFECTS.length === 0) {
+            console.log("No existing defects to render.");
+            return;
+        }
+
+        EXISTING_DEFECTS.forEach(d => {
+            const sphere = BABYLON.MeshBuilder.CreateSphere("m_" + d.id, { diameter: 0.2 }, scene);
+            sphere.position = new BABYLON.Vector3(d.x, d.y, d.z);
+
+            const mat = new BABYLON.StandardMaterial("oldMat_" + d.id, scene);
+            mat.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red
+            sphere.material = mat;
+
+            // Optional: Add tooltip or action?
+            // For now, just visualization.
+        });
+    }
+
+    // --- Init ---
+    scene = createScene();
+
+    console.log("Existing Defects:", EXISTING_DEFECTS);
+    console.log("Model URL:", MODEL_URL);
+
+    // Initial Load
+    if (MODEL_URL) {
+        loadModel(MODEL_URL).then(() => {
+            console.log("Model loaded, rendering defects...");
+            renderExistingDefects();
+        });
+    } else {
+        console.log("No model URL, creating dummy box and rendering defects...");
+        // Just render defects if they exist in valid space (unlikely without model reference)
+        // or create fallback
+        const box = BABYLON.MeshBuilder.CreateBox("dummy", { size: 1 }, scene);
+        renderExistingDefects();
+    }
+
+    engine.runRenderLoop(function () {
+        scene.render();
+    });
+
+    window.addEventListener("resize", function () {
+        engine.resize();
+    });
+
+    // --- File Input Change (Preview Mode) ---
+    lidarInput.addEventListener('change', function (evt) {
+        const file = evt.target.files[0];
+        if (file) {
+            const fileURL = URL.createObjectURL(file);
+
+            // Reset Scene Meshes (Keep camera/light/markers?)
+            // Simplest: Dispose all meshes that are not markers? 
+            // Or just reload scene. Let's try disposing root nodes of imported models.
+            scene.meshes.forEach(m => {
+                if (m.name !== "newDefect" && !m.name.startsWith("m_")) {
+                    m.dispose();
+                }
+            });
+
+            // Also we should probably clear existing defect markers if the model changes entirely?
+            // The user might be uploading a NEW scan for a NEW project.
+            // The task says "Update the JavaScript... to loop through these saved {{ defects }}".
+            // If the user uploads a new file, the old defects (linked to old scan) might not be relevant visually.
+            // But let's keep them if they are just re-uploading the same model?
+            // For safety, let's keep them but maybe the user will ignore them if they are floating in void.
+
+            loadModel(fileURL);
+        }
+    });
+
 </script>
 {% endblock %}

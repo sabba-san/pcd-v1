@@ -64,6 +64,18 @@ class Defect(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.now())
     activities = db.relationship('ActivityLog', backref='defect', lazy=True)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'x': self.x,
+            'y': self.y,
+            'z': self.z,
+            'description': self.description,
+            'status': self.status,
+            'defect_type': self.defect_type,
+            'severity': self.severity
+        }
+
 class ActivityLog(db.Model):
     __tablename__ = 'activity_logs'
     id = db.Column(db.Integer, primary_key=True)
