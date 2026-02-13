@@ -130,7 +130,7 @@
 
                                 <td class="d-print-none">
                                     {% if defect.filename and defect.filename != 'No File' %}
-                                    <a href="{{ url_for('module3.visualize', filename=defect.filename, project_name=defect.project_name, back_to='developer') }}"
+                                    <a href="{{ url_for('module3.visualize', scan_id=defect.scan_id) }}"
                                         class="btn btn-sm btn-outline-info rounded-pill px-3">
                                         <i class="bi bi-badge-3d-fill me-1"></i> Verify Model
                                     </a>

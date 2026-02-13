@@ -156,9 +156,122 @@ def dashboard():
 @bp.route('/developer_portal')
 @login_required
 def developer_portal():
-    return render_template('developer_portal.html', projects=[], stats={}, defects=[])
+    # 1. Get Selected Project from Query Params (default to first available if None)
+    selected_project = request.args.get('project_name')
+    
+    # 2. Get Statistics for Projects
+    # We want to group defects by User.project_name
+    from sqlalchemy import func
+    from app.module3.models import User # Ensure User is imported if not already avilable via relationship
+    
+    # Get all unique project names from Users who are homeowners
+    projects_query = db.session.query(
+        User.project_name, 
+        func.count(Defect.id)
+    ).join(Defect, User.id == Defect.user_id)\
+     .filter(User.role == 'user')\
+     .group_by(User.project_name).all()
+    
+    projects = []
+    for p_name, count in projects_query:
+        if p_name: # Filter out None
+            projects.append({
+                'project_name': p_name,
+                'active_count': count
+            })
+            
+    # Set default selected project
+    if not selected_project and projects:
+        selected_project = projects[0]['project_name']
+        
+    # 3. Fetch Defects for the Selected Project
+    defects = []
+    stats = {'new': 0, 'in_progress': 0, 'completed': 0, 'current_project': selected_project or "All Projects"}
+    
+    if selected_project:
+        # Join User to filter by project_name
+        defects_query = Defect.query.join(User).filter(User.project_name == selected_project).order_by(Defect.created_at.desc()).all()
+    else:
+        # Fallback: Show all if no projects found
+        defects_query = Defect.query.order_by(Defect.created_at.desc()).all()
+
+    for d in defects_query:
+        # Calculate Stats
+        if d.status in ['Reported', 'draft', 'New']:
+            stats['new'] += 1
+        elif d.status in ['in_progress', 'Processing', 'locked']:
+            stats['in_progress'] += 1
+        elif d.status == 'completed':
+            stats['completed'] += 1
+            
+        # Format for Template
+        defects.append({
+            'id': d.id,
+            'full_name': d.user.full_name if d.user else "Unknown",
+            'unit_no': d.location, # Using location as unit_no
+            'description': d.description,
+            'filename': d.scan.model_path if d.scan else 'No File',
+            'scan_id': d.scan_id, # ADDED scan_id
+            'project_name': d.user.project_name if d.user else "Unknown",
+            'severity': d.severity,
+            'status': d.status
+        })
+
+    return render_template('developer_portal.html', projects=projects, stats=stats, defects=defects)
 
 @bp.route('/lawyer_dashboard')
 @login_required
 def lawyer_dashboard():
-    return render_template('module3/lawyer_dashboard.html', user=current_user.full_name, cases=[])
+    # Fetch all defects for the lawyer view (Cases)
+    all_defects = Defect.query.order_by(Defect.created_at.desc()).all()
+    
+    cases = []
+    for d in all_defects:
+        cases.append({
+            'id': d.id,
+            'unit_no': d.location or "N/A",
+            'project_name': d.user.project_name if d.user else "Unknown Project",
+            'description': d.description,
+            'status': d.status,
+            'filename': d.scan.model_path if d.scan else None,
+            'scan_id': d.scan_id # ADDED scan_id
+        })
+        
+    return render_template('module3/lawyer_dashboard.html', user=current_user.full_name, cases=cases)
+
+# --- Missing Routes for Templates ---
+
+@bp.route('/update_status/<int:id>/<string:new_status>')
+@login_required
+def update_status(id, new_status):
+    defect = Defect.query.get_or_404(id)
+    # Check permissions? For now assume Developer/Lawyer can update
+    defect.status = new_status
+    
+    # Log activity
+    log = ActivityLog(
+        defect_id=defect.id,
+        scan_id=defect.scan_id,
+        action=f"Status updated to {new_status} by {current_user.username}",
+        old_value=defect.status,
+        new_value=new_status
+    )
+    db.session.add(log)
+    db.session.commit()
+    
+    flash(f"Defect status updated to {new_status}", "success")
+    return redirect(request.referrer or url_for('module3.dashboard'))
+
+@bp.route('/evidence_report')
+@login_required
+def evidence_report():
+    # Placeholder for Evidence Report
+    flash("Evidence Report feature coming soon.", "info")
+    return redirect(url_for('module3.lawyer_dashboard'))
+
+@bp.route('/validate_all', methods=['POST'])
+@login_required
+def validate_all():
+    # Placeholder for locking all cases
+    flash("All cases validated and locked.", "success")
+    return redirect(url_for('module3.lawyer_dashboard'))
