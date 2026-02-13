@@ -22,11 +22,12 @@ def api_chat():
     try:
         data = request.json
         message = data.get('message', '').strip()
+        context = data.get('context', {}) # <--- Extract Context
         
         if not message:
             return jsonify({"error": "Empty message"}), 400
         
-        response_text = process_query(message)
+        response_text = process_query(message, context) # <--- Pass Context
         
         try:
             save_history({"user": message, "bot": response_text})

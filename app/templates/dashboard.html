@@ -27,7 +27,8 @@
 
             <div class="col-md-6">
                 <!-- EXTERNAL LINK TO CHATBOT SERVICE -->
-                <a href="http://localhost:5002/" class="text-decoration-none">
+                <a href="http://localhost:5002/?project_name={{ current_user.project_name or 'N/A' }}&defect_count={{ defects|length }}"
+                    class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -124,18 +125,18 @@
                                     <small class="text-white-50">Unit: {{ defect.location }}</small>
                                 </td>
                                 <td style="background-color: #334155; border-bottom: none;">
-                                    {% if defect.status == 'draft' %}
-                                    <span
-                                        class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill px-3">Draft</span>
-                                    {% elif defect.status == 'locked' %}
-                                    <span
-                                        class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Processing...</span>
+                                    {% if defect.status in ['draft', 'Reported', 'New', 'locked'] %}
+                                    <span class="badge bg-info bg-opacity-25 text-info rounded-pill px-3">New
+                                        Claim</span>
                                     {% elif defect.status == 'in_progress' %}
-                                    <span
-                                        class="badge bg-primary bg-opacity-25 text-primary rounded-pill px-3">Repairing</span>
+                                    <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">In
+                                        Progress</span>
                                     {% elif defect.status == 'completed' %}
                                     <span
-                                        class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Resolved</span>
+                                        class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Done</span>
+                                    {% elif defect.status == 'rejected' %}
+                                    <span
+                                        class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-3">Rejected</span>
                                     {% else %}
                                     <span class="badge bg-light text-dark rounded-pill px-3">{{ defect.status
                                         }}</span>

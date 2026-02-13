@@ -20,6 +20,14 @@ class DLPChatbotApp {
         this.cacheElements();
         this.attachEventListeners();
         this.loadSavedData(); // Loads all chats from LocalStorage
+
+        // Parse Context from URL
+        const params = new URLSearchParams(window.location.search);
+        this.context = {
+            project_name: params.get('project_name') || 'Unknown Project',
+            defect_count: params.get('defect_count') || '0'
+        };
+        console.log("Chatbot Context Loaded:", this.context);
     }
     cacheElements() {
         // Navigation & Sidebar
@@ -345,7 +353,10 @@ class DLPChatbotApp {
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text })
+                body: JSON.stringify({
+                    message: text,
+                    context: this.context  // <--- Send Context to Backend
+                })
             });
 
             const data = await response.json();

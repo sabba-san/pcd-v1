@@ -17,14 +17,30 @@ def list_projects():
     # Enhance scan data with defect counts
     projects = []
     for scan in scans:
-        defect_count = Defect.query.filter_by(scan_id=scan.id).count()
+        # Calculate Project Status
+        defects = Defect.query.filter_by(scan_id=scan.id).all()
+        status = 'New'
         
+        if not defects:
+            status = 'New'
+        else:
+            statuses = [d.status for d in defects]
+            if all(s == 'completed' for s in statuses):
+                status = 'Completed'
+            elif any(s in ['in_progress', 'locked', 'Processing'] for s in statuses):
+                status = 'Processing'
+            elif any(s == 'rejected' for s in statuses):
+                status = 'Action Required' # Or 'Attention'
+            else:
+                status = 'Pending'
+
         projects.append({
             'id': scan.id,
             'name': scan.name,
             'created_at': scan.created_at,
-            'defect_count': defect_count,
+            'defect_count': len(defects),
             'model_path': scan.model_path,
+            'status': status,
             # Placeholder for metadata until file upload logic is fully ported
             'metadata': None 
         })

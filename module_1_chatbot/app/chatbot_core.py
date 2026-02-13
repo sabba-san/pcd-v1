@@ -52,10 +52,12 @@ You are a specialized legal assistant for Malaysian Property Law.
 If the user asks about something off-topic, politely refuse.
 """
 
-def process_query(user_query):
+def process_query(user_query, context=None):
     if not client:
+        print("DEBUG: Client not initialized")
         return "Error: AI Client not initialized. Check API Key."
 
+    print(f"DEBUG: Processing query: {user_query}")
     lower_query = user_query.lower()
     retrieved_context = []
     
@@ -70,9 +72,18 @@ def process_query(user_query):
     else:
         full_context_text = "No specific documents found in internal database. Please rely on your general knowledge."
 
+    # Format Context String
+    context_str = ""
+    if context:
+        project = context.get('project_name', 'Unknown')
+        count = context.get('defect_count', '0')
+        context_str = f"USER CONTEXT: The user has {count} defect(s) pending at project '{project}'."
+
     try:
         # Construct the final prompt
         user_prompt = f"""
+        {context_str}
+
         Retrieved Context:
         {full_context_text}
 
@@ -80,7 +91,10 @@ def process_query(user_query):
         {user_query}
         """
         
+        print(f"DEBUG: Using new context: {context}")
+        
         # Send to Groq
+        print("DEBUG: Sending to Groq...")
         chat_completion = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": SYSTEM_INSTRUCTION},
@@ -89,9 +103,11 @@ def process_query(user_query):
             model=MODEL_NAME,
             temperature=0.3, # Low temperature = strict and factual
         )
+        print("DEBUG: Groq returned response")
         return chat_completion.choices[0].message.content
         
     except Exception as e:
+        print(f"DEBUG: AI Error: {e}")
         return f"AI Error: {str(e)}"
 
 def analyze_legal_text(document_text):
