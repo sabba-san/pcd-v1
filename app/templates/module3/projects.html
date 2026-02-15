@@ -40,11 +40,13 @@
                         </div>
 
                         {% if p.status == 'Processing' %}
-                        <span class="badge bg-warning text-dark">{{ p.status }}</span>
+                        <span class="badge bg-warning text-dark">In Progress</span>
                         {% elif p.status == 'Completed' %}
-                        <span class="badge bg-success">{{ p.status }}</span>
+                        <span class="badge bg-success">Done</span>
+                        {% elif p.status == 'Action Required' %}
+                        <span class="badge bg-danger">Attention Needed</span>
                         {% else %}
-                        <span class="badge bg-info">{{ p.status }}</span>
+                        <span class="badge bg-info text-dark">{{ p.status }}</span>
                         {% endif %}
                     </div>
 

@@ -115,16 +115,15 @@
                                 </td>
 
                                 <td>
-                                    {% if defect.status == 'draft' %}
-                                    <span class="badge bg-info text-dark border border-info">New / Draft</span>
-                                    {% elif defect.status == 'locked' %}
-                                    <span
-                                        class="badge bg-secondary text-white border border-secondary">Processing</span>
+                                    {% if defect.status in ['Reported', 'draft', 'New', 'locked'] %}
+                                    <span class="badge bg-info text-dark border border-info">New Claim</span>
                                     {% elif defect.status == 'in_progress' %}
-                                    <span class="badge bg-primary text-white border border-primary">Repair in
+                                    <span class="badge bg-warning text-dark border border-warning">Repair in
                                         Progress</span>
                                     {% elif defect.status == 'completed' %}
-                                    <span class="badge bg-success text-white">Resolved</span>
+                                    <span class="badge bg-success text-white border border-success">Done</span>
+                                    {% elif defect.status == 'rejected' %}
+                                    <span class="badge bg-danger text-white border border-danger">Rejected</span>
                                     {% endif %}
                                 </td>
 
@@ -141,19 +140,29 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-end pe-4 d-print-none">
-                                    {% if defect.status == 'locked' or defect.status == 'draft' %}
-                                    <a href="{{ url_for('module3.update_status', id=defect.id, new_status='in_progress') }}"
-                                        class="btn btn-sm btn-primary fw-bold px-3 shadow-sm">
-                                        <i class="bi bi-play-fill me-1"></i>Start Job
-                                    </a>
+                                    {% if defect.status in ['Reported', 'draft', 'New', 'locked'] %}
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('module3.update_status', id=defect.id, new_status='in_progress') }}"
+                                            class="btn btn-sm btn-primary fw-bold shadow-sm" title="Accept Claim">
+                                            <i class="bi bi-check2-circle"></i> Accept
+                                        </a>
+                                        <a href="{{ url_for('module3.update_status', id=defect.id, new_status='rejected') }}"
+                                            class="btn btn-sm btn-outline-danger fw-bold shadow-sm" title="Reject Claim"
+                                            onclick="return confirm('Are you sure you want to reject this claim?')">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                    </div>
                                     {% elif defect.status == 'in_progress' %}
                                     <a href="{{ url_for('module3.update_status', id=defect.id, new_status='completed') }}"
                                         class="btn btn-sm btn-success fw-bold px-3 shadow-sm">
-                                        <i class="bi bi-check-lg me-1"></i>Finish
+                                        <i class="bi bi-check-lg me-1"></i>Complete
                                     </a>
                                     {% elif defect.status == 'completed' %}
                                     <span class="text-success small fw-bold"><i
-                                            class="bi bi-check-circle-fill me-1"></i> Complete</span>
+                                            class="bi bi-check-circle-fill me-1"></i> Done</span>
+                                    {% elif defect.status == 'rejected' %}
+                                    <span class="text-danger small fw-bold"><i class="bi bi-x-circle-fill me-1"></i>
+                                        Rejected</span>
                                     {% endif %}
                                 </td>
                                 <td class="d-none d-print-table-cell text-end pe-4"

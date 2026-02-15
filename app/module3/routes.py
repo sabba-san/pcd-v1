@@ -1,9 +1,10 @@
 import os
+from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, send_from_directory
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.module3.extensions import db
-from app.module3.models import Defect, ActivityLog, Scan
+from app.module3.models import Defect, ActivityLog, Scan, User
 
 bp = Blueprint('module3', __name__, url_prefix='/module3')
 
@@ -250,10 +251,48 @@ def lawyer_dashboard():
             'description': d.description,
             'status': d.status,
             'filename': d.scan.model_path if d.scan else None,
-            'scan_id': d.scan_id # ADDED scan_id
+            'scan_id': d.scan_id, # ADDED scan_id
+            'priority': d.priority # ADDED priority for filtering
         })
         
-    return render_template('module3/lawyer_dashboard.html', user=current_user.full_name, cases=cases)
+    # Fetch distinct projects and priorities for the filter
+    projects = db.session.query(User.project_name).filter(User.role == 'user').distinct().all()
+    project_list = [p[0] for p in projects if p[0]]
+    
+    priorities = db.session.query(Defect.priority).distinct().all()
+    priority_list = [p[0] for p in priorities if p[0]]
+    
+    # Fetch all scans with their associated user (project) info for specific selection
+    available_scans = db.session.query(Scan, User).join(User, Scan.user_id == User.id).all()
+
+    return render_template('module3/lawyer_dashboard.html', 
+                           user=current_user.full_name, 
+                           cases=cases,
+                           projects=project_list,
+                           priorities=priority_list,
+                           available_scans=available_scans)
+
+@bp.route('/select_visualization', methods=['POST'])
+@login_required
+def select_visualization():
+    scan_id = request.form.get('scan_id')
+    priority = request.form.get('priority')
+    
+    if scan_id:
+        target_scan = Scan.query.get(scan_id)
+    else:
+        # Fallback to legacy logic if no scan_id provided (e.g. old form submit)
+        project_name = request.form.get('project_name')
+        if project_name and project_name != 'All Projects':
+             target_scan = Scan.query.join(User).filter(User.project_name == project_name).order_by(Scan.created_at.desc()).first()
+        else:
+            target_scan = Scan.query.order_by(Scan.created_at.desc()).first()
+        
+    if not target_scan:
+        flash("No 3D model found for the selected criteria.", "warning")
+        return redirect(url_for('module3.lawyer_dashboard'))
+        
+    return redirect(url_for('module3.visualize', scan_id=target_scan.id, priority=priority))
 
 # --- Missing Routes for Templates ---
 
@@ -281,13 +320,87 @@ def update_status(id, new_status):
 @bp.route('/evidence_report')
 @login_required
 def evidence_report():
-    # Placeholder for Evidence Report
-    flash("Evidence Report feature coming soon.", "info")
-    return redirect(url_for('module3.lawyer_dashboard'))
+    # 1. Fetch Defects (For now, all defects, or filter by project if needed)
+    # In a real app, you might filter by the selected project in the dashboard
+    defects = Defect.query.order_by(Defect.created_at.desc()).all()
+    
+    # 2. Calculate Metrics
+    total_defects = len(defects)
+    critical_count = sum(1 for d in defects if d.severity == 'Critical')
+    high_count = sum(1 for d in defects if d.severity == 'High')
+    
+    # AI Confidence Logic (Simulation)
+    # Base confidence 85%, increases with more critical defects found (simulating "stronger evidence")
+    ai_confidence = min(99, 85 + (critical_count * 2))
+    
+    # Risk Level Logic
+    if critical_count > 0:
+        risk_level = "Critical"
+    elif high_count > 0:
+        risk_level = "High"
+    elif total_defects > 0:
+        risk_level = "Medium"
+    else:
+        risk_level = "Low"
+        ai_confidence = 0 # No defects, no confidence
+        
+    # 3. Prepare Report Data
+    report = {
+        'case_id': f"CS-{datetime.utcnow().strftime('%Y%m%d')}-001",
+        'client': "JMB Management" if current_user.role == 'lawyer' else current_user.full_name,
+        'project': "All Active Projects", # Update this if we verify single project
+        'ai_confidence': ai_confidence,
+        'risk_level': risk_level
+    }
+    
+    # 4. Format Defects for Template
+    defect_list = []
+    for d in defects:
+        defect_list.append({
+            'id': d.id,
+            'project_name': d.user.project_name if d.user else "Unknown",
+            'unit_no': d.location or "N/A",
+            'description': d.description,
+            'status': d.status,
+            'severity': d.severity
+        })
+
+    return render_template('module3/evidence_report.html', report=report, defects=defect_list)
+
+@bp.route('/lock_evidence/<int:id>', methods=['POST'])
+@login_required
+def lock_evidence(id):
+    defect = Defect.query.get_or_404(id)
+    defect.status = 'locked'
+    
+    # Log activity
+    log = ActivityLog(
+        defect_id=defect.id,
+        scan_id=defect.scan_id,
+        action=f"Evidence LOCKED by {current_user.username}",
+        old_value=defect.status,
+        new_value='locked'
+    )
+    db.session.add(log)
+    db.session.commit()
+    
+    flash(f"Defect #{id} has been locked as evidence.", "success")
+    return redirect(url_for('module3.evidence_report'))
 
 @bp.route('/validate_all', methods=['POST'])
 @login_required
 def validate_all():
-    # Placeholder for locking all cases
-    flash("All cases validated and locked.", "success")
-    return redirect(url_for('module3.lawyer_dashboard'))
+    # Lock all visible defects
+    # In real app, filter by current view (project/user)
+    defects_to_lock = Defect.query.filter(Defect.status.in_(['Reported', 'draft', 'Review', 'New'])).all()
+    
+    count = 0
+    for d in defects_to_lock:
+        d.status = 'locked'
+        count += 1
+        
+    db.session.commit()
+    
+    flash(f"Successfully validated and locked {count} evidence items.", "success")
+    # Redirect back to where they came from, or dashboard
+    return redirect(request.referrer or url_for('module3.lawyer_dashboard'))

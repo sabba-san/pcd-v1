@@ -569,7 +569,28 @@
         async function loadDefects() {
             try {
                 const res = await fetch(`/module3/api/scans/${SCAN_ID}/defects`);
-                defects = await res.json();
+                let allDefects = await res.json();
+
+                // Get Priority from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const priorityFilter = urlParams.get('priority');
+
+                if (priorityFilter && priorityFilter !== '' && priorityFilter !== 'All') {
+                    defects = allDefects.filter(d => d.priority === priorityFilter);
+
+                    // Show a toast or log
+                    console.log(`Filtering by ${priorityFilter}`);
+
+                    // Update header title to show filter
+                    const badge = document.getElementById('defectCountBadge');
+                    if (badge) {
+                        badge.innerText = `${defects.length} (Filtered)`;
+                        badge.style.backgroundColor = '#f59e0b'; // Orange
+                    }
+                } else {
+                    defects = allDefects;
+                }
+
                 updateDefectList();
                 renderMarkers();
             } catch (err) {

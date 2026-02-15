@@ -59,7 +59,8 @@ class Defect(db.Model):
             'description': self.description,
             'status': self.status,
             'defect_type': self.defect_type,
-            'severity': self.severity
+            'severity': self.severity,
+            'priority': self.priority
         }
 
 class ActivityLog(db.Model):

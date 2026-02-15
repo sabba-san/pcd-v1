@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-fluid px-4">
+<div class="container-fluid px-4 print-container">
 
-    <div class="d-flex justify-content-between align-items-center my-4">
+    <div class="d-flex justify-content-between align-items-center my-4 no-print">
         <div>
             <a href="{{ url_for('module3.lawyer_dashboard') }}" class="text-white-50 text-decoration-none small">
                 <i class="bi bi-arrow-left me-1"></i> Back to Console
@@ -13,15 +13,25 @@
                 report.project }}</p>
         </div>
         <div>
-            <button class="btn btn-outline-light me-2"><i class="bi bi-printer me-2"></i>Export PDF</button>
-            <button class="btn btn-primary"><i class="bi bi-check-circle-fill me-2"></i>Validate All Evidence</button>
+            <button class="btn btn-outline-light me-2" onclick="window.print()"><i class="bi bi-printer me-2"></i>Export
+                PDF</button>
         </div>
+    </div>
+
+    <!-- Print Header (Visible only in print) -->
+    <div class="print-only mb-4">
+        <h2>Evidence Review Report</h2>
+        <p><strong>Case ID:</strong> {{ report.case_id }}</p>
+        <p><strong>Client:</strong> {{ report.client }}</p>
+        <p><strong>Date:</strong> {{ report.case_id.split('-')[1] }}</p>
     </div>
 
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="card border-0 shadow-lg text-white" style="background-color: #1e293b;">
-                <div class="card-header bg-transparent border-secondary fw-bold text-uppercase small py-3">
+            <!-- Summary Card -->
+            <div class="card border-0 shadow-lg print-card" style="background-color: #1e293b;">
+                <div
+                    class="card-header bg-transparent border-secondary fw-bold text-uppercase small py-3 no-print-border">
                     AI Analysis Summary
                 </div>
                 <div class="card-body text-center py-5">
@@ -35,14 +45,15 @@
                         </div>
                     </div>
 
-                    <h5 class="fw-bold">AI Detection Status</h5>
-                    <p class="text-white-50 small px-4">The system has detected defects with high certainty. Requires
-                        manual verification.</p>
+                    <h5 class="fw-bold print-text-dark">AI Detection Status</h5>
+                    <p class="text-white-50 small px-4 print-text-dark">The system has detected defects with high
+                        certainty.</p>
 
                     <div
-                        class="alert bg-danger bg-opacity-25 border-danger mx-3 mt-4 d-flex align-items-center justify-content-center">
+                        class="alert bg-danger bg-opacity-25 border-danger mx-3 mt-4 d-flex align-items-center justify-content-center print-alert">
                         <i class="bi bi-exclamation-triangle-fill text-danger me-2 fs-5"></i>
-                        <span class="text-white">Risk Level: <strong class="text-danger fw-bold ms-1 text-uppercase">{{
+                        <span class="text-white print-text-dark">Risk Level: <strong
+                                class="text-danger fw-bold ms-1 text-uppercase">{{
                                 report.risk_level }}</strong></span>
                     </div>
                 </div>
@@ -50,60 +61,45 @@
         </div>
 
         <div class="col-md-8">
-            <div class="card border-0 shadow-lg" style="background-color: #1e293b;">
-                <div class="card-header bg-transparent border-secondary fw-bold text-white text-uppercase small py-3">
+            <div class="card border-0 shadow-lg print-card" style="background-color: #1e293b;">
+                <div
+                    class="card-header bg-transparent border-secondary fw-bold text-white text-uppercase small py-3 print-text-dark no-print-border">
                     Detected Defects Queue
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover mb-0 align-middle">
+                    <table class="table table-dark table-hover mb-0 align-middle print-table">
                         <thead>
-                            <tr class="text-white-50 small">
+                            <tr class="text-white-50 small print-text-dark">
                                 <th class="ps-4">Project / Unit</th>
                                 <th>Description</th>
                                 <th>Status</th>
-                                <th class="text-end pe-4">Action</th>
+                                <th>Severity</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for defect in defects %}
                             <tr>
                                 <td class="ps-4 py-3">
-                                    <div class="fw-bold text-white">{{ defect['project_name'] }}</div>
-                                    <small class="text-white-50">{{ defect['unit_no'] }}</small>
+                                    <div class="fw-bold text-white print-text-dark">{{ defect['project_name'] }}</div>
+                                    <small class="text-white-50 print-text-dark">{{ defect['unit_no'] }}</small>
                                 </td>
                                 <td>
-                                    <span class="text-white">{{ defect['description'] }}</span>
+                                    <span class="text-white print-text-dark">{{ defect['description'] }}</span>
                                 </td>
                                 <td>
-                                    {% if defect['status'] == 'locked' %}
-                                    <span class="badge bg-secondary">LOCKED</span>
-                                    {% else %}
-                                    <span class="badge bg-warning text-dark">DRAFT</span>
-                                    {% endif %}
+                                    <span class="badge bg-secondary border border-secondary text-dark">{{
+                                        defect['status']|upper }}</span>
                                 </td>
-                                <td class="text-end pe-4">
-
-                                    {% if defect['status'] == 'draft' %}
-                                    <form action="{{ url_for('module3.lock_evidence', id=defect['id']) }}" method="POST"
-                                        style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Are you sure? This will lock the evidence for the Tribunal.')">
-                                            <i class="bi bi-lock-fill me-1"></i> Lock Evidence
-                                        </button>
-                                    </form>
-                                    {% else %}
-                                    <button class="btn btn-sm btn-secondary" disabled>
-                                        <i class="bi bi-check-circle-fill me-1"></i> Submitted
-                                    </button>
-                                    {% endif %}
-
+                                <td>
+                                    <span
+                                        class="badge {{ 'bg-danger' if defect['severity'] == 'Critical' else 'bg-warning text-dark' }}">{{
+                                        defect['severity']|upper }}</span>
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
                                 <td colspan="4" class="text-center py-4 text-white-50">
-                                    No defects found in database. <br>
-                                    <small>Go to "Insert Defect" to add one.</small>
+                                    No defects found.
                                 </td>
                             </tr>
                             {% endfor %}
@@ -114,4 +110,89 @@
         </div>
     </div>
 </div>
+
+<style>
+    .print-only {
+        display: none;
+    }
+
+    @media print {
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        body {
+            background-color: white !important;
+            color: black !important;
+        }
+
+        /* Hide elements */
+        .no-print,
+        .sidebar,
+        .navbar,
+        .btn,
+        .footer {
+            display: none !important;
+        }
+
+        .print-only {
+            display: block;
+            color: black;
+        }
+
+        /* Containers */
+        .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .card {
+            background-color: white !important;
+            box-shadow: none !important;
+            border: 1px solid #ccc !important;
+            color: black !important;
+        }
+
+        .card-header {
+            color: black !important;
+            border-bottom: 2px solid #000 !important;
+        }
+
+        .no-print-border {
+            border: none !important;
+        }
+
+        /* Text Colors */
+        .text-white,
+        .text-white-50,
+        .print-text-dark {
+            color: black !important;
+        }
+
+        .text-success {
+            color: green !important;
+        }
+
+        .text-danger {
+            color: red !important;
+        }
+
+        /* Table */
+        .table-dark {
+            --bs-table-bg: transparent !important;
+            --bs-table-color: black !important;
+            color: black !important;
+            border-color: #ccc !important;
+        }
+
+        .table-hover tbody tr:hover {
+            color: black !important;
+        }
+
+        thead th {
+            border-bottom: 2px solid black !important;
+        }
+    }
+</style>
 {% endblock %}
