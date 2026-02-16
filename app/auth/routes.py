@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required
 from app.module3.extensions import db
-from app.module3.models import User
+from app.models import User, Project # Updated Import
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -15,18 +15,35 @@ def register():
         full_name = request.form['full_name']
         role = request.form['role']
         
-        # Logic to determine "Project Name"
-        project_name = None
+        # Role Specific Fields
+        ic_number = request.form.get('ic_number')
+        phone_number = request.form.get('phone_number')
+        correspondence_address = request.form.get('correspondence_address')
+        
+        company_name = request.form.get('developer_company')
+        developer_ssm = request.form.get('developer_ssm')
+        developer_address = request.form.get('developer_address') # Capturing address for developer too
+        
+        firm_name = request.form.get('law_firm')
+        bar_council_id = request.form.get('bar_council_id')
+
+        # Logic to determine and Link "Project"
+        project_obj = None
         
         if role == 'user':
-            if request.form.get('project_name_select') == 'Other':
-                project_name = request.form.get('custom_project_name')
-            else:
-                project_name = request.form.get('project_name_select')       
-        elif role == 'developer':
-            project_name = request.form.get('developer_company')    
-        elif role == 'lawyer':
-            project_name = request.form.get('law_firm')
+            selected_project = request.form.get('project_name_select')
+            custom_project = request.form.get('custom_project_name')
+            
+            project_name = custom_project if selected_project == 'Other' else selected_project
+            
+            if project_name:
+                # Check if project exists, else create
+                project_obj = Project.query.filter_by(name=project_name).first()
+                if not project_obj:
+                    project_obj = Project(name=project_name)
+                    # If Homeowner created it via "Other", it might lack developer details initially
+                    db.session.add(project_obj)
+                    db.session.flush() # Get ID
 
         # Check if user exists
         if User.query.filter_by(username=username).first():
@@ -38,7 +55,21 @@ def register():
             email=email,
             full_name=full_name,
             role=role,
-            project_name=project_name
+            
+            # Homeowner
+            ic_number=ic_number,
+            phone_number=phone_number,
+            correspondence_address=correspondence_address,
+            project_id=project_obj.id if project_obj else None,
+            
+            # Developer
+            company_name=company_name,
+            company_reg_no=developer_ssm,
+            company_address=developer_address, # reusing this field if we want, or map to correspondence
+            
+            # Lawyer
+            firm_name=firm_name,
+            bar_council_id=bar_council_id
         )
         new_user.set_password(password)
         

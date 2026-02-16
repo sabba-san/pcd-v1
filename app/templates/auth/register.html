@@ -1,18 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Register - DLP Advisor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
-        .login-card { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; width: 100%; max-width: 400px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        .form-control, .form-select { background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; color: white; }
-        .form-control:focus, .form-select:focus { background: rgba(15, 23, 42, 0.8); border-color: #3b82f6; color: white; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
-        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .login-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-control,
+        .form-select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
+            color: white;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: #3b82f6;
+            color: white;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
         /* Dropdown arrow fix */
-        .form-select { 
+        .form-select {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 1rem center;
@@ -20,6 +51,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-card">
         <div class="text-center mb-4">
@@ -29,21 +61,21 @@
         </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} small py-2 mb-3">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} small py-2 mb-3">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
         {% endwith %}
-        
+
         <form action="{{ url_for('auth.register') }}" method="POST">
             <div class="mb-3">
                 <label class="form-label small text-white-50">Full Name</label>
                 <input type="text" name="full_name" class="form-control" placeholder="e.g. Ali Baba" required>
             </div>
-            
+
             <div class="mb-3">
                 <label class="form-label small text-white-50">Username / Email</label>
                 <input type="text" name="username" class="form-control" placeholder="name@example.com" required>
@@ -60,35 +92,65 @@
 
             <div class="mb-3" id="homeownerField">
                 <label class="form-label small text-white-50">Select Your Housing Project</label>
-                <select name="project_name_select" id="projectSelect" class="form-select" onchange="toggleCustomProject()">
+                <select name="project_name_select" id="projectSelect" class="form-select"
+                    onchange="toggleCustomProject()">
                     <option value="ASMARINDA12">ASMARINDA12</option>
                     <option value="SISIRAN 2">SISIRAN 2</option>
                     <option value="TAMAN MERPAUH">TAMAN MERPAUH</option>
                     <option value="Other">Other (Enter Custom)</option>
                 </select>
-                <input type="text" name="custom_project_name" id="customProjectInput" 
-                       class="form-control mt-2" placeholder="Enter your Project Name..." style="display: none;">
+                <input type="text" name="custom_project_name" id="customProjectInput" class="form-control mt-2"
+                    placeholder="Enter your Project Name..." style="display: none;">
+
+                <div class="mt-3">
+                    <label class="form-label small text-white-50">IC Number</label>
+                    <input type="text" name="ic_number" class="form-control" placeholder="e.g 900101-14-1234">
+                </div>
+                <div class="mt-3">
+                    <label class="form-label small text-white-50">Phone Number</label>
+                    <input type="text" name="phone_number" class="form-control" placeholder="+6012-345 6789">
+                </div>
+                <div class="mt-3">
+                    <label class="form-label small text-white-50">Correspondence Address</label>
+                    <textarea name="correspondence_address" class="form-control" rows="2"
+                        placeholder="Start typing address..."></textarea>
+                </div>
             </div>
 
             <div class="mb-3" id="developerField" style="display: none;">
                 <label class="form-label small text-white-50">Company Name</label>
                 <input type="text" name="developer_company" class="form-control" placeholder="e.g. EcoWorld Sdn Bhd">
+
+                <div class="mt-3">
+                    <label class="form-label small text-white-50">Company Registration No. (SSM)</label>
+                    <input type="text" name="developer_ssm" class="form-control" placeholder="e.g. 202301000123">
+                </div>
+                <div class="mt-3">
+                    <label class="form-label small text-white-50">Company Address</label>
+                    <textarea name="developer_address" class="form-control" rows="2"></textarea>
+                </div>
             </div>
 
             <div class="mb-3" id="lawyerField" style="display: none;">
                 <label class="form-label small text-white-50">Law Firm Name</label>
                 <input type="text" name="law_firm" class="form-control" placeholder="e.g. Zulaikha & Partners">
+
+                <div class="mt-3">
+                    <label class="form-label small text-white-50">Bar Council ID</label>
+                    <input type="text" name="bar_council_id" class="form-control" placeholder="e.g. BC/A/123">
+                </div>
             </div>
-            
+
             <div class="mb-4">
                 <label class="form-label small text-white-50">Password</label>
                 <input type="password" name="password" class="form-control" placeholder="••••••••" required>
             </div>
-            
+
             <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mb-3">Register</button>
-            
+
             <div class="text-center">
-                <small class="text-white-50">Already have an account? <a href="{{ url_for('auth.login') }}" class="text-info text-decoration-none">Login</a></small>
+                <small class="text-white-50">Already have an account? <a href="{{ url_for('auth.login') }}"
+                        class="text-info text-decoration-none">Login</a></small>
             </div>
         </form>
     </div>
@@ -118,7 +180,7 @@
         function toggleCustomProject() {
             var select = document.getElementById("projectSelect");
             var input = document.getElementById("customProjectInput");
-            
+
             if (select.value === "Other") {
                 input.style.display = "block";
             } else {
@@ -127,4 +189,5 @@
         }
     </script>
 </body>
+
 </html>

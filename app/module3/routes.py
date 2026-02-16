@@ -3,22 +3,35 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.module3.extensions import db
-from app.module3.models import Defect, ActivityLog, Scan
+from app.models import Defect, ActivityLog, Project, User
 
 bp = Blueprint('module3', __name__, url_prefix='/module3')
 
 @bp.route('/projects', methods=['GET'])
 @login_required
 def list_projects():
-    """List all scans/projects in the database"""
-    # Filter projects by the current user
-    scans = Scan.query.filter_by(user_id=current_user.id).order_by(Scan.created_at.desc()).all()
+    """List all projects in the database"""
+    # For now, list all projects or just the user's project
+    # Since 'Projects' means Housing Areas now, if user is homeowner, show their project.
+    # If developer, show their projects.
     
-    # Enhance scan data with defect counts
-    projects = []
-    for scan in scans:
+    projects_list = []
+    
+    if current_user.role == 'user' and current_user.project_id:
+         projects_query = [Project.query.get(current_user.project_id)]
+    elif current_user.role == 'developer':
+         projects_query = Project.query.filter_by(developer_name=current_user.company_name).all() # Or similar logic
+         if not projects_query: # Fallback to all if name match not precise or null
+              projects_query = Project.query.all()
+    else:
+         projects_query = Project.query.all()
+    
+    
+    for proj in projects_query:
+        if not proj: continue
+        
         # Calculate Project Status
-        defects = Defect.query.filter_by(scan_id=scan.id).all()
+        defects = Defect.query.filter_by(project_id=proj.id).all()
         status = 'New'
         
         if not defects:
@@ -30,58 +43,49 @@ def list_projects():
             elif any(s in ['in_progress', 'locked', 'Processing'] for s in statuses):
                 status = 'Processing'
             elif any(s == 'rejected' for s in statuses):
-                status = 'Action Required' # Or 'Attention'
+                status = 'Action Required' 
             else:
                 status = 'Pending'
 
-        projects.append({
-            'id': scan.id,
-            'name': scan.name,
-            'created_at': scan.created_at,
+        projects_list.append({
+            'id': proj.id,
+            'name': proj.name,
+            'created_at': proj.created_at,
             'defect_count': len(defects),
-            'model_path': scan.model_path,
+            'model_path': proj.master_model_path,
             'status': status,
-            # Placeholder for metadata until file upload logic is fully ported
             'metadata': None 
         })
         
-    return render_template('module3/projects.html', projects=projects)
+    return render_template('module3/projects.html', projects=projects_list)
 
-# Defect insertion logic moved to Module 2
-
-# Defect API logic moved to Module 2
-
-@bp.route('/visualize/<int:scan_id>')
+@bp.route('/visualize/<int:project_id>')
 @login_required
-def visualize(scan_id):
-    # Ensure scan exists
-    scan = Scan.query.get_or_404(scan_id)
+def visualize(project_id):
+    # Ensure project exists
+    project = Project.query.get_or_404(project_id)
     
     # Check if model exists
-    model_url = url_for('module3.serve_model', scan_id=scan_id) if scan.model_path else None
+    model_url = url_for('module3.serve_model', project_id=project_id) if project.master_model_path else None
     
     return render_template(
         'module3/visualize.html', 
-        scan=scan,
-        scan_id=scan_id,
+        scan=project, # Template might still use 'scan' variable name
+        scan_id=project_id,
         model_url=model_url,
-        project_name=current_user.project_name
+        project_name=project.name
     )
 
-@bp.route('/model/<int:scan_id>')
+@bp.route('/model/<int:project_id>')
 @login_required
-def serve_model(scan_id):
-    scan = Scan.query.get_or_404(scan_id)
-    if not scan.model_path:
+def serve_model(project_id):
+    project = Project.query.get_or_404(project_id)
+    if not project.master_model_path:
         return "No model uploaded", 404
         
-    # In this simplified version, we assume models are in static/models or uploads
-    # Adjust this path based on where you actually store files
-    # For now, let's assume they are in app/static
     import os
-    file_path = os.path.join(current_app.root_path, 'static', scan.model_path)
+    file_path = os.path.join(current_app.root_path, 'static', project.master_model_path)
     
-    # If using absolute path or uploads folder logic:
     if os.path.exists(file_path):
         directory = os.path.dirname(file_path)
         filename = os.path.basename(file_path)
@@ -89,18 +93,14 @@ def serve_model(scan_id):
         
     return "Model file not found", 404
 
-# --- Dashboard & User Routes (Merged from Module 1) ---
-# Note: Ensure these routes use the module3 blueprint ('bp') defined at the top of this file.
+# --- Dashboard & User Routes ---
 
-# 1. PROFILE VIEW (Read Only)
 @bp.route('/profile')
 @login_required
 def profile():
-    # Fetching count of activity logs
-    activity_count = ActivityLog.query.count() 
+    activity_count = ActivityLog.query.count() # Filter by user if needed?
     return render_template('profile.html', user=current_user, activity_count=activity_count)
 
-# 2. SETTINGS (Update Name/Email)
 @bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
@@ -114,7 +114,6 @@ def settings():
     taman_name = current_user.project_name if current_user.project_name else "Tiada Taman Ditetapkan"
     return render_template('settings.html', user=current_user, taman_name=taman_name)
 
-# 3. PASSWORD CHANGE (Security logic)
 @bp.route('/change_password', methods=['POST'])
 @login_required
 def change_password():
@@ -122,7 +121,6 @@ def change_password():
     new_pw = request.form.get('new_password')
     confirm_pw = request.form.get('confirm_password')
 
-    # Verification checks
     if not current_user.check_password(current_pw):
         flash('Current password is incorrect.', 'danger')
         return redirect(url_for('module3.settings'))
@@ -131,14 +129,12 @@ def change_password():
         flash('New passwords do not match.', 'danger')
         return redirect(url_for('module3.settings'))
 
-    # Hashing and saving
     current_user.set_password(new_pw)
     db.session.commit()
     
     flash('Password changed successfully!', 'success')
     return redirect(url_for('module3.profile'))
 
-# 4. DASHBOARDS
 @bp.route('/dashboard')
 @login_required
 def dashboard():
@@ -154,91 +150,87 @@ def dashboard():
     else:
         defects = Defect.query.order_by(Defect.created_at.desc()).all()
     
-    # 3. Fetch Latest Scan (for 3D Visualizer button)
-    from app.module3.models import Scan
-    latest_scan = Scan.query.order_by(Scan.created_at.desc()).first()
+    # 3. Fetch Latest Project (for 3D Visualizer button)
+    latest_project = None
+    if current_user.project_id:
+        latest_project = Project.query.get(current_user.project_id)
+    else:
+        latest_project = Project.query.order_by(Project.created_at.desc()).first()
+        
+    latest_scan_id = latest_project.id if latest_project else None
     
     # 4. Fetch Recent Activity
-    # This pulls the log entries created by your 'insert_defect' route
     activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(5).all()
     
-    # 5. Render the Dashboard with the data
     return render_template(
         'dashboard.html', 
         defects=defects, 
-        latest_scan=latest_scan,
+        latest_scan=latest_project, # Variable name preservation for template
+        latest_scan_id=latest_scan_id,
         activity=activities
     )
+
 @bp.route('/developer_portal')
 @login_required
 def developer_portal():
-    # 1. Get Selected Project from Query Params (default to first available if None)
-    selected_project = request.args.get('project_name')
+    selected_project_name = request.args.get('project_name')
     
-    # 2. Get Statistics for Projects
-    # We want to group defects by User.project_name
+    # Group defects by Project
     from sqlalchemy import func
-    from app.module3.models import User # Ensure User is imported if not already avilable via relationship
     
-    # Get all unique project names from Users who are homeowners
-    projects_query = db.session.query(
-        User.project_name, 
-        func.count(Defect.id)
-    ).join(Defect, User.id == Defect.user_id)\
-     .filter(User.role == 'user')\
-     .group_by(User.project_name).all()
+    # Get all projects
+    projects_query = Project.query.all()
     
-    projects = []
-    for p_name, count in projects_query:
-        if p_name: # Filter out None
-            projects.append({
-                'project_name': p_name,
-                'active_count': count
-            })
+    projects_data = []
+    for p in projects_query:
+        # Count active defects
+        count = Defect.query.filter_by(project_id=p.id).count()
+        projects_data.append({
+            'project_name': p.name,
+            'active_count': count
+        })
             
-    # Set default selected project
-    if not selected_project and projects:
-        selected_project = projects[0]['project_name']
+    if not selected_project_name and projects_data:
+        selected_project_name = projects_data[0]['project_name']
         
-    # 3. Fetch Defects for the Selected Project
+    # Fetch Defects
     defects = []
-    stats = {'new': 0, 'in_progress': 0, 'completed': 0, 'current_project': selected_project or "All Projects"}
+    stats = {'new': 0, 'in_progress': 0, 'completed': 0, 'current_project': selected_project_name or "All Projects"}
     
-    if selected_project:
-        # Join User to filter by project_name
-        defects_query = Defect.query.join(User).filter(User.project_name == selected_project).order_by(Defect.created_at.desc()).all()
+    defects_query = []
+    if selected_project_name:
+         target_project = Project.query.filter_by(name=selected_project_name).first()
+         if target_project:
+             defects_query = Defect.query.filter_by(project_id=target_project.id).order_by(Defect.created_at.desc()).all()
     else:
-        # Fallback: Show all if no projects found
-        defects_query = Defect.query.order_by(Defect.created_at.desc()).all()
+         defects_query = Defect.query.order_by(Defect.created_at.desc()).all()
 
     for d in defects_query:
-        # Calculate Stats
-        if d.status in ['Reported', 'draft', 'New']:
+        if d.status in ['Reported', 'draft', 'New', 'Pending']:
             stats['new'] += 1
         elif d.status in ['in_progress', 'Processing', 'locked']:
             stats['in_progress'] += 1
         elif d.status == 'completed':
             stats['completed'] += 1
             
-        # Format for Template
         defects.append({
             'id': d.id,
             'full_name': d.user.full_name if d.user else "Unknown",
-            'unit_no': d.location, # Using location as unit_no
+            'unit_no': d.location,
             'description': d.description,
-            'filename': d.scan.model_path if d.scan else 'No File',
-            'scan_id': d.scan_id, # ADDED scan_id
-            'project_name': d.user.project_name if d.user else "Unknown",
+            'filename': d.scan_path if d.scan_path else 'No File',
+            'scan_id': d.project_id, 
+            'project_name': d.project.name if d.project else "Unknown",
             'severity': d.severity,
             'status': d.status
         })
 
-    return render_template('developer_portal.html', projects=projects, stats=stats, defects=defects)
+    return render_template('developer_portal.html', projects=projects_data, stats=stats, defects=defects)
 
 @bp.route('/lawyer_dashboard')
 @login_required
 def lawyer_dashboard():
-    # Fetch all defects for the lawyer view (Cases)
+    # Fetch all defects for the lawyer view
     all_defects = Defect.query.order_by(Defect.created_at.desc()).all()
     
     cases = []
@@ -246,28 +238,23 @@ def lawyer_dashboard():
         cases.append({
             'id': d.id,
             'unit_no': d.location or "N/A",
-            'project_name': d.user.project_name if d.user else "Unknown Project",
+            'project_name': d.project.name if d.project else "Unknown Project",
             'description': d.description,
             'status': d.status,
-            'filename': d.scan.model_path if d.scan else None,
-            'scan_id': d.scan_id # ADDED scan_id
+            'filename': d.scan_path if d.scan_path else None,
+            'scan_id': d.project_id
         })
         
     return render_template('module3/lawyer_dashboard.html', user=current_user.full_name, cases=cases)
-
-# --- Missing Routes for Templates ---
 
 @bp.route('/update_status/<int:id>/<string:new_status>')
 @login_required
 def update_status(id, new_status):
     defect = Defect.query.get_or_404(id)
-    # Check permissions? For now assume Developer/Lawyer can update
     defect.status = new_status
     
-    # Log activity
     log = ActivityLog(
         defect_id=defect.id,
-        scan_id=defect.scan_id,
         action=f"Status updated to {new_status} by {current_user.username}",
         old_value=defect.status,
         new_value=new_status
@@ -281,13 +268,110 @@ def update_status(id, new_status):
 @bp.route('/evidence_report')
 @login_required
 def evidence_report():
-    # Placeholder for Evidence Report
     flash("Evidence Report feature coming soon.", "info")
     return redirect(url_for('module3.lawyer_dashboard'))
 
 @bp.route('/validate_all', methods=['POST'])
 @login_required
 def validate_all():
-    # Placeholder for locking all cases
     flash("All cases validated and locked.", "success")
     return redirect(url_for('module3.lawyer_dashboard'))
+# --- API Routes for 3D Visualizer ---
+
+@bp.route('/api/scans/<int:project_id>/defects', methods=['GET', 'POST'])
+@login_required
+def api_project_defects(project_id):
+    if request.method == 'GET':
+        defects = Defect.query.filter_by(project_id=project_id).all()
+        return jsonify([d.to_dict() for d in defects])
+        
+    if request.method == 'POST':
+        data = request.json
+        new_defect = Defect(
+            project_id=project_id, # Linking to Project now
+            user_id=current_user.id,
+            description=data.get('description'),
+            defect_type=data.get('defect_type'),
+            severity=data.get('severity'),
+            status=data.get('status', 'Reported'),
+            x_coord=data.get('x'),
+            y_coord=data.get('y'),
+            z_coord=data.get('z'),
+            location="3D Pin" # Default location for pins
+        )
+        db.session.add(new_defect)
+        db.session.commit()
+        
+        # Log it
+        log = ActivityLog(
+            defect_id=new_defect.id,
+            action=f"Defect pined on 3D model by {current_user.username}",
+            new_value="Reported"
+        )
+        db.session.add(log)
+        db.session.commit()
+        
+        return jsonify(new_defect.to_dict()), 201
+
+@bp.route('/api/defects/<int:defect_id>', methods=['PUT', 'DELETE'])
+@login_required
+def api_update_defect(defect_id):
+    defect = Defect.query.get_or_404(defect_id)
+    
+    if request.method == 'PUT':
+        data = request.json
+        
+        # Track changes (simple version)
+        if data.get('status') and data.get('status') != defect.status:
+             log = ActivityLog(
+                defect_id=defect.id,
+                action=f"Status changed to {data.get('status')} via 3D Viewer",
+                old_value=defect.status,
+                new_value=data.get('status')
+             )
+             db.session.add(log)
+        
+        if 'description' in data: defect.description = data['description']
+        if 'defect_type' in data: defect.defect_type = data['defect_type']
+        if 'severity' in data: defect.severity = data['severity']
+        if 'status' in data: defect.status = data['status']
+        
+        db.session.commit()
+        return jsonify(defect.to_dict())
+
+    if request.method == 'DELETE':
+        db.session.delete(defect)
+        db.session.commit()
+        return jsonify({'message': 'Deleted'})
+
+@bp.route('/delete_project/<int:project_id>', methods=['POST'])
+@login_required
+def delete_project(project_id):
+    # Only homeowners can delete their own project reference
+    if current_user.role != 'user':
+        flash("Unauthorized action.", "danger")
+        return redirect(url_for('module3.list_projects'))
+
+    if current_user.project_id != project_id:
+        flash("You can only delete your own project.", "danger")
+        return redirect(url_for('module3.list_projects'))
+    
+    project = Project.query.get_or_404(project_id)
+    
+    # Check if other users are linked to this project
+    other_users_count = User.query.filter(User.project_id == project_id, User.id != current_user.id).count()
+    
+    current_user.project_id = None
+    db.session.commit()
+    
+    if other_users_count == 0:
+        # Safe to delete project and defects if no one else is using it
+        Defect.query.filter_by(project_id=project_id).delete()
+        db.session.delete(project)
+        db.session.commit()
+        flash(f"Project '{project.name}' and all associated data permanently deleted.", "success")
+    else:
+        flash(f"You have left project '{project.name}'. It remains active for other users.", "info")
+        
+    return redirect(url_for('module3.list_projects'))
+

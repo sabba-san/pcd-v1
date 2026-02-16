@@ -79,20 +79,24 @@
             </div>
 
             <div class="col-md-6">
-                <a href="{{ url_for('module3.visualize', scan_id=latest_scan.id) }}" class="text-decoration-none">
-                    <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
-                        <div class="card-body">
-                            <div class="mb-4 d-flex justify-content-between align-items-center">
-                                <div class="bg-warning bg-opacity-10 p-3 rounded-3">
-                                    <i class="bi bi-box-fill fs-3 text-warning"></i>
+                {% if latest_scan_id %}
+                <a href="{{ url_for('module3.visualize', project_id=latest_scan_id) }}" class="text-decoration-none">
+                    {% else %}
+                    <a href="javascript:void(0);" onclick="showNoProjectAlert()" class="text-decoration-none">
+                        {% endif %}
+                        <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                            <div class="card-body">
+                                <div class="mb-4 d-flex justify-content-between align-items-center">
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded-3">
+                                        <i class="bi bi-box-fill fs-3 text-warning"></i>
+                                    </div>
+                                    <i class="bi bi-chevron-right text-muted"></i>
                                 </div>
-                                <i class="bi bi-chevron-right text-muted"></i>
+                                <h4 class="fw-bold text-white mb-2">3D Visualizer</h4>
+                                <p class="text-white-50 small">Interact with defects in 3D space.</p>
                             </div>
-                            <h4 class="fw-bold text-white mb-2">3D Visualizer</h4>
-                            <p class="text-white-50 small">Interact with defects in 3D space.</p>
                         </div>
-                    </div>
-                </a>
+                    </a>
             </div>
 
         </div>
@@ -118,7 +122,7 @@
                             <tr>
                                 <td class="ps-4 fw-bold text-white"
                                     style="background-color: #334155; border-bottom: none;">
-                                    {{ defect.scan.name if defect.scan else 'No Scan' }}
+                                    {{ defect.project.name if defect.project else 'No Project' }}
                                 </td>
                                 <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">
                                     <div class="text-white">{{ defect.description }}</div>

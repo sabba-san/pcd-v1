@@ -40,6 +40,14 @@ def init_db():
 
     cursor = db.cursor()
     
+    # --- DROP TABLES (To ensure schema updates are applied) ---
+    cursor.execute("DROP TABLE IF EXISTS chat_feedback CASCADE;")
+    cursor.execute("DROP TABLE IF EXISTS activity_logs CASCADE;")
+    cursor.execute("DROP TABLE IF EXISTS defects CASCADE;")
+    cursor.execute("DROP TABLE IF EXISTS scans CASCADE;")
+    cursor.execute("DROP TABLE IF EXISTS projects CASCADE;")
+    cursor.execute("DROP TABLE IF EXISTS users CASCADE;")
+
     # 0. Table for USERS (Login System) - Must be first for Foreign Keys
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -50,6 +58,9 @@ def init_db():
             full_name TEXT,
             role TEXT NOT NULL DEFAULT 'user',
             project_name TEXT,
+            ic_number VARCHAR(20),
+            phone_number VARCHAR(20),
+            employment_details VARCHAR(100),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)
@@ -70,6 +81,14 @@ def init_db():
             id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
             model_path VARCHAR(500),
+            user_id INTEGER REFERENCES users(id),
+            grant_number VARCHAR(50),
+            parcel_number VARCHAR(50),
+            vp_date DATE,
+            ccc_date DATE,
+            bank_name VARCHAR(100),
+            inspection_type VARCHAR(20),
+            assessor_details TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)

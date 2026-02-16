@@ -1,87 +1,69 @@
-import sqlite3
-import os
+import time
+from app import create_app
+from app.module3.extensions import db
+from app.models import User, Project, Defect, ChatHistory
 
-# Calculate path to ensure it goes in the same folder as this script
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, 'app.db')
+app = create_app()
 
-def reset_database():
-    print(f"--- DATABASE RESET TOOL ---")
-    print(f"Target Database: {DB_PATH}")
-    
-    # 1. Connect (This creates the file if it doesn't exist)
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        print("✓ Connected to database")
-    except Exception as e:
-        print(f"X Error connecting: {e}")
-        return
-
-    # 2. Drop Old Tables (Clean Slate)
-    print("... Deleting old tables")
-    cursor.execute("DROP TABLE IF EXISTS defects")
-    cursor.execute("DROP TABLE IF EXISTS users")
-    
-    # 3. Create Tables (With CORRECT Columns)
-    print("... Creating new schema")
-    
-    # Users Table
-    cursor.execute('''
-        CREATE TABLE users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            full_name TEXT NOT NULL,
-            role TEXT DEFAULT 'user',
-            project_name TEXT
+def setup_database():
+    with app.app_context():
+        print("Waiting for database connection...")
+        # Simple retry logic could be added here if needed, but Docker depends_on helps
+        
+        print("Dropping old tables (if any)...")
+        db.drop_all()
+        
+        print("Creating new tables from app.models...")
+        db.create_all()
+        print("Tables created.")
+        
+        # --- SEED DATA ---
+        print("Seeding data...")
+        
+        # 1. Projects
+        p1 = Project(name="ASMARINDA12", developer_name="EcoWorld", master_model_path="uploads/master_asmarinda.glb")
+        p2 = Project(name="SISIRAN 2", developer_name="IOI Properties")
+        p3 = Project(name="TAMAN MERPAUH", developer_name="Merpauh Dev")
+        
+        db.session.add_all([p1, p2, p3])
+        db.session.commit()
+        
+        # 2. Users
+        # Admin/Developer
+        dev = User(
+            username="dev_contractor", 
+            email="dev@ecoworld.com", 
+            role="developer",
+            company_name="EcoWorld Sdn Bhd",
+            company_reg_no="123456-X"
         )
-    ''')
-    
-    # Defects Table (With user_id link)
-    cursor.execute('''
-        CREATE TABLE defects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            project_name TEXT,
-            unit_no TEXT,
-            description TEXT,
-            status TEXT DEFAULT 'draft',
-            severity TEXT DEFAULT 'Low',
-            filename TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(user_id) REFERENCES users(id)
+        dev.set_password("dev123")
+        
+        # Lawyer
+        law = User(
+            username="zulaikha_law", 
+            email="lawyer@firm.com", 
+            role="lawyer",
+            firm_name="Zulaikha & Partners",
+            bar_council_id="BC/Z/999"
         )
-    ''')
-
-    # 4. Insert Default Users
-    print("... Seeding default users")
-    
-    users = [
-        ('abbas@student.uum.edu.my', 'password123', 'Abbas Abu Dzarr', 'user', 'ASMARINDA12'),
-        ('developer@ecoworld.com', 'dev123', 'EcoWorld Contractor', 'developer', 'ALL'),
-        ('lawyer@firm.com', 'law123', 'Pn. Zulaikha', 'lawyer', 'ALL'),
-        ('admin@uum.edu.my', 'admin123', 'System Administrator', 'admin', 'ALL')
-    ]
-    
-    for email, pwd, name, role, proj in users:
-        cursor.execute("INSERT INTO users (email, password, full_name, role, project_name) VALUES (?, ?, ?, ?, ?)", 
-                       (email, pwd, name, role, proj))
-
-    # 5. Insert Sample Defect for Abbas
-    print("... Adding sample defect for Abbas")
-    cursor.execute("SELECT id FROM users WHERE email = 'abbas@student.uum.edu.my'")
-    abbas_id = cursor.fetchone()[0]
-    
-    cursor.execute('''
-        INSERT INTO defects (user_id, project_name, unit_no, description, status, severity, filename)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (abbas_id, 'ASMARINDA12', 'A-85', 'Cracked Wall in Master Bedroom', 'in_progress', 'Medium', 'sisiranRendered.glb'))
-
-    conn.commit()
-    conn.close()
-    print("SUCCESS: Database has been reset and populated!")
-    print("You can now run 'python run.py'")
+        law.set_password("law123")
+        
+        # Homeowner (Abbas)
+        abbas = User(
+            username="abbas",
+            email="abbas@student.uum.edu.my",
+            role="user",
+            full_name="Abbas Abu Dzarr",
+            project_id=p1.id, # Link to Asmarinda
+            ic_number="900101-14-1234"
+        )
+        abbas.set_password("password123")
+        
+        db.session.add_all([dev, law, abbas])
+        db.session.commit()
+        
+        print("✓ Database setup complete with Seed Data.")
 
 if __name__ == "__main__":
-    reset_database()
+    setup_database()
