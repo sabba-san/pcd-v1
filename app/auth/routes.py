@@ -6,11 +6,16 @@ from app.models import User, Project # Updated Import
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+@bp.route('/ws/ws')
+def silence_ws():
+    """Dummy route to silence WebSocket 404 errors from external tools."""
+    return '', 204
+
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['username'] # Using username as email logic
+        email = request.form['email']
+        username = email # Use email as username
         password = request.form['password']
         full_name = request.form['full_name']
         role = request.form['role']
@@ -45,9 +50,9 @@ def register():
                     db.session.add(project_obj)
                     db.session.flush() # Get ID
 
-        # Check if user exists
-        if User.query.filter_by(username=username).first():
-            flash("Error: Username already taken.", "error")
+        # Check if user exists (by email)
+        if User.query.filter_by(email=email).first():
+            flash("Error: Email already registered.", "error")
             return redirect(url_for('auth.register'))
 
         new_user = User(
@@ -89,10 +94,10 @@ def register():
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
         
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(email=email).first()
         
         if user and user.check_password(password):
             login_user(user)
@@ -103,7 +108,7 @@ def login():
             
             return redirect(url_for('module3.dashboard'))
         else:
-            flash("Invalid username or password", "error")
+            flash("Invalid email or password", "error")
             
     return render_template('auth/login.html')
 

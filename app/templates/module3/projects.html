@@ -71,10 +71,16 @@
                             defects
                         </div>
                         <div class="d-flex w-100 gap-2">
+                            {% if p.model_path %}
                             <a href="{{ url_for('module3.visualize', project_id=p.id) }}"
                                 class="btn btn-sm btn-light flex-grow-1">
                                 <i class="bi bi-box-fill me-1"></i> 3D Model
                             </a>
+                            {% else %}
+                            <span class="btn btn-sm btn-secondary disabled flex-grow-1 opacity-50">
+                                <i class="bi bi-box me-1"></i> No Model
+                            </span>
+                            {% endif %}
                             {% if current_user.role == 'user' %}
                             <form action="{{ url_for('module3.delete_project', project_id=p.id) }}" method="POST"
                                 onsubmit="return confirm('Are you sure you want to delete this project? This action cannot be undone if you are the only member.');"
@@ -89,6 +95,17 @@
 
                 </div>
             </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="text-muted mb-3">
+                <i class="bi bi-folder-x display-1"></i>
+            </div>
+            <h4 class="text-white">No Projects Found</h4>
+            <p class="text-muted mb-4">You are not currently linked to any housing project.</p>
+            <a href="{{ url_for('module2.insert_defect') }}" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-plus-lg me-2"></i> Join a Project
+            </a>
         </div>
         {% endfor %}
 

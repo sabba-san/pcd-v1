@@ -7,6 +7,11 @@ from app.models import Defect, ActivityLog, Project, User
 
 bp = Blueprint('module3', __name__, url_prefix='/module3')
 
+@bp.route('/ws/ws', methods=['GET', 'POST', 'OPTIONS'])
+def silence_ws():
+    """Dummy route to silence WebSocket 404 errors from external tools."""
+    return '', 204
+
 @bp.route('/projects', methods=['GET'])
 @login_required
 def list_projects():
@@ -17,8 +22,11 @@ def list_projects():
     
     projects_list = []
     
-    if current_user.role == 'user' and current_user.project_id:
-         projects_query = [Project.query.get(current_user.project_id)]
+    if current_user.role == 'user':
+        if current_user.project_id:
+             projects_query = [Project.query.get(current_user.project_id)]
+        else:
+             projects_query = [] # Show nothing if not linked
     elif current_user.role == 'developer':
          projects_query = Project.query.filter_by(developer_name=current_user.company_name).all() # Or similar logic
          if not projects_query: # Fallback to all if name match not precise or null
@@ -352,26 +360,21 @@ def delete_project(project_id):
         flash("Unauthorized action.", "danger")
         return redirect(url_for('module3.list_projects'))
 
-    if current_user.project_id != project_id:
-        flash("You can only delete your own project.", "danger")
-        return redirect(url_for('module3.list_projects'))
-    
     project = Project.query.get_or_404(project_id)
     
-    # Check if other users are linked to this project
-    other_users_count = User.query.filter(User.project_id == project_id, User.id != current_user.id).count()
+    # 1. Unlink any users currently attached to this project
+    linked_users = User.query.filter_by(project_id=project_id).all()
+    for u in linked_users:
+        u.project_id = None
     
-    current_user.project_id = None
+    # 2. Delete all defects associated with this project
+    Defect.query.filter_by(project_id=project_id).delete()
+    
+    # 3. Delete the project itself
+    db.session.delete(project)
     db.session.commit()
     
-    if other_users_count == 0:
-        # Safe to delete project and defects if no one else is using it
-        Defect.query.filter_by(project_id=project_id).delete()
-        db.session.delete(project)
-        db.session.commit()
-        flash(f"Project '{project.name}' and all associated data permanently deleted.", "success")
-    else:
-        flash(f"You have left project '{project.name}'. It remains active for other users.", "info")
+    flash(f"Project '{project.name}' and all associated data permanently deleted.", "success")
         
     return redirect(url_for('module3.list_projects'))
 

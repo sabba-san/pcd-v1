@@ -42,6 +42,29 @@ def insert_defect():
             # Link to User's Project
             project_id = current_user.project_id
             
+            if not project_id:
+                # Auto-create project for unlinked user
+                from datetime import datetime
+                project_name = f"{current_user.full_name or current_user.email}'s Project ({datetime.now().strftime('%H%M%S')})"
+                
+                new_project = Project(
+                    name=project_name, 
+                    master_model_path=lidar_path # Set master model if uploaded
+                )
+                db.session.add(new_project)
+                db.session.flush()
+                
+                current_user.project_id = new_project.id
+                project_id = new_project.id
+                db.session.commit()
+                flash(f"Created new project: {project_name}", "info")
+            elif lidar_path:
+                # Update existing project model if new scan uploaded
+                project = Project.query.get(project_id)
+                if project:
+                    project.master_model_path = lidar_path
+                    db.session.commit()
+            
             new_defect = Defect(
                 project_id=project_id,
                 user_id=current_user.id,
@@ -132,6 +155,17 @@ def api_add_defect():
                  user = current_user
             
             project_id = user.project_id if user else None
+
+            # Auto-create project for API calls if missing
+            if user and not project_id:
+                from datetime import datetime
+                project_name = f"{user.full_name or user.email}'s Project ({datetime.now().strftime('%H%M%S')})"
+                new_project = Project(name=project_name)
+                db.session.add(new_project)
+                db.session.flush()
+                user.project_id = new_project.id
+                project_id = new_project.id
+                db.session.commit()
 
             # 5. Create Defect
             new_defect = Defect(
