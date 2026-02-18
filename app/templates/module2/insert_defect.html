@@ -213,6 +213,8 @@
         // Camera
         camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
         camera.attachControl(canvas, true);
+        // Disable scroll zoom interactions to prevent page scroll hijacking
+        camera.inputs.remove(camera.inputs.attached.mousewheel);
         camera.wheelPrecision = 50;
         camera.minZ = 0.1;
 

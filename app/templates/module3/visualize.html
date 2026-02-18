@@ -383,13 +383,13 @@
         </div>
 
         <div class="toolbar">
-            <button class="tool-btn" id="addModeBtn" onclick="toggleAddMode()" title="Add Defect Mode">
+            <button class="tool-btn" id="addModeBtn" onclick="toggleAddMode()" title="Add Defect Mode (Click to Pin)">
                 <i class="fas fa-map-pin"></i>
             </button>
-            <button class="tool-btn" onclick="camera.zoomOnFactor(1.5)" title="Zoom In">
+            <button class="tool-btn" onclick="zoomIn()" title="Zoom In">
                 <i class="fas fa-plus"></i>
             </button>
-            <button class="tool-btn" onclick="camera.zoomOnFactor(0.6)" title="Zoom Out">
+            <button class="tool-btn" onclick="zoomOut()" title="Zoom Out">
                 <i class="fas fa-minus"></i>
             </button>
         </div>
@@ -444,6 +444,10 @@
 
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <!-- Delete Button (Only for existing defects) -->
+                    <button type="button" class="btn-cancel" id="deleteBtn"
+                        style="color: var(--danger); border: 1px solid var(--danger); display: none;"
+                        onclick="handleDelete()">Delete</button>
                     <button type="submit" class="btn btn-primary" style="width: auto; padding: 0 20px;">Save
                         Defect</button>
                 </div>
@@ -452,218 +456,166 @@
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const SCAN_ID = "{{ scan_id if scan_id else '0' }}";
-        const MODEL_URL = "{{ model_url }}"; // URL to GLB file
+        // --- Configuration ---
+        const PROJECT_ID = "{{ scan.id }}";
+        const MODEL_URL = "{{ model_url }}"; // Generated in route
 
-        // --- BABYLON SETUP ---
+        // Babylon.js Globals
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
         let scene, camera;
-        let defects = [];
-        let isAddMode = false;
-        let markers = [];
-        let ghostMarker = null; // Follows mouse
-        let tempMarker = null;  // Placed on click
+        let defectMeshes = [];
 
-        const createScene = async function () {
-            scene = new BABYLON.Scene(engine);
-            scene.clearColor = new BABYLON.Color4(0.06, 0.09, 0.16, 1); // Dark blueish bg
-
-            // Camera
-            camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
-            camera.attachControl(canvas, true);
-            camera.wheelPrecision = 50;
-
-            // Light
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-            light.intensity = 0.7;
+        async function init() {
+            scene = createScene();
 
             // Load Model
-            if (MODEL_URL && MODEL_URL !== "None") {
+            if (MODEL_URL) {
+                document.getElementById('loadingLayer').style.display = 'flex';
                 try {
-                    const result = await BABYLON.SceneLoader.ImportMeshAsync("", "", MODEL_URL, scene, undefined, ".glb");
-                    // Center model
-                    const bounds = result.meshes[0].getHierarchyBoundingVectors();
-                    const center = bounds.max.add(bounds.min).scale(0.5);
-                    camera.setTarget(center);
-
-                    document.getElementById('loadingLayer').style.display = 'none';
+                    await BABYLON.SceneLoader.ImportMeshAsync("", "", MODEL_URL, scene, undefined, ".glb");
+                    console.log("Model loaded");
                 } catch (e) {
-                    console.error("Error loading model", e);
-                    document.getElementById('loadingLayer').innerHTML = `<span style="color:red">Error loading model</span>`;
+                    console.error("Model load error:", e);
+                } finally {
+                    document.getElementById('loadingLayer').style.display = 'none';
                 }
             } else {
                 // Fallback box if no model
-                const box = BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
+                BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
                 document.getElementById('loadingLayer').style.display = 'none';
             }
 
-            // Ghost Marker (for Add Mode)
-            ghostMarker = BABYLON.MeshBuilder.CreateSphere("ghostMarker", { diameter: 0.2 }, scene);
-            ghostMarker.material = new BABYLON.StandardMaterial("ghostMat", scene);
-            ghostMarker.material.diffuseColor = new BABYLON.Color3(0, 1, 1); // Cyan
-            ghostMarker.material.alpha = 0.5;
-            ghostMarker.isVisible = false;
-            ghostMarker.isPickable = false; // Raycast should ignore it
+            // Load Defects
+            await loadDefects();
 
-            // Pointer Move (Update Ghost)
-            scene.onPointerMove = function () {
-                if (isAddMode) {
-                    const pickResult = scene.pick(scene.pointerX, scene.pointerY, (mesh) => {
-                        // Ignore markers and ghost
-                        return mesh.isPickable && mesh !== ghostMarker && !mesh.name.startsWith("m_");
-                    });
+            // Render Loop
+            engine.runRenderLoop(() => scene.render());
+            window.addEventListener("resize", () => engine.resize());
+        }
 
-                    if (pickResult.hit) {
-                        ghostMarker.position = pickResult.pickedPoint;
-                        ghostMarker.isVisible = true;
-                    } else {
-                        ghostMarker.isVisible = false;
-                    }
-                } else {
-                    ghostMarker.isVisible = false;
-                }
-            };
+        const createScene = function () {
+            const scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color4(0.06, 0.09, 0.16, 1);
 
-            // Click Event (for adding defects)
-            // Click Event (for adding defects)
+            camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
+            camera.attachControl(canvas, true);
+            camera.inputs.remove(camera.inputs.attached.mousewheel); // Disable scroll zoom
+            camera.minZ = 0.1;
+
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            light.intensity = 0.8;
+
+            // Click Handler (Add Mode)
+            // Click Handler (Add Mode)
             scene.onPointerDown = function (evt, pickResult) {
-                // Only act if left click (button 0)
                 if (evt.button !== 0) return;
 
-                if (isAddMode) {
-                    // check if we hit a mesh and NOT a marker
-                    if (pickResult.hit && pickResult.pickedMesh) {
-                        // Avoid clicking on existing defect markers (which are spheres)
-                        if (pickResult.pickedMesh.name.startsWith("m_")) {
-                            return;
+                // If adding new defect
+                if (document.getElementById('addModeBtn').classList.contains('active')) {
+                    if (pickResult.hit) {
+                        // If clicking an existing marker, let it fall through to Edit logic (optional)
+                        // Or just ignore it if we want strict mode.
+                        // Let's ignore clicks on defects so we don't accidentally pin on top of one.
+                        if (pickResult.pickedMesh && (pickResult.pickedMesh.name.startsWith("defect_") || (pickResult.pickedMesh.metadata && pickResult.pickedMesh.metadata.id))) {
+                            // It's a defect, fall through to edit or return?
+                            // Let's fall through to allow editing even in add mode if you click a dot.
+                        } else {
+                            // It is a surface (wall/floor). Pin it.
+                            openAddModal(pickResult.pickedPoint);
+                            return; // STOP! Do not check for edit.
                         }
-
-                        console.log("Defect Point Picked:", pickResult.pickedPoint);
-                        openAddModal(pickResult.pickedPoint);
                     }
+                }
+
+                // If clicking existing defect (Edit Mode)
+                if (pickResult.hit && pickResult.pickedMesh && pickResult.pickedMesh.metadata && pickResult.pickedMesh.metadata.id) {
+                    const defectData = pickResult.pickedMesh.metadata;
+                    openEditModal(defectData);
                 }
             };
 
             return scene;
         };
 
-        // --- APP LOGIC ---
-
-        function init() {
-            createScene().then(() => {
-                engine.runRenderLoop(function () {
-                    scene.render();
-                });
-
-                // Fetch existing defects
-                loadDefects();
-            });
-
-            window.addEventListener("resize", function () {
-                engine.resize();
-            });
-        }
-
         async function loadDefects() {
             try {
-                const res = await fetch(`/module3/api/scans/${SCAN_ID}/defects`);
-                defects = await res.json();
-                updateDefectList();
-                renderMarkers();
-            } catch (err) {
-                console.error("Failed to load defects", err);
+                const res = await fetch(`/module3/api/scans/${PROJECT_ID}/defects`);
+                const defects = await res.json();
+
+                renderDefects(defects);
+                updateSidebar(defects);
+
+            } catch (e) {
+                console.error("Error loading defects:", e);
             }
         }
 
-        function renderMarkers() {
-            // Clear old markers
-            markers.forEach(m => m.dispose());
-            markers = [];
+        function renderDefects(defects) {
+            // Clear old meshes
+            defectMeshes.forEach(m => m.dispose());
+            defectMeshes = [];
 
             defects.forEach(d => {
-                // Create a marker (using a small sphere for now, could be sprite)
-                const sphere = BABYLON.MeshBuilder.CreateSphere("m_" + d.id, { diameter: 0.2 }, scene);
+                const sphere = BABYLON.MeshBuilder.CreateSphere("defect_" + d.id, { diameter: 0.3 }, scene);
                 sphere.position = new BABYLON.Vector3(d.x, d.y, d.z);
 
                 // Color based on status
                 const mat = new BABYLON.StandardMaterial("mat_" + d.id, scene);
-                if (d.status === 'Fixed') mat.diffuseColor = BABYLON.Color3.Green();
-                else if (d.status === 'Review') mat.diffuseColor = new BABYLON.Color3(1, 0.6, 0); // Orange
-                else mat.diffuseColor = BABYLON.Color3.Red(); // Reported
+                if (d.status === 'Fixed') mat.diffuseColor = new BABYLON.Color3(0.2, 0.8, 0.2); // Green
+                else if (d.status === 'Review') mat.diffuseColor = new BABYLON.Color3(0.9, 0.6, 0); // Orange
+                else mat.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red (Reported)
 
                 sphere.material = mat;
+                sphere.metadata = d; // Store data on mesh for click event
 
-                // Action Manager for click
-                sphere.actionManager = new BABYLON.ActionManager(scene);
-                sphere.actionManager.registerAction(
-                    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function () {
-                        openEditModal(d);
-                    })
-                );
-
-                markers.push(sphere);
+                defectMeshes.push(sphere);
             });
         }
 
-        function updateDefectList() {
+        function updateSidebar(defects) {
             const list = document.getElementById('defectList');
+            list.innerHTML = '';
             document.getElementById('defectCountBadge').innerText = defects.length;
 
-            list.innerHTML = defects.map(d => `
-                <div class="defect-card" onclick="panToDefect(${d.id})">
-                    <div class="defect-header">
-                        <span class="defect-type">${d.defect_type}</span>
-                        <span class="defect-status status-${d.status}">${d.status}</span>
-                    </div>
-                    <div class="defect-location">
-                        <i class="fas fa-map-marker-alt"></i>
-                        ${d.description.substring(0, 30)}${d.description.length > 30 ? '...' : ''}
-                    </div>
-                </div>
-            `).join('');
+            defects.forEach(d => {
+                const item = document.createElement('div');
+                item.className = 'defect-card';
+                item.onclick = () => {
+                    // Fly to defect
+                    if (camera && scene) {
+                        const target = new BABYLON.Vector3(d.x, d.y, d.z);
+                        camera.setTarget(target);
+                        camera.radius = 5; // Zoom in
+                    }
+                    openEditModal(d);
+                };
+
+                item.innerHTML = `
+                            <div class="defect-header">
+                                <span class="defect-type">${d.defect_type || 'Defect'}</span>
+                                <span class="defect-status status-${d.status}">${d.status}</span>
+                            </div>
+                            <div class="defect-location">
+                                <i class="fas fa-map-marker-alt"></i> ${d.location || 'Unknown Location'}
+                            </div>
+                            <div style="font-size: 0.85rem; color: #cbd5e1; margin-top: 4px;">
+                                ${d.description}
+                            </div>
+                            `;
+                list.appendChild(item);
+            });
         }
-
-        function panToDefect(id) {
-            const d = defects.find(x => x.id === id);
-            if (d) {
-                const target = new BABYLON.Vector3(d.x, d.y, d.z);
-
-                // Animate camera
-                const anim = BABYLON.Animation.CreateAndStartAnimation("anim", camera, "target", 30, 30, camera.target, target, 2, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-                camera.radius = 4; // Zoom in
-            }
-        }
-
-        // --- INTERACTION ---
 
         function toggleAddMode() {
-            isAddMode = !isAddMode;
             const btn = document.getElementById('addModeBtn');
-            const canvas = document.getElementById('renderCanvas'); // Target canvas directly
-
-            if (isAddMode) {
-                document.body.style.cursor = "crosshair";
-                if (canvas) canvas.style.cursor = "crosshair";
-                btn.classList.add('active');
-            } else {
-                document.body.style.cursor = "default";
-                if (canvas) canvas.style.cursor = "default";
-                btn.classList.remove('active');
-            }
+            btn.classList.toggle('active');
+            // Cursor update could go here
         }
 
-        function openAddModal(point) {
-            document.getElementById('modalTitle').innerText = "New Defect";
-            document.getElementById('defectId').value = "";
-            document.getElementById('defectDesc').value = "";
-            document.getElementById('coordX').value = point.x;
-            document.getElementById('coordY').value = point.y;
-            document.getElementById('coordZ').value = point.z;
-
-            document.getElementById('defectModal').classList.add('open');
-            toggleAddMode(); // Turn off add mode after click
+        function closeModal() {
+            document.getElementById('defectModal').classList.remove('open');
+            document.getElementById('addModeBtn').classList.remove('active');
         }
 
         function openEditModal(d) {
@@ -674,16 +626,46 @@
             document.getElementById('defectStatus').value = d.status;
             document.getElementById('defectSeverity').value = d.severity;
 
+            // Show Delete Button
+            const delBtn = document.getElementById('deleteBtn');
+            delBtn.style.display = 'block';
+            delBtn.onclick = () => handleDelete(d.id);
+
             document.getElementById('defectModal').classList.add('open');
         }
 
-        function closeModal() {
-            document.getElementById('defectModal').classList.remove('open');
-            // Check if we were adding a new defect (not editing)
-            // If we have a temp marker, remove it
-            if (tempMarker) {
-                tempMarker.dispose();
-                tempMarker = null;
+        function openAddModal(point) {
+            // ... (existing add modal logic) ...
+            document.getElementById('modalTitle').innerText = "New Defect";
+            document.getElementById('defectId').value = ""; // Clear ID
+            // ... reset fields ...
+            document.getElementById('defectDesc').value = "";
+            document.getElementById('coordX').value = point.x;
+            document.getElementById('coordY').value = point.y;
+            document.getElementById('coordZ').value = point.z;
+
+            // Hide Delete Button for new defects
+            document.getElementById('deleteBtn').style.display = 'none';
+
+            document.getElementById('defectModal').classList.add('open');
+            toggleAddMode();
+        }
+
+        async function handleDelete(id) {
+            if (!id) return; // Should not happen for new defects
+            if (!confirm("Are you sure you want to delete this defect?")) return;
+
+            try {
+                const res = await fetch(`/module3/delete_defect/${id}`, { method: 'POST' });
+                if (res.ok) {
+                    closeModal();
+                    loadDefects(); // Refresh
+                } else {
+                    alert("Failed to delete defect");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error deleting defect");
             }
         }
 
@@ -699,26 +681,46 @@
                 status: document.getElementById('defectStatus').value
             };
 
-            if (isNew) {
-                payload.x = parseFloat(document.getElementById('coordX').value);
-                payload.y = parseFloat(document.getElementById('coordY').value);
-                payload.z = parseFloat(document.getElementById('coordZ').value);
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Saving...";
 
-                await fetch(`/module3/api/scans/${SCAN_ID}/defects`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } else {
-                await fetch(`/module3/api/defects/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            try {
+                let res;
+                if (isNew) {
+                    payload.x = parseFloat(document.getElementById('coordX').value);
+                    payload.y = parseFloat(document.getElementById('coordY').value);
+                    payload.z = parseFloat(document.getElementById('coordZ').value);
+
+                    res = await fetch(`/module3/api/scans/${PROJECT_ID}/defects`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    res = await fetch(`/module3/api/defects/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                if (!res.ok) throw new Error("Failed to save defect");
+
+                closeModal();
+                await loadDefects(); // Wait for reload
+
+                // Optional: Show simple alert or toast if base.html toast not triggered from JS
+                // But typically we rely on visual update.
+
+            } catch (err) {
+                console.error(err);
+                alert("Error saving defect: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
             }
-
-            closeModal();
-            loadDefects(); // Reload to refresh list/markers
         }
 
         // Initialize

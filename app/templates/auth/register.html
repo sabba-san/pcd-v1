@@ -67,15 +67,7 @@
             <p class="text-white">Join the DLP Advisor Platform</p>
         </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} small py-2 mb-3">
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
+        <!-- Flash messages handled by base.html Toasts -->
 
         <form action="{{ url_for('auth.register') }}" method="POST">
             <div class="row">

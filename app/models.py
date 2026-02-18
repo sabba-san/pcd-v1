@@ -21,7 +21,7 @@ class Project(db.Model):
     
     # Relationships
     users = db.relationship('User', backref='project', lazy=True)
-    defects = db.relationship('Defect', backref='project', lazy=True)
+    defects = db.relationship('Defect', backref='project', lazy=True, cascade="all, delete-orphan")
 
 class User(UserMixin, db.Model):
     """Unified User Model"""
@@ -93,7 +93,7 @@ class Defect(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Activity Log Relationship
-    activities = db.relationship('ActivityLog', backref='defect', lazy=True)
+    activities = db.relationship('ActivityLog', backref='defect', lazy=True, cascade="all, delete-orphan")
 
     def to_dict(self):
         return {

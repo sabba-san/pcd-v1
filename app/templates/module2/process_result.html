@@ -1,55 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Module 2 – Process Defect File</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: system-ui, sans-serif; margin:0; padding:2rem; background:#f3f4f6; }
-    .card { max-width:1100px; margin:0 auto; padding:2rem; background:#fff; border-radius:12px; box-shadow:0 10px 25px rgba(15,23,42,0.1); }
-    h1 { margin-top:0; font-size:1.6rem; }
-    h2 { margin-top:1.5rem; font-size:1.2rem; color:#1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
-    table { width:100%; border-collapse:collapse; margin-top:1rem; }
-    th, td { border:1px solid #e5e7eb; padding:0.5rem 0.75rem; font-size:0.9rem; vertical-align:top; }
-    th { background:#f9fafb; text-align:left; }
-    .error { padding:0.75rem 1rem; background:#fee2e2; color:#991b1b; border-radius:8px; }
-    .flash { padding:0.75rem 1rem; border-radius:8px; font-size:0.9rem; margin-top:1rem; }
-    .flash.success { background:#dcfce7; color:#166534; }
-    .flash.error { background:#fee2e2; color:#991b1b; }
-    .flash.info { background:#e0f2fe; color:#075985; }
-    .sub { color:#6b7280; font-size:0.9rem; }
-    
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #f3f4f6;
+    }
+
+    .card {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.6rem;
+    }
+
+    h2 {
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+      color: #1f2937;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th,
+    td {
+      border: 1px solid #e5e7eb;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f9fafb;
+      text-align: left;
+    }
+
+    .error {
+      padding: 0.75rem 1rem;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 8px;
+    }
+
+    .flash {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .flash.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .flash.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .flash.info {
+      background: #e0f2fe;
+      color: #075985;
+    }
+
+    .sub {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
     /* Upload Details Card */
-    .upload-details { background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:1.25rem; margin-bottom:1.5rem; }
-    .upload-details h3 { margin:0 0 1rem 0; font-size:1.1rem; color:#0369a1; }
-    .details-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; }
-    .detail-item { background:#fff; padding:0.75rem; border-radius:6px; border:1px solid #e0f2fe; }
-    .detail-label { font-size:0.75rem; color:#64748b; text-transform:uppercase; font-weight:600; margin-bottom:0.25rem; }
-    .detail-value { font-size:0.95rem; color:#1e293b; word-break:break-word; }
-    
-    .image-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1rem; margin-top:1rem; }
-    .image-card { border:1px solid #e5e7eb; border-radius:10px; padding:0.75rem; background:#f9fafb; display:flex; flex-direction:column; gap:0.5rem; }
-    .image-card.assigned { border-color:#2563eb; background:#eef2ff; }
-    .image-card img { width:100%; height:180px; object-fit:cover; border-radius:6px; border:1px solid #d1d5db; background:#fff; }
-    .image-card form { display:flex; flex-direction:column; gap:0.5rem; }
-    .image-card select, .image-card button { width:100%; padding:0.4rem 0.6rem; border-radius:6px; border:1px solid #cbd5f5; font-size:0.9rem; }
-    .image-card button { background:#2563eb; color:#fff; border:none; cursor:pointer; }
-    .image-card button.secondary { background:#fff; color:#1f2937; border:1px solid #cbd5f5; }
-    .image-note { font-size:0.85rem; color:#475569; }
-    
+    .upload-details {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .upload-details h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.1rem;
+      color: #0369a1;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .detail-item {
+      background: #fff;
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #e0f2fe;
+    }
+
+    .detail-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+      font-size: 0.95rem;
+      color: #1e293b;
+      word-break: break-word;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .image-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 0.75rem;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .image-card.assigned {
+      border-color: #2563eb;
+      background: #eef2ff;
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+    }
+
+    .image-card form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .image-card select,
+    .image-card button {
+      width: 100%;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5f5;
+      font-size: 0.9rem;
+    }
+
+    .image-card button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    .image-card button.secondary {
+      background: #fff;
+      color: #1f2937;
+      border: 1px solid #cbd5f5;
+    }
+
+    .image-note {
+      font-size: 0.85rem;
+      color: #475569;
+    }
+
     /* Back button */
-    .back-link { display: inline-flex; align-items: center; gap: 8px; color: #3b82f6; text-decoration: none; font-weight: 600; margin-bottom: 1.5rem; font-size: 0.95rem; }
-    .back-link:hover { color: #2563eb; }
-    
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #3b82f6;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .back-link:hover {
+      color: #2563eb;
+    }
+
     /* Save Form */
-    .save-form { background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:1.25rem; margin-top:1.5rem; }
-    .save-form label { font-weight:600; color:#166534; }
-    .save-form input[type=text] { padding:0.6rem 0.8rem; border:1px solid #86efac; border-radius:6px; width:350px; font-size:1rem; }
-    .save-form button { padding:0.6rem 1.5rem; background:#16a34a; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:1rem; }
-    .save-form button:hover { background:#15803d; }
+    .save-form {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    .save-form label {
+      font-weight: 600;
+      color: #166534;
+    }
+
+    .save-form input[type=text] {
+      padding: 0.6rem 0.8rem;
+      border: 1px solid #86efac;
+      border-radius: 6px;
+      width: 350px;
+      font-size: 1rem;
+    }
+
+    .save-form button {
+      padding: 0.6rem 1.5rem;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .save-form button:hover {
+      background: #15803d;
+    }
   </style>
 </head>
+
 <body>
   <main class="card">
     <a href="/projects" class="back-link">
@@ -60,150 +260,147 @@
       Review the extracted defect data and link images before saving to the database.
     </p>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    <!-- Flash messages handled by base.html Toasts -->
 
     {% if error %}
-      <div class="error">{{ error }}</div>
+    <div class="error">{{ error }}</div>
     {% else %}
-      {% if auto_assigned %}
-        <div class="flash info">Images were automatically matched to defects based on filename/extensible heuristics.</div>
-      {% endif %}
-      
-      <!-- Upload Details Section -->
-      {% if upload_metadata %}
-      <div class="upload-details">
-        <h3>📋 Upload Details</h3>
-        <div class="details-grid">
-          <div class="detail-item">
-            <div class="detail-label">Project Name</div>
-            <div class="detail-value">{{ upload_metadata.project_name or '–' }}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Inspection Date</div>
-            <div class="detail-value">{{ upload_metadata.scan_date or '–' }}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Unit No.</div>
-            <div class="detail-value">{{ upload_metadata.unit_no or '–' }}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Address</div>
-            <div class="detail-value">{{ upload_metadata.address or '–' }}</div>
-          </div>
-          {% if upload_metadata.glb_path %}
-          <div class="detail-item">
-            <div class="detail-label">GLB Model</div>
-            <div class="detail-value">{{ upload_metadata.glb_path.split('/')[-1] }}</div>
-          </div>
-          {% endif %}
-          {% if upload_metadata.notes %}
-          <div class="detail-item" style="grid-column: span 2;">
-            <div class="detail-label">Notes</div>
-            <div class="detail-value">{{ upload_metadata.notes }}</div>
-          </div>
-          {% endif %}
+    {% if auto_assigned %}
+    <div class="flash info">Images were automatically matched to defects based on filename/extensible heuristics.</div>
+    {% endif %}
+
+    <!-- Upload Details Section -->
+    {% if upload_metadata %}
+    <div class="upload-details">
+      <h3>📋 Upload Details</h3>
+      <div class="details-grid">
+        <div class="detail-item">
+          <div class="detail-label">Project Name</div>
+          <div class="detail-value">{{ upload_metadata.project_name or '–' }}</div>
         </div>
+        <div class="detail-item">
+          <div class="detail-label">Inspection Date</div>
+          <div class="detail-value">{{ upload_metadata.scan_date or '–' }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Unit No.</div>
+          <div class="detail-value">{{ upload_metadata.unit_no or '–' }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Address</div>
+          <div class="detail-value">{{ upload_metadata.address or '–' }}</div>
+        </div>
+        {% if upload_metadata.glb_path %}
+        <div class="detail-item">
+          <div class="detail-label">GLB Model</div>
+          <div class="detail-value">{{ upload_metadata.glb_path.split('/')[-1] }}</div>
+        </div>
+        {% endif %}
+        {% if upload_metadata.notes %}
+        <div class="detail-item" style="grid-column: span 2;">
+          <div class="detail-label">Notes</div>
+          <div class="detail-value">{{ upload_metadata.notes }}</div>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
+    </div>
+    {% endif %}
 
-      <h2>Extracted Defects</h2>
-      {% if defects %}
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Description</th>
-              <th>X</th>
-              <th>Y</th>
-              <th>Z</th>
-              <th>Image</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for d in defects %}
-              <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ d.description }}</td>
-                <td>{{ "%.3f"|format(d.x) }}</td>
-                <td>{{ "%.3f"|format(d.y) }}</td>
-                <td>{{ "%.3f"|format(d.z) }}</td>
-                <td>
-                  {% if defect_assignments.get(d.id) %}
-                    {% set assigned_id = defect_assignments.get(d.id) %}
-                    {% for img in image_entries %}
-                      {% if img.id == assigned_id %}
-                        <div>
-                          <img src="{{ img.url }}" alt="Assigned image" style="width:140px; height:90px; object-fit:cover; border:1px solid #d1d5db; border-radius:6px;" />
-                          <div class="image-note">Page {{ img.page or '–' }}</div>
-                        </div>
-                      {% endif %}
-                    {% endfor %}
-                  {% else %}
-                    <span class="image-note">Unassigned</span>
-                  {% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p>No defects were found in the file.</p>
-      {% endif %}
-
-      <h2>Defect Image Matching</h2>
-      {% if image_entries %}
-        <p class="sub">Link extracted PDF photos to the 3D defect markers so the viewer can show context.</p>
-        <div class="image-grid">
-          {% for img in image_entries %}
-            <div class="image-card {% if img.assigned_defect %}assigned{% endif %}">
-              <img src="{{ img.url }}" alt="Extracted defect image" />
-              <div class="image-note">Image ID: {{ img.id }} · Page {{ img.page or '–' }}</div>
-              {% if img.assigned_defect %}
-                <div class="image-note">Assigned to defect {{ img.assigned_defect }}</div>
-                <form method="post" action="{{ url_for('process_data.assign_image_to_defect') }}">
-                  <input type="hidden" name="image_id" value="{{ img.id }}" />
-                  <input type="hidden" name="action" value="unassign" />
-                  <button type="submit" class="secondary">Unassign</button>
-                </form>
-              {% elif defects %}
-                <form method="post" action="{{ url_for('process_data.assign_image_to_defect') }}">
-                  <input type="hidden" name="image_id" value="{{ img.id }}" />
-                  <label for="select-{{ img.id }}" class="image-note">Select defect:</label>
-                  <select id="select-{{ img.id }}" name="defect_id" required>
-                    <option value="" disabled selected>Choose defect…</option>
-                    {% for d in defects %}
-                      <option value="{{ d.id }}">{{ loop.index }} – {{ d.description }}</option>
-                    {% endfor %}
-                  </select>
-                  <button type="submit">Link to defect</button>
-                </form>
-              {% else %}
-                <span class="image-note">Upload a GLB to extract defects before assigning images.</span>
-              {% endif %}
+    <h2>Extracted Defects</h2>
+    {% if defects %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Description</th>
+          <th>X</th>
+          <th>Y</th>
+          <th>Z</th>
+          <th>Image</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in defects %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ d.description }}</td>
+          <td>{{ "%.3f"|format(d.x) }}</td>
+          <td>{{ "%.3f"|format(d.y) }}</td>
+          <td>{{ "%.3f"|format(d.z) }}</td>
+          <td>
+            {% if defect_assignments.get(d.id) %}
+            {% set assigned_id = defect_assignments.get(d.id) %}
+            {% for img in image_entries %}
+            {% if img.id == assigned_id %}
+            <div>
+              <img src="{{ img.url }}" alt="Assigned image"
+                style="width:140px; height:90px; object-fit:cover; border:1px solid #d1d5db; border-radius:6px;" />
+              <div class="image-note">Page {{ img.page or '–' }}</div>
             </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <p>No images were extracted from the uploaded PDF.</p>
-      {% endif %}
+            {% endif %}
+            {% endfor %}
+            {% else %}
+            <span class="image-note">Unassigned</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No defects were found in the file.</p>
+    {% endif %}
 
-      {% if defects %}
-        <h2>Save to Database</h2>
-        <div class="save-form">
-          <form method="post">
-            <label for="scan_name">Scan Name:</label><br>
-            <input type="text" id="scan_name" name="scan_name" value="{{ default_scan_name }}" required style="margin-top:0.5rem;">
-            <button type="submit" name="save_to_db" value="yes" style="margin-left:1rem;">Save Defects to Database</button>
-          </form>
-        </div>
-      {% endif %}
+    <h2>Defect Image Matching</h2>
+    {% if image_entries %}
+    <p class="sub">Link extracted PDF photos to the 3D defect markers so the viewer can show context.</p>
+    <div class="image-grid">
+      {% for img in image_entries %}
+      <div class="image-card {% if img.assigned_defect %}assigned{% endif %}">
+        <img src="{{ img.url }}" alt="Extracted defect image" />
+        <div class="image-note">Image ID: {{ img.id }} · Page {{ img.page or '–' }}</div>
+        {% if img.assigned_defect %}
+        <div class="image-note">Assigned to defect {{ img.assigned_defect }}</div>
+        <form method="post" action="{{ url_for('process_data.assign_image_to_defect') }}">
+          <input type="hidden" name="image_id" value="{{ img.id }}" />
+          <input type="hidden" name="action" value="unassign" />
+          <button type="submit" class="secondary">Unassign</button>
+        </form>
+        {% elif defects %}
+        <form method="post" action="{{ url_for('process_data.assign_image_to_defect') }}">
+          <input type="hidden" name="image_id" value="{{ img.id }}" />
+          <label for="select-{{ img.id }}" class="image-note">Select defect:</label>
+          <select id="select-{{ img.id }}" name="defect_id" required>
+            <option value="" disabled selected>Choose defect…</option>
+            {% for d in defects %}
+            <option value="{{ d.id }}">{{ loop.index }} – {{ d.description }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit">Link to defect</button>
+        </form>
+        {% else %}
+        <span class="image-note">Upload a GLB to extract defects before assigning images.</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>No images were extracted from the uploaded PDF.</p>
+    {% endif %}
+
+    {% if defects %}
+    <h2>Save to Database</h2>
+    <div class="save-form">
+      <form method="post">
+        <label for="scan_name">Scan Name:</label><br>
+        <input type="text" id="scan_name" name="scan_name" value="{{ default_scan_name }}" required
+          style="margin-top:0.5rem;">
+        <button type="submit" name="save_to_db" value="yes" style="margin-left:1rem;">Save Defects to Database</button>
+      </form>
+    </div>
+    {% endif %}
     {% endif %}
   </main>
 </body>
+
 </html>

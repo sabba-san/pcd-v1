@@ -2,17 +2,8 @@
 
 {% block content %}
 <!-- SweetAlert2 CSS success send db -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }} alert-dismissible fade show border-0 mb-4 shadow-sm" role="alert">
-    <i class="bi {{ 'bi-check-circle-fill' if category == 'success' else 'bi-exclamation-triangle-fill' }} me-2"></i>
-    {{ message }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
-{% endfor %}
-{% endif %}
-{% endwith %}
+
+<!-- SweetAlert2 CSS success send db -->
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
@@ -26,7 +17,8 @@
         <div class="row g-4">
 
             <div class="col-md-6">
-                <a href="http://localhost:5002/" class="text-decoration-none" target="_blank">
+                <a href="http://localhost:5002/?project_name={{ project_name }}&defect_count={{ defect_count }}"
+                    class="text-decoration-none" target="_blank">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -78,7 +70,7 @@
 
             <div class="col-md-6">
                 {% if latest_scan_id %}
-                <a href="{{ url_for('module3.visualize', scan_id=latest_scan_id) }}" class="text-decoration-none">
+                <a href="{{ url_for('module3.visualize', project_id=latest_scan_id) }}" class="text-decoration-none">
                     {% else %}
                     <a href="javascript:void(0);" onclick="showNoProjectAlert()" class="text-decoration-none">
                         {% endif %}
@@ -113,6 +105,8 @@
                                 </th>
                                 <th class="py-3 text-white-50 fw-normal small text-uppercase"
                                     style="background-color: #1e293b; border-bottom: 1px solid #475569;">Status</th>
+                                <th class="py-3 text-white-50 fw-normal small text-uppercase"
+                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -120,7 +114,7 @@
                             <tr>
                                 <td class="ps-4 fw-bold text-white"
                                     style="background-color: #334155; border-bottom: none;">
-                                    {{ defect.scan.name if defect.scan else 'No Scan' }}
+                                    {{ defect.project.name if defect.project else 'No Project' }}
                                 </td>
                                 <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">
                                     <div class="text-white">{{ defect.description }}</div>
@@ -140,9 +134,16 @@
                                     <span
                                         class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Resolved</span>
                                     {% else %}
-                                    <span class="badge bg-light text-dark rounded-pill px-3">{{ defect.status
-                                        }}</span>
                                     {% endif %}
+                                </td>
+                                <td style="background-color: #334155; border-bottom: none;">
+                                    <form action="{{ url_for('module3.delete_defect', defect_id=defect.id) }}"
+                                        method="POST" onsubmit="return confirm('Delete this defect?');"
+                                        class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             {% else %}

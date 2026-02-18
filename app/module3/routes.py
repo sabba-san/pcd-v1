@@ -171,11 +171,13 @@ def dashboard():
     activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(5).all()
     
     return render_template(
-        'dashboard.html', 
+        'module3/dashboard_fixed.html', 
         defects=defects, 
         latest_scan=latest_project, # Variable name preservation for template
         latest_scan_id=latest_scan_id,
-        activity=activities
+        activity=activities,
+        defect_count=len(defects),
+        project_name=latest_project.name if latest_project else 'No Project'
     )
 
 @bp.route('/developer_portal')
@@ -295,31 +297,36 @@ def api_project_defects(project_id):
         
     if request.method == 'POST':
         data = request.json
-        new_defect = Defect(
-            project_id=project_id, # Linking to Project now
-            user_id=current_user.id,
-            description=data.get('description'),
-            defect_type=data.get('defect_type'),
-            severity=data.get('severity'),
-            status=data.get('status', 'Reported'),
-            x_coord=data.get('x'),
-            y_coord=data.get('y'),
-            z_coord=data.get('z'),
-            location="3D Pin" # Default location for pins
-        )
-        db.session.add(new_defect)
-        db.session.commit()
-        
-        # Log it
-        log = ActivityLog(
-            defect_id=new_defect.id,
-            action=f"Defect pined on 3D model by {current_user.username}",
-            new_value="Reported"
-        )
-        db.session.add(log)
-        db.session.commit()
-        
-        return jsonify(new_defect.to_dict()), 201
+        try:
+            new_defect = Defect(
+                project_id=project_id, # Linking to Project now
+                user_id=current_user.id,
+                description=data.get('description'),
+                defect_type=data.get('defect_type'),
+                severity=data.get('severity'),
+                status=data.get('status', 'Reported'),
+                x_coord=float(data.get('x', 0.0)), # Ensure float
+                y_coord=float(data.get('y', 0.0)),
+                z_coord=float(data.get('z', 0.0)),
+                location="3D Pin" # Default location for pins
+            )
+            db.session.add(new_defect)
+            db.session.commit()
+            
+            # Log it
+            log = ActivityLog(
+                defect_id=new_defect.id,
+                action=f"Defect pined on 3D model by {current_user.username}",
+                new_value="Reported"
+            )
+            db.session.add(log)
+            db.session.commit()
+            
+            return jsonify(new_defect.to_dict()), 201
+        except Exception as e:
+            db.session.rollback()
+            print(f"ERROR saving defect: {str(e)}")
+            return jsonify({'error': str(e)}), 500
 
 @bp.route('/api/defects/<int:defect_id>', methods=['PUT', 'DELETE'])
 @login_required
@@ -368,7 +375,12 @@ def delete_project(project_id):
         u.project_id = None
     
     # 2. Delete all defects associated with this project
-    Defect.query.filter_by(project_id=project_id).delete()
+    defects = Defect.query.filter_by(project_id=project_id).all()
+    for d in defects:
+        # Delete activity logs for each defect
+        ActivityLog.query.filter_by(defect_id=d.id).delete()
+        # Delete the defect itself
+        db.session.delete(d)
     
     # 3. Delete the project itself
     db.session.delete(project)
@@ -377,4 +389,23 @@ def delete_project(project_id):
     flash(f"Project '{project.name}' and all associated data permanently deleted.", "success")
         
     return redirect(url_for('module3.list_projects'))
+
+@bp.route('/delete_defect/<int:defect_id>', methods=['POST'])
+@login_required
+def delete_defect(defect_id):
+    defect = Defect.query.get_or_404(defect_id)
+    
+    # Check permission (Homeowner can only delete own defects)
+    if current_user.role == 'user' and defect.user_id != current_user.id:
+        flash("Unauthorized action.", "danger")
+        return redirect(url_for('module3.dashboard'))
+
+    # Delete related logs first
+    ActivityLog.query.filter_by(defect_id=defect.id).delete()
+    
+    db.session.delete(defect)
+    db.session.commit()
+    
+    flash("Defect deleted successfully.", "success")
+    return redirect(url_for('module3.dashboard'))
 
