@@ -3,13 +3,13 @@ import os
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from app.extensions import db
-from app.models import Scan, Defect
+from app.models import Project, Defect
 
 developer_bp = Blueprint("developer", __name__)
 
 
 def _load_latest_upload_metadata():
-    """Load latest upload metadata (address, unit, scan date) for display."""
+    """Load latest upload metadata (address, unit, project date) for display."""
     upload_root = os.path.join(current_app.instance_path, "uploads", "upload_data")
     metadata_path = os.path.join(upload_root, "latest_upload.json")
     if not os.path.exists(metadata_path):
@@ -28,52 +28,52 @@ def dashboard():
     sort = request.args.get("sort", "recent")
     status_filter = request.args.get("status_filter", "all")
     date_range = request.args.get("date_range", "all")
-    order_clause = Scan.created_at.desc() if sort == "recent" else Scan.created_at.asc()
+    order_clause = Project.created_at.desc() if sort == "recent" else Project.created_at.asc()
 
-    # Get all scans with defect counts
+    # Get all projects with defect counts
     query = db.session.query(
-        Scan,
+        Project,
         db.func.count(Defect.id).label('defect_count'),
         db.func.coalesce(db.func.sum(db.case((Defect.status == 'Reported', 1), else_=0)), 0).label('reported_count'),
         db.func.coalesce(db.func.sum(db.case((Defect.status == 'Under Review', 1), else_=0)), 0).label('review_count'),
         db.func.coalesce(db.func.sum(db.case((Defect.status == 'Fixed', 1), else_=0)), 0).label('fixed_count')
-    ).outerjoin(Defect).group_by(Scan.id).order_by(order_clause)
+    ).outerjoin(Defect).group_by(Project.id).order_by(order_clause)
     
     # Apply date range filter
     from datetime import datetime, timedelta
     if date_range == "week":
         cutoff = datetime.now() - timedelta(days=7)
-        query = query.filter(Scan.created_at >= cutoff)
+        query = query.filter(Project.created_at >= cutoff)
     elif date_range == "month":
         cutoff = datetime.now() - timedelta(days=30)
-        query = query.filter(Scan.created_at >= cutoff)
+        query = query.filter(Project.created_at >= cutoff)
     elif date_range == "3months":
         cutoff = datetime.now() - timedelta(days=90)
-        query = query.filter(Scan.created_at >= cutoff)
+        query = query.filter(Project.created_at >= cutoff)
     
-    scans = query.all()
+    projects = query.all()
     
     # Apply status filter in Python (simpler than SQL HAVING clause)
     if status_filter != "all":
-        filtered_scans = []
-        for scan_data in scans:
-            scan, defect_count, reported, review, fixed = scan_data
+        filtered_projects = []
+        for project_data in projects:
+            project, defect_count, reported, review, fixed = project_data
             if status_filter == "complete" and defect_count > 0 and fixed == defect_count:
-                filtered_scans.append(scan_data)
+                filtered_projects.append(project_data)
             elif status_filter == "in_progress" and review > 0:
-                filtered_scans.append(scan_data)
+                filtered_projects.append(project_data)
             elif status_filter == "started" and reported > 0 and review == 0 and fixed == 0:
-                filtered_scans.append(scan_data)
-        scans = filtered_scans
+                filtered_projects.append(project_data)
+        projects = filtered_projects
 
-    total_defects = sum(row.defect_count for row in scans)
-    total_reported = sum(row.reported_count for row in scans)
-    total_review = sum(row.review_count for row in scans)
-    total_fixed = sum(row.fixed_count for row in scans)
+    total_defects = sum(row.defect_count for row in projects)
+    total_reported = sum(row.reported_count for row in projects)
+    total_review = sum(row.review_count for row in projects)
+    total_fixed = sum(row.fixed_count for row in projects)
 
     return render_template(
         "developer/dashboard.html",
-        scans=scans,
+        projects=scans,
         total_defects=total_defects,
         total_reported=total_reported,
         total_review=total_review,
@@ -84,23 +84,23 @@ def dashboard():
     )
 
 
-@developer_bp.route("/developer/scan/<int:scan_id>", methods=["GET"])
-def view_scan(scan_id):
+@developer_bp.route("/developer/project/<int:project_id>", methods=["GET"])
+def view_project(project_id):
     """View detailed defects for a specific scan"""
-    scan = Scan.query.get_or_404(scan_id)
-    defects = Defect.query.filter_by(scan_id=scan_id).order_by(Defect.created_at.desc()).all()
+    project = Project.query.get_or_404(project_id)
+    defects = Defect.query.filter_by(project_id=project_id).order_by(Defect.created_at.desc()).all()
     upload_metadata = _load_latest_upload_metadata()
 
-    return render_template("developer/scan_detail.html", scan=scan, defects=defects, upload_metadata=upload_metadata)
+    return render_template("developer/scan_detail.html", project=project, defects=defects, upload_metadata=upload_metadata)
 
 
 @developer_bp.route("/developer/defect/<int:defect_id>/update", methods=["POST"])
 def update_defect_progress(defect_id):
     """Update defect status/progress"""
-    from app.models import ActivityLog
+
     
     defect = Defect.query.get_or_404(defect_id)
-    scan_id = defect.scan_id
+    project_id = defect.project_id
     
     new_status = request.form.get("status")
     new_priority = request.form.get("priority")
@@ -112,26 +112,7 @@ def update_defect_progress(defect_id):
     if new_priority and new_priority not in ['Urgent', 'High', 'Medium', 'Low']:
         return jsonify({"success": False, "message": "Invalid priority"}), 400
 
-    # Log changes
-    if new_status and new_status != defect.status:
-        activity = ActivityLog(
-            defect_id=defect_id,
-            scan_id=scan_id,
-            action='status updated',
-            old_value=defect.status,
-            new_value=new_status
-        )
-        db.session.add(activity)
-    
-    if new_priority and new_priority != defect.priority:
-        activity = ActivityLog(
-            defect_id=defect_id,
-            scan_id=scan_id,
-            action='priority updated',
-            old_value=defect.priority or 'Medium',
-            new_value=new_priority
-        )
-        db.session.add(activity)
+
     
     # Update defect
     if new_status:
@@ -190,12 +171,12 @@ def serve_defect_image(image_path: str):
     return send_from_directory(image_dir, filename)
 
 
-@developer_bp.route("/developer/scan/<int:scan_id>/bulk-update", methods=["POST"])
-def bulk_update_defects(scan_id):
+@developer_bp.route("/developer/project/<int:project_id>/bulk-update", methods=["POST"])
+def bulk_update_defects(project_id):
     """Bulk update multiple defects at once"""
-    from app.models import ActivityLog
+
     
-    scan = Scan.query.get_or_404(scan_id)
+    project = Project.query.get_or_404(project_id)
     
     defect_ids = request.form.getlist("defect_ids[]")
     new_status = request.form.get("bulk_status")
@@ -203,42 +184,22 @@ def bulk_update_defects(scan_id):
     
     if not defect_ids:
         flash("⚠ No defects selected", "error")
-        return redirect(url_for('developer.view_scan', scan_id=scan_id))
+        return redirect(url_for('developer.view_project', project_id=project_id))
     
     if new_status and new_status not in ['Reported', 'Under Review', 'Fixed']:
         flash("⚠ Invalid status", "error")
-        return redirect(url_for('developer.view_scan', scan_id=scan_id))
+        return redirect(url_for('developer.view_project', project_id=project_id))
     
     if new_priority and new_priority not in ['Urgent', 'High', 'Medium', 'Low']:
         flash("⚠ Invalid priority", "error")
-        return redirect(url_for('developer.view_scan', scan_id=scan_id))
+        return redirect(url_for('developer.view_project', project_id=project_id))
     
     # Update all selected defects
     updated_count = 0
     for defect_id in defect_ids:
-        defect = Defect.query.filter_by(id=int(defect_id), scan_id=scan_id).first()
+        defect = Defect.query.filter_by(id=int(defect_id), project_id=project_id).first()
         if defect:
-            # Log status change
-            if new_status and new_status != defect.status:
-                activity = ActivityLog(
-                    defect_id=defect.id,
-                    scan_id=scan_id,
-                    action='status updated (bulk)',
-                    old_value=defect.status,
-                    new_value=new_status
-                )
-                db.session.add(activity)
-            
-            # Log priority change
-            if new_priority and new_priority != defect.priority:
-                activity = ActivityLog(
-                    defect_id=defect.id,
-                    scan_id=scan_id,
-                    action='priority updated (bulk)',
-                    old_value=defect.priority or 'Medium',
-                    new_value=new_priority
-                )
-                db.session.add(activity)
+
             
             if new_status:
                 defect.status = new_status
@@ -248,18 +209,18 @@ def bulk_update_defects(scan_id):
     
     db.session.commit()
     flash(f"✓ Successfully updated {updated_count} defect(s)", "success")
-    return redirect(url_for('developer.view_scan', scan_id=scan_id))
+    return redirect(url_for('developer.view_project', project_id=project_id))
 
 
-@developer_bp.route("/developer/scan/<int:scan_id>/export-csv", methods=["GET"])
-def export_scan_csv(scan_id):
-    """Export scan defects to CSV"""
+@developer_bp.route("/developer/project/<int:project_id>/export-csv", methods=["GET"])
+def export_project_csv(project_id):
+    """Export project defects to CSV"""
     from flask import Response
     import csv
     from io import StringIO
     
-    scan = Scan.query.get_or_404(scan_id)
-    defects = Defect.query.filter_by(scan_id=scan_id).order_by(Defect.created_at.desc()).all()
+    project = Project.query.get_or_404(project_id)
+    defects = Defect.query.filter_by(project_id=project_id).order_by(Defect.created_at.desc()).all()
     
     # Create CSV
     output = StringIO()
@@ -287,7 +248,7 @@ def export_scan_csv(scan_id):
     return Response(
         output.getvalue(),
         mimetype='text/csv',
-        headers={'Content-Disposition': f'attachment; filename={scan.name}_defects.csv'}
+        headers={'Content-Disposition': f'attachment; filename={project.name}_defects.csv'}
     )
 
 
@@ -296,13 +257,13 @@ def export_scan_csv(scan_id):
 # (Team assignment removed)
 
 
-@developer_bp.route("/developer/scan/<int:scan_id>/charts-data", methods=["GET"])
-def get_charts_data(scan_id):
+@developer_bp.route("/developer/project/<int:project_id>/charts-data", methods=["GET"])
+def get_charts_data(project_id):
     """Get data for charts (status, priority, trend)"""
     from datetime import datetime, timedelta
     
-    scan = Scan.query.get_or_404(scan_id)
-    defects = Defect.query.filter_by(scan_id=scan_id).all()
+    project = Project.query.get_or_404(project_id)
+    defects = Defect.query.filter_by(project_id=project_id).all()
     
     # Status distribution
     status_counts = {}
@@ -334,11 +295,11 @@ def get_charts_data(scan_id):
     })
 
 
-@developer_bp.route("/developer/scan/<int:scan_id>/heatmap-data", methods=["GET"])
-def get_heatmap_data(scan_id):
+@developer_bp.route("/developer/project/<int:project_id>/heatmap-data", methods=["GET"])
+def get_heatmap_data(project_id):
     """Get heatmap data by location"""
-    scan = Scan.query.get_or_404(scan_id)
-    defects = Defect.query.filter_by(scan_id=scan_id).all()
+    project = Project.query.get_or_404(project_id)
+    defects = Defect.query.filter_by(project_id=project_id).all()
     
     # Count defects by location
     location_counts = {}
@@ -365,10 +326,10 @@ def get_heatmap_data(scan_id):
 @developer_bp.route("/developer/recent-activity", methods=["GET"])
 def get_recent_activity():
     """Get recent activity across all scans"""
-    from app.models import ActivityLog
+
     
     # Get last 20 activities
-    activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(20).all()
+    activities = []
     
     return jsonify([{
         'id': a.id,
@@ -376,6 +337,6 @@ def get_recent_activity():
         'old_value': a.old_value,
         'new_value': a.new_value,
         'defect_id': a.defect_id,
-        'scan_id': a.scan_id,
+        'project_id': a.project_id,
         'timestamp': a.timestamp.strftime('%Y-%m-%d %H:%M:%S') if a.timestamp else ''
     } for a in activities])

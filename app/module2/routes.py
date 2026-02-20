@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.module3.extensions import db
-from app.models import Defect, ActivityLog, Project
+from app.models import Defect, Project
 
 # Define the Blueprint
 bp = Blueprint('module2', __name__, url_prefix='/module2')
@@ -78,14 +78,7 @@ def insert_defect():
             db.session.add(new_defect)
             db.session.flush() # Get ID
             
-            # 4. Log the activity
-            log = ActivityLog(
-                defect_id=new_defect.id,
-                # scan_id=scan.id, # Removed
-                action=f"Claim submitted by {current_user.username}",
-                new_value="Reported"
-            )
-            db.session.add(log)
+
             
             db.session.commit()
             
@@ -181,13 +174,7 @@ def api_add_defect():
             db.session.add(new_defect)
             db.session.flush() # Get ID
             
-            # 6. Log Activity
-            log = ActivityLog(
-                defect_id=new_defect.id,
-                action="Defect created via API",
-                new_value="Reported"
-            )
-            db.session.add(log)
+
             db.session.commit()
             
             return jsonify({

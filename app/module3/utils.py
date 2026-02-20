@@ -1,7 +1,7 @@
 import os
 from fpdf import FPDF
 from flask import current_app
-from app.module2.models import Scan, User, Defect
+from app.models import Project, User, Defect
 
 class ComplianceReport(FPDF):
     def header(self):
@@ -17,13 +17,13 @@ class ComplianceReport(FPDF):
         self.set_font('Arial', 'I', 8)
         self.cell(0, 10, f'Page {self.page_no()}/{{nb}}', 0, 0, 'C')
 
-def generate_pdf(scan_id):
-    scan = Scan.query.get(scan_id)
+def generate_pdf(project_id):
+    project = Project.query.get(project_id)
     if not scan:
         return None
         
-    user = User.query.get(scan.user_id) if scan.user_id else None
-    defects = Defect.query.filter_by(scan_id=scan.id).all()
+    user = User.query.get(project.user_id) if project.user_id else None
+    defects = Defect.query.filter_by(project_id=project.id).all()
     
     pdf = ComplianceReport()
     pdf.alias_nb_pages()
@@ -43,19 +43,19 @@ def generate_pdf(scan_id):
     
     # Row 2
     pdf.cell(col_width, line_height, f"Phone: {user.phone_number if user else 'N/A'}", 0)
-    pdf.cell(col_width, line_height, f"Project: {scan.name.split('-')[0] if scan.name else 'N/A'}", 0, 1)
+    pdf.cell(col_width, line_height, f"Project: {project.name.split('-')[0] if project.name else 'N/A'}", 0, 1)
     
     # Row 3
-    pdf.cell(col_width, line_height, f"Unit No: {scan.name.split('-')[-1].strip() if '-' in scan.name else 'N/A'}", 0)
-    pdf.cell(col_width, line_height, f"Parcel No: {scan.parcel_number or 'N/A'}", 0, 1)
+    pdf.cell(col_width, line_height, f"Unit No: {project.name.split('-')[-1].strip() if '-' in project.name else 'N/A'}", 0)
+    pdf.cell(col_width, line_height, f"Parcel No: {project.parcel_number or 'N/A'}", 0, 1)
     
     # Row 4
-    pdf.cell(col_width, line_height, f"Grant No: {scan.grant_number or 'N/A'}", 0)
-    pdf.cell(col_width, line_height, f"Bank: {scan.bank_name or 'N/A'}", 0, 1)
+    pdf.cell(col_width, line_height, f"Grant No: {project.grant_number or 'N/A'}", 0)
+    pdf.cell(col_width, line_height, f"Bank: {project.bank_name or 'N/A'}", 0, 1)
     
     # Row 5
-    vp = scan.vp_date.strftime('%d/%m/%Y') if scan.vp_date else 'N/A'
-    ccc = scan.ccc_date.strftime('%d/%m/%Y') if scan.ccc_date else 'N/A'
+    vp = project.vp_date.strftime('%d/%m/%Y') if project.vp_date else 'N/A'
+    ccc = project.ccc_date.strftime('%d/%m/%Y') if project.ccc_date else 'N/A'
     pdf.cell(col_width, line_height, f"VP Date: {vp}", 0)
     pdf.cell(col_width, line_height, f"CCC Date: {ccc}", 0, 1)
     
@@ -108,7 +108,7 @@ def generate_pdf(scan_id):
     reports_dir = os.path.join(current_app.root_path, 'static', 'reports')
     os.makedirs(reports_dir, exist_ok=True)
     
-    filename = f"DLP_Report_{scan.id}.pdf"
+    filename = f"DLP_Report_{project.id}.pdf"
     filepath = os.path.join(reports_dir, filename)
     
     pdf.output(filepath)

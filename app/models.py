@@ -4,23 +4,24 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class Project(db.Model):
-    """Represents a Housing Area / Development Project"""
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True) # e.g. 'Taman Merpauh'
+    name = db.Column(db.String(100), nullable=False)
     
-    # Developer Details
-    developer_name = db.Column(db.String(100))
-    developer_ssm = db.Column(db.String(50))
+    developer_name = db.Column(db.Text)
+    developer_ssm = db.Column(db.Text)
     developer_address = db.Column(db.Text)
     
-    # Master 3D Model (Replaces 'Scan' logic for the whole project)
-    master_model_path = db.Column(db.String(500)) 
+    master_model_path = db.Column(db.String(500))
     
+    # Timestamps
+    from datetime import datetime
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
     # Relationships
     users = db.relationship('User', backref='project', lazy=True)
+    claims = db.relationship('TribunalClaim', backref='project', lazy=True, cascade="all, delete-orphan")
     defects = db.relationship('Defect', backref='project', lazy=True, cascade="all, delete-orphan")
 
 class User(UserMixin, db.Model):
@@ -30,26 +31,31 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(50), default='homeowner') # 'homeowner', 'developer', 'lawyer'
+    role = db.Column(db.String(50))
     
-    # --- Role Specific Fields ---
-    
-    # Homeowner
-    full_name = db.Column(db.String(100)) # As per IC
-    ic_number = db.Column(db.String(20))
-    phone_number = db.Column(db.String(20))
+    # Legal/Homeowner
+    full_name = db.Column(db.Text)
+    ic_number = db.Column(db.Text)
+    phone_number = db.Column(db.Text)
     correspondence_address = db.Column(db.Text)
+    unit_no = db.Column(db.String(50))
     
-    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True) # Link to their housing area
+    # Tribunal Info
+    tribunal_city = db.Column(db.String(100))
+    tribunal_state = db.Column(db.String(100))
     
-    # Developer
+    # Other Roles
     company_name = db.Column(db.String(100))
-    company_reg_no = db.Column(db.String(50)) # SSM
-    company_address = db.Column(db.Text)
-    
-    # Lawyer
+    company_reg_no = db.Column(db.String(50))
     firm_name = db.Column(db.String(100))
-    bar_council_id = db.Column(db.String(50))
+    
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True)
+
+    # Relationships
+    claims = db.relationship('TribunalClaim', backref='user', lazy=True)
+    defects = db.relationship('Defect', backref='user', lazy=True)
+    reports = db.relationship('GeneratedReport', backref='user', lazy=True)
+    chats = db.relationship('ChatHistory', backref='user', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -59,73 +65,81 @@ class User(UserMixin, db.Model):
 
     @property
     def project_name(self):
-        # Backward compatibility helper
         return self.project.name if self.project else None
 
-class Defect(db.Model):
-    """The Bridge between 3D Data and Reporting"""
-    __tablename__ = 'defects'
+class TribunalClaim(db.Model):
+    __tablename__ = 'tribunal_claims'
     id = db.Column(db.Integer, primary_key=True)
-    
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    user = db.relationship('User', backref='defects', lazy=True)
-    
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True)
     
-    # Module 2 Data (3D & Location)
-    image_path = db.Column(db.String(500)) 
-    scan_path = db.Column(db.String(500)) # Individual unit scan if applicable, else usage of master
-    x_coord = db.Column(db.Float, default=0.0)
-    y_coord = db.Column(db.Float, default=0.0)
-    z_coord = db.Column(db.Float, default=0.0)
-    element = db.Column(db.String(100)) # Wall, Floor, Ceiling
-    
-    # Module 3 Data (Reporting & Status)
-    description = db.Column(db.Text)
-    location = db.Column(db.String(100)) # Unit No / Room Name
-    defect_type = db.Column(db.String(50), default='Unknown')
-    severity = db.Column(db.String(20), default='Medium')
-    status = db.Column(db.String(50), default='Pending') # Pending, Verified, Rectified
-    estimated_cost = db.Column(db.Float)
-    scheduled_date = db.Column(db.Date)
+    claim_number = db.Column(db.String(100), unique=True)
+    total_claim_amount = db.Column(db.Float, default=0.0)
+    filing_date = db.Column(db.Date)
+    status = db.Column(db.String(50), default='Draft')
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Activity Log Relationship
-    activities = db.relationship('ActivityLog', backref='defect', lazy=True, cascade="all, delete-orphan")
+    # Relationships
+    defects = db.relationship('Defect', backref='claim', lazy=True)
+    reports = db.relationship('GeneratedReport', backref='claim', lazy=True)
+
+class Defect(db.Model):
+    __tablename__ = 'defects'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True)
+    claim_id = db.Column(db.Integer, db.ForeignKey('tribunal_claims.id'), nullable=True)
+    
+    # 3D Data
+    image_path = db.Column(db.String(500))
+    scan_path = db.Column(db.String(500))
+    x_coord = db.Column(db.Float)
+    y_coord = db.Column(db.Float)
+    z_coord = db.Column(db.Float)
+    element = db.Column(db.String(100))
+    
+    # Reporting Data
+    title = db.Column(db.Text)
+    description = db.Column(db.Text)
+    status = db.Column(db.String(50), default='Pending')
+    estimated_cost = db.Column(db.Float)
+    scheduled_date = db.Column(db.Date)
+    
+    reported_date = db.Column(db.Date)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self):
         return {
             'id': self.id,
-            'x': self.x_coord,
-            'y': self.y_coord,
-            'z': self.z_coord,
+            'x_coord': self.x_coord,
+            'y_coord': self.y_coord,
+            'z_coord': self.z_coord,
+            'title': self.title,
             'description': self.description,
             'status': self.status,
-            'defect_type': self.defect_type,
-            'severity': self.severity,
-            'image_path': self.image_path
+            'image_path': self.image_path,
+            'element': self.element
         }
 
-class ActivityLog(db.Model):
-    __tablename__ = 'activity_logs'
+class GeneratedReport(db.Model):
+    __tablename__ = 'generated_reports'
     id = db.Column(db.Integer, primary_key=True)
-    defect_id = db.Column(db.Integer, db.ForeignKey('defects.id'))
-    action = db.Column(db.String(255), nullable=False) 
-    old_value = db.Column(db.String(255)) 
-    new_value = db.Column(db.String(255)) 
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    claim_id = db.Column(db.Integer, db.ForeignKey('tribunal_claims.id'), nullable=True)
+    
+    report_type = db.Column(db.String(100))
+    file_path = db.Column(db.String(500))
+    generated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class ChatHistory(db.Model):
     __tablename__ = 'chat_history'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
     user_message = db.Column(db.Text)
     bot_response = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    user = db.relationship('User', backref='chats', lazy=True)
-    
-# Keep Scan for backward compatibility if needed, or remove. 
-# Plan says remove, but 'Defect' model above replaces 'Scan' dependency with 'Project'.

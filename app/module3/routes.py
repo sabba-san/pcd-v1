@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.module3.extensions import db
-from app.models import Defect, ActivityLog, Project, User
+from app.models import Defect, Project, User
 
 bp = Blueprint('module3', __name__, url_prefix='/module3')
 
@@ -106,7 +106,7 @@ def serve_model(project_id):
 @bp.route('/profile')
 @login_required
 def profile():
-    activity_count = ActivityLog.query.count() # Filter by user if needed?
+    activity_count = 0 # ActivityLog removed
     return render_template('profile.html', user=current_user, activity_count=activity_count)
 
 @bp.route('/settings', methods=['GET', 'POST'])
@@ -168,7 +168,7 @@ def dashboard():
     latest_scan_id = latest_project.id if latest_project else None
     
     # 4. Fetch Recent Activity
-    activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(5).all()
+    activities = []
     
     return render_template(
         'module3/dashboard_fixed.html', 
@@ -263,13 +263,7 @@ def update_status(id, new_status):
     defect = Defect.query.get_or_404(id)
     defect.status = new_status
     
-    log = ActivityLog(
-        defect_id=defect.id,
-        action=f"Status updated to {new_status} by {current_user.username}",
-        old_value=defect.status,
-        new_value=new_status
-    )
-    db.session.add(log)
+
     db.session.commit()
     
     flash(f"Defect status updated to {new_status}", "success")
@@ -313,13 +307,7 @@ def api_project_defects(project_id):
             db.session.add(new_defect)
             db.session.commit()
             
-            # Log it
-            log = ActivityLog(
-                defect_id=new_defect.id,
-                action=f"Defect pined on 3D model by {current_user.username}",
-                new_value="Reported"
-            )
-            db.session.add(log)
+
             db.session.commit()
             
             return jsonify(new_defect.to_dict()), 201
@@ -337,14 +325,7 @@ def api_update_defect(defect_id):
         data = request.json
         
         # Track changes (simple version)
-        if data.get('status') and data.get('status') != defect.status:
-             log = ActivityLog(
-                defect_id=defect.id,
-                action=f"Status changed to {data.get('status')} via 3D Viewer",
-                old_value=defect.status,
-                new_value=data.get('status')
-             )
-             db.session.add(log)
+
         
         if 'description' in data: defect.description = data['description']
         if 'defect_type' in data: defect.defect_type = data['defect_type']
@@ -378,7 +359,7 @@ def delete_project(project_id):
     defects = Defect.query.filter_by(project_id=project_id).all()
     for d in defects:
         # Delete activity logs for each defect
-        ActivityLog.query.filter_by(defect_id=d.id).delete()
+
         # Delete the defect itself
         db.session.delete(d)
     
@@ -401,7 +382,7 @@ def delete_defect(defect_id):
         return redirect(url_for('module3.dashboard'))
 
     # Delete related logs first
-    ActivityLog.query.filter_by(defect_id=defect.id).delete()
+
     
     db.session.delete(defect)
     db.session.commit()

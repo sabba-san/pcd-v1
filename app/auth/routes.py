@@ -70,11 +70,9 @@ def register():
             # Developer
             company_name=company_name,
             company_reg_no=developer_ssm,
-            company_address=developer_address, # reusing this field if we want, or map to correspondence
             
             # Lawyer
-            firm_name=firm_name,
-            bar_council_id=bar_council_id
+            firm_name=firm_name
         )
         new_user.set_password(password)
         
