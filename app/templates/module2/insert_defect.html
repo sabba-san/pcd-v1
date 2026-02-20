@@ -213,8 +213,7 @@
         // Camera
         camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
         camera.attachControl(canvas, true);
-        // Disable scroll zoom interactions to prevent page scroll hijacking
-        camera.inputs.remove(camera.inputs.attached.mousewheel);
+        // Enabled scroll zoom interactions
         camera.wheelPrecision = 50;
         camera.minZ = 0.1;
 
@@ -245,7 +244,8 @@
             currentMarker.dispose();
         }
 
-        currentMarker = BABYLON.MeshBuilder.CreateSphere("newDefect", { diameter: 0.25 }, scene);
+        const markerDiameter = window.modelMaxDimension ? Math.max(0.1, Math.min(window.modelMaxDimension * 0.02, 5.0)) : 0.25;
+        currentMarker = BABYLON.MeshBuilder.CreateSphere("newDefect", { diameter: markerDiameter }, scene);
         currentMarker.position = point;
 
         const mat = new BABYLON.StandardMaterial("newMat", scene);
@@ -269,15 +269,37 @@
         }
 
         try {
-            // Dispose old meshes except markers/camera/light if needed
-            // Actually, keep it simple: import into scene. 
+            // Import into scene. 
             const result = await BABYLON.SceneLoader.ImportMeshAsync("", "", url, scene, undefined, ".glb");
 
-            // Focus camera on model
+            // Focus camera on model and Auto-frame
             if (result.meshes.length > 0) {
-                const bounds = result.meshes[0].getHierarchyBoundingVectors();
-                const center = bounds.max.add(bounds.min).scale(0.5);
-                camera.setTarget(center);
+                let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+                result.meshes.forEach(mesh => {
+                    if (mesh.getBoundingInfo && mesh.name !== '__root__') {
+                        mesh.computeWorldMatrix(true);
+                        const boundingBox = mesh.getBoundingInfo().boundingBox;
+                        min = BABYLON.Vector3.Minimize(min, boundingBox.minimumWorld);
+                        max = BABYLON.Vector3.Maximize(max, boundingBox.maximumWorld);
+                    }
+                });
+
+                const center = min.add(max).scale(0.5);
+                const size = max.subtract(min);
+                const maxDimension = Math.max(size.x, Math.max(size.y, size.z));
+
+                if (maxDimension > 0 && maxDimension < 100000) {
+                    camera.target = center;
+                    camera.radius = maxDimension * 1.5;
+                    camera.wheelPrecision = 50 / maxDimension;
+                    camera.minZ = maxDimension * 0.001;
+                    camera.maxZ = maxDimension * 10;
+
+                    // Expose max dimension globally for marker scaling
+                    window.modelMaxDimension = maxDimension;
+                }
             }
         } catch (e) {
             console.error("Error loading model:", e);
@@ -291,7 +313,8 @@
         }
 
         EXISTING_DEFECTS.forEach(d => {
-            const sphere = BABYLON.MeshBuilder.CreateSphere("m_" + d.id, { diameter: 0.2 }, scene);
+            const markerDiameter = window.modelMaxDimension ? Math.max(0.1, Math.min(window.modelMaxDimension * 0.02, 5.0)) : 0.2;
+            const sphere = BABYLON.MeshBuilder.CreateSphere("m_" + d.id, { diameter: markerDiameter }, scene);
             sphere.position = new BABYLON.Vector3(d.x, d.y, d.z);
 
             const mat = new BABYLON.StandardMaterial("oldMat_" + d.id, scene);

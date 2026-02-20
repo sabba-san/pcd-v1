@@ -99,11 +99,14 @@ class Defect(db.Model):
     y_coord = db.Column(db.Float)
     z_coord = db.Column(db.Float)
     element = db.Column(db.String(100))
+    location = db.Column(db.String(255))
     
     # Reporting Data
     title = db.Column(db.Text)
     description = db.Column(db.Text)
     status = db.Column(db.String(50), default='Pending')
+    defect_type = db.Column(db.String(100))
+    severity = db.Column(db.String(50))
     estimated_cost = db.Column(db.Float)
     scheduled_date = db.Column(db.Date)
     
@@ -121,8 +124,11 @@ class Defect(db.Model):
             'title': self.title,
             'description': self.description,
             'status': self.status,
+            'defect_type': self.defect_type,
+            'severity': self.severity,
             'image_path': self.image_path,
-            'element': self.element
+            'element': self.element,
+            'location': self.location
         }
 
 class GeneratedReport(db.Model):

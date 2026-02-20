@@ -1,0 +1,26 @@
+# Integration of 3D Defect Tracking Updates
+
+We successfully integrated Imran's 3D defect tracking functionality into the central Microservices architecture and resolved several UI/UX issues.
+
+## 1. Dependency Updates
+Added new dependencies required for 3D GLB processing and PDF generation to `requirements.txt`:
+- `pygltflib==1.16.5`
+- `pypdf>=4.1.0`
+- `Pillow>=10.0.0`
+
+## 2. Database Models Integration 
+- Retained the central `app/models.py` to preserve Module 3 legal reporting requirements.
+- Adapted the new 3D code to use the existing `Project`, `User`, and `Defect` models (replacing Imran's `Scan` model references).
+
+## 3. Backend Routing & API Fixes
+- Added `glb_snapshot.py` to `app/utils/` to handle 3D coordinate processing.
+- Updated the API endpoints in `app/module3/routes.py` (`api_project_defects`/`api_update_defect`):
+  - Fixed infinite loading spinners by exactly matching the JSON payload format the frontend expects.
+  - Added full support for recording exact X, Y, Z coordinates for newly submitted defects.
+
+## 4. 3D Viewer UI/UX Overhaul (`visualize.html`)
+- **Restored "Add Defect" Functionality:** Added an Action toolbar with a `+` button to toggle the Add Defect mode.
+- **Ghost Marker:** Added a red translucent sphere that tracks the cursor over the 3D model, allowing accurate defect placement.
+- **Fixed Disappearing Markers:** Overhauled `renderDefectMarkers`. It now defaults to the database's exact XYZ coordinates for new defects, but safely falls back to embedded GLB snapshot meshes for older defects that lacked coordinates. 
+- **Fixed Navigation:** Restored and fixed broken "Projects" and "Visualize" sidebar links to direct the user back to their dashboard. 
+- **Fixed Toolbar Layout:** Rearranged the CSS/HTML to ensure the new Action buttons aren't hidden by the statistics panel.

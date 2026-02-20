@@ -17,3 +17,5 @@ gunicorn
 python-dateutil
 numpy
 pandas
+pygltflib==1.16.5
+pypdf>=4.1.0

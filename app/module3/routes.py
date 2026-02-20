@@ -287,7 +287,19 @@ def validate_all():
 def api_project_defects(project_id):
     if request.method == 'GET':
         defects = Defect.query.filter_by(project_id=project_id).all()
-        return jsonify([d.to_dict() for d in defects])
+        return jsonify([{
+            'defectId': d.id,
+            'x': d.x_coord or 0.0,
+            'y': d.y_coord or 0.0,
+            'z': d.z_coord or 0.0,
+            'element': d.element or 'Unknown',
+            'location': d.location or '',
+            'defect_type': d.defect_type or 'Unknown',
+            'severity': d.severity or 'Medium',
+            'status': d.status or 'Reported',
+            'description': d.description or '',
+            'created_at': d.created_at.strftime('%Y-%m-%d') if d.created_at else None
+        } for d in defects])
         
     if request.method == 'POST':
         data = request.json
@@ -295,15 +307,17 @@ def api_project_defects(project_id):
             new_defect = Defect(
                 project_id=project_id, # Linking to Project now
                 user_id=current_user.id,
-                description=data.get('description'),
-                defect_type=data.get('defect_type'),
-                severity=data.get('severity'),
+                description=data.get('description', ''),
+                defect_type=data.get('defect_type', 'Unknown'),
+                severity=data.get('severity', 'Medium'),
                 status=data.get('status', 'Reported'),
                 x_coord=float(data.get('x', 0.0)), # Ensure float
                 y_coord=float(data.get('y', 0.0)),
                 z_coord=float(data.get('z', 0.0)),
-                location="3D Pin" # Default location for pins
+                location=data.get('location', '3D Pin') # Use actual input location
             )
+            if 'notes' in data and hasattr(Defect, 'notes'):
+                new_defect.notes = data['notes']
             db.session.add(new_defect)
             db.session.commit()
             
@@ -316,21 +330,35 @@ def api_project_defects(project_id):
             print(f"ERROR saving defect: {str(e)}")
             return jsonify({'error': str(e)}), 500
 
-@bp.route('/api/defects/<int:defect_id>', methods=['PUT', 'DELETE'])
+@bp.route('/api/defects/<int:defect_id>', methods=['GET', 'PUT', 'DELETE'])
 @login_required
 def api_update_defect(defect_id):
     defect = Defect.query.get_or_404(defect_id)
     
+    if request.method == 'GET':
+        return jsonify({
+            'defectId': defect.id,
+            'element': defect.element if hasattr(defect, 'element') else 'Unknown',
+            'location': defect.location,
+            'defect_type': defect.defect_type if hasattr(defect, 'defect_type') else 'Unknown',
+            'severity': defect.severity if hasattr(defect, 'severity') else 'Medium',
+            'description': defect.description,
+            'x': defect.x_coord,
+            'y': defect.y_coord,
+            'z': defect.z_coord,
+            'status': defect.status,
+            'imageUrl': None, # Add image logic if required
+            'notes': defect.notes if hasattr(defect, 'notes') else ''
+        })
+
     if request.method == 'PUT':
         data = request.json
-        
-        # Track changes (simple version)
-
-        
         if 'description' in data: defect.description = data['description']
-        if 'defect_type' in data: defect.defect_type = data['defect_type']
-        if 'severity' in data: defect.severity = data['severity']
+        if 'defect_type' in data and hasattr(defect, 'defect_type'): defect.defect_type = data['defect_type']
+        if 'severity' in data and hasattr(defect, 'severity'): defect.severity = data['severity']
         if 'status' in data: defect.status = data['status']
+        if 'location' in data: defect.location = data['location']
+        if 'notes' in data and hasattr(defect, 'notes'): defect.notes = data['notes']
         
         db.session.commit()
         return jsonify(defect.to_dict())
