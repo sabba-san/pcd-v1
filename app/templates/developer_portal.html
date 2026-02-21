@@ -115,22 +115,24 @@
                                 </td>
 
                                 <td>
-                                    {% if defect.status == 'draft' %}
-                                    <span class="badge bg-info text-dark border border-info">New / Draft</span>
-                                    {% elif defect.status == 'locked' %}
-                                    <span
-                                        class="badge bg-secondary text-white border border-secondary">Processing</span>
+                                    {% if defect.status in ['draft', 'New', 'Pending', 'Reported'] %}
+                                    <span class="badge bg-info text-dark border border-info">New / Reported</span>
+                                    {% elif defect.status in ['locked', 'Processing', 'Under Review'] %}
+                                    <span class="badge bg-secondary text-white border border-secondary">Processing /
+                                        Under Review</span>
                                     {% elif defect.status == 'in_progress' %}
                                     <span class="badge bg-primary text-white border border-primary">Repair in
                                         Progress</span>
-                                    {% elif defect.status == 'completed' %}
-                                    <span class="badge bg-success text-white">Resolved</span>
+                                    {% elif defect.status in ['completed', 'Fixed'] %}
+                                    <span class="badge bg-success text-white">Resolved / Fixed</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-dark">{{ defect.status }}</span>
                                     {% endif %}
                                 </td>
 
                                 <td class="d-print-none">
                                     {% if defect.filename and defect.filename != 'No File' %}
-                                    <a href="{{ url_for('module3.visualize', project_id=defect.project_id) }}"
+                                    <a href="{{ url_for('module3.visualize', project_id=defect.scan_id) }}"
                                         class="btn btn-sm btn-outline-info rounded-pill px-3">
                                         <i class="bi bi-badge-3d-fill me-1"></i> Verify Model
                                     </a>
@@ -141,17 +143,17 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-end pe-4 d-print-none">
-                                    {% if defect.status == 'locked' or defect.status == 'draft' %}
+                                    {% if defect.status in ['locked', 'draft', 'Reported', 'New', 'Pending'] %}
                                     <a href="{{ url_for('module3.update_status', id=defect.id, new_status='in_progress') }}"
                                         class="btn btn-sm btn-primary fw-bold px-3 shadow-sm">
                                         <i class="bi bi-play-fill me-1"></i>Start Job
                                     </a>
-                                    {% elif defect.status == 'in_progress' %}
-                                    <a href="{{ url_for('module3.update_status', id=defect.id, new_status='completed') }}"
+                                    {% elif defect.status in ['in_progress', 'Processing', 'Under Review'] %}
+                                    <a href="{{ url_for('module3.update_status', id=defect.id, new_status='Fixed') }}"
                                         class="btn btn-sm btn-success fw-bold px-3 shadow-sm">
                                         <i class="bi bi-check-lg me-1"></i>Finish
                                     </a>
-                                    {% elif defect.status == 'completed' %}
+                                    {% elif defect.status in ['completed', 'Fixed'] %}
                                     <span class="text-success small fw-bold"><i
                                             class="bi bi-check-circle-fill me-1"></i> Complete</span>
                                     {% endif %}

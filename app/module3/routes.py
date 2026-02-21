@@ -218,9 +218,9 @@ def developer_portal():
     for d in defects_query:
         if d.status in ['Reported', 'draft', 'New', 'Pending']:
             stats['new'] += 1
-        elif d.status in ['in_progress', 'Processing', 'locked']:
+        elif d.status in ['in_progress', 'Processing', 'locked', 'Under Review']:
             stats['in_progress'] += 1
-        elif d.status == 'completed':
+        elif d.status in ['completed', 'Fixed']:
             stats['completed'] += 1
             
         defects.append({
