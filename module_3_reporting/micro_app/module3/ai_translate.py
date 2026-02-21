@@ -2,7 +2,7 @@ import re
 import os
 import json
 import hashlib
-from groqai_client import get_ai_client
+from .groqai_client import get_ai_client
 
 # ==============================
 # CONFIG

@@ -1,96 +1,43 @@
-# Automated Compliance Report Generation
+# Module 3: Reporting Microservice
 
-An AI-powered Flask web application for generating **Tribunal Defect Liability Period (DLP)** compliance and support reports using **Groq LLM**.  
-The system supports role-based access for **Homeowner, Developer, and Legal/Tribunal** users.
-
+An AI-powered Flask microservice for generating **Tribunal Defect Liability Period (DLP)** compliance and support reports using **Groq LLM**.  
+The system operates as an independent backend service that is dynamically queried by the main PCD frontend app.
 
 ## 🚀 Features
 - AI-generated tribunal-style compliance reports
-- Role-based dashboards: Homeowner, Developer, Legal/Tribunal
-- Bahasa Malaysia & English support
-- PDF report generation (Borang 1 format)
-- Secure backend with defect status tracking
+- Centralized database support (Imports models directly from main application)
+- Dynamic Context Injection: Homeowner vs Developer perspectives
+- PDF Report generation (Borang 1 format) via ReportLab
 
 ## 🛠️ Tech Stack
-- Python
+- Python 3.11
 - Flask
-- Groq API
+- Groq LLM API
 - ReportLab
+- SQLAlchemy (via app.models injection)
+- Docker Compose
 
+## ⚙️ Microservice Architecture
+Instead of running as a standalone standalone web app displaying HTML, Module 3 has been converted into a REST API endpoint:
+`GET /module3/api/generate_report/<report_type>?user_id=<id>&project_id=<id>`
 
-## ⚙️ Setup & Run
+The **Web Service** acts as a proxy, fetching the PDF blob across the Docker network (`http://module_3_reporting:5003`) and streaming it to the user.
 
+## 🚀 Setup & Run
 
-### 1. Navigate to project folder
-```bash
-cd C:\Users\user\Automated-Compliance-Report-Generation\app\module3
-```
-
----
-
-### 2. Install dependencies
-
-```bash
-pip install groq
-```
-
-```bash
-pip install flask reportlab groq
-```
-
----
-
-### 3. Set up Groq API key
-
-1.	Create an API key at:
-
-```text
-https://console.groq.com/keys
-```
-
-2.	Add the key in `groqai_client.py`:
-
-```phyton
-# app/module3/groqai_client.py
-# Groq AI API key (replace with your own api)
-GROQ_API_KEY = "replace _here"
-```
-
-**⚠️ Do not expose real API keys in public repositories.**
-
----
-
-### 4. Run application
-
-```bash
-python app.py
-```
-
-Open in a browser:
-```text
-http://127.0.0.1:5000
-```
-
----
-
-## 🌐 Role Access
-
-Homeowner:
- http://127.0.0.1:5000/?role=Homeowner
-
-Developer:
-http://127.0.0.1:5000/?role=Developer
-
-Legal / Tribunal:
-http://127.0.0.1:5000/?role=Legal
-
+1. Navigate to the root of the PCD project.
+2. Ensure you have your `.env` configured inside the main project directory with:
+   ```env
+   GROQ_API_KEY=your_secure_api_key_here
+   ```
+3. Run the Docker Compose stack:
+   ```bash
+   docker compose up --build
+   ```
 
 ## 📌 Disclaimer
-
 This project is developed for academic and demonstration purposes only.
 AI-generated reports assist in information organisation and do not constitute legal advice.
 
-
-Author: N. Nabilah
-
+Author: N. Nabilah & Imran
 Automated Compliance Report Generation (Academic Project)

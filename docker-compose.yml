@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   chatbot_service:
-    build: 
+    build:
       context: ./module_1_chatbot
     container_name: chatbot_service
     # Use conda to run flask on port 5002
@@ -35,6 +35,27 @@ services:
       - ./:/usr/src/app
     depends_on:
       - chatbot_service
+      - db
+
+  module_3_reporting:
+    build:
+      context: ./module_3_reporting
+    container_name: module_3_reporting
+    command: conda run --no-capture-output -n pcd flask run --host=0.0.0.0 --port=5003
+    ports:
+      - "5003:5003"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - FLASK_APP=micro_app:app
+      - FLASK_ENV=development
+      - PYTHONPATH_MAIN=/usr/src/app_main
+      - DATABASE_URL=postgresql://user:password@flask_db:5432/flaskdb
+    networks:
+      - pcd_network
+    volumes:
+      - ./module_3_reporting:/usr/src/app
+      - ./:/usr/src/app_main
+    depends_on:
       - db
 
   db:

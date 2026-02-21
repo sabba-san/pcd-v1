@@ -1,4 +1,7 @@
 flask>=2.0.0
 google-generativeai>=0.3.0
 reportlab>=4.0.0
+Pillow>=10.0.0flask>=2.0.0
+google-generativeai>=0.3.0
+reportlab>=4.0.0
 Pillow>=10.0.0

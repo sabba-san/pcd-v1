@@ -1,6 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, send_from_directory
 from flask_login import login_required, current_user
+import requests
 from werkzeug.utils import secure_filename
 from app.module3.extensions import db
 from app.models import Defect, Project, User
@@ -418,3 +419,39 @@ def delete_defect(defect_id):
     flash("Defect deleted successfully.", "success")
     return redirect(url_for('module3.dashboard'))
 
+
+@bp.route('/download_report/<report_type>')
+@login_required
+def download_report(report_type):
+    from flask import Response
+    
+    # URL of the microservice
+    # It must match the module_3_reporting service name on docker network
+    microservice_url = f"http://module_3_reporting:5003/module3/api/generate_report/{report_type}"
+    
+    try:
+        lang = request.args.get('language', 'ms')
+        params = {'language': lang}
+        if request.args.get('user_id'):
+            params['user_id'] = request.args.get('user_id')
+        if request.args.get('project_id'):
+            params['project_id'] = request.args.get('project_id')
+            
+        # Stream the PDF response back to the client
+        resp = requests.get(microservice_url, params=params, stream=True)
+        
+        if resp.status_code == 200:
+            return Response(
+                resp.iter_content(chunk_size=1024),
+                content_type=resp.headers.get('Content-Type', 'application/pdf'),
+                headers={
+                    'Content-Disposition': resp.headers.get('Content-Disposition', f'attachment; filename=report.pdf')
+                }
+            )
+        else:
+            flash(f"Failed to generate report. Microservice returned: {resp.status_code}", "danger")
+            return redirect(request.referrer or url_for('module3.dashboard_homeowner'))
+            
+    except requests.exceptions.RequestException as e:
+        flash(f"Error communicating with reporting service: {str(e)}", "danger")
+        return redirect(request.referrer or url_for('module3.dashboard_homeowner'))

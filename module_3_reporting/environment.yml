@@ -18,4 +18,8 @@ dependencies:
     - requests
     - pytest
     - black
-    # add other pip deps here
+    - reportlab
+    - google-generativeai
+    - Pillow
+    - flask-login
+    - groq

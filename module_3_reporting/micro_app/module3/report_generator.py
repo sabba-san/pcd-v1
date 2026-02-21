@@ -1,7 +1,7 @@
 # report_generator.py
 from datetime import datetime
-from groqai_client import get_ai_client
-from prompts import build_prompt, get_language_config
+from .groqai_client import get_ai_client
+from .prompts import build_prompt, get_language_config
 
 def generate_ai_report(role, report_data, language="ms"):
     """

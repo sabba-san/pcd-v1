@@ -20,8 +20,19 @@
     <div class="col-lg-10">
 
         <h2 class="fw-bold text-white mb-1">Dashboard</h2>
-        <p class="text-white-50 mb-5">Welcome back, {{ current_user.full_name if current_user.full_name else
-            current_user.username }}.</p>
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <p class="text-white-50 mb-0">Welcome back, {{ current_user.full_name if current_user.full_name else
+                    current_user.username }}.</p>
+            </div>
+            <div>
+                {% set cid = current_user.claims[0].id if current_user.claims else 1 %}
+                <a href="{{ url_for('module3.download_report', report_type='homeowner', claim_id=cid) }}"
+                    class="btn btn-outline-light rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-file-earmark-pdf-fill me-2 text-danger"></i> Download Tribunal Report
+                </a>
+            </div>
+        </div>
 
         <div class="row g-4">
 

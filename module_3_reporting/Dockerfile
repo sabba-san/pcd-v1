@@ -20,7 +20,7 @@ COPY . /usr/src/app
 EXPOSE 5000
 
 # Set environment variables (FLASK_APP points to the 'app' variable inside the package)
-ENV FLASK_APP=app:app
+ENV FLASK_APP=micro_app:app
 ENV FLASK_ENV=development
 ENV PYTHONPATH=/usr/src/app
 

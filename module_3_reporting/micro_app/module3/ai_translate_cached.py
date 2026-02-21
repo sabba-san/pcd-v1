@@ -1,7 +1,7 @@
 import os
 import json
 import hashlib
-from groqai_client import get_ai_client
+from .groqai_client import get_ai_client
 
 MODEL = "llama-3.3-70b-versatile"
 BASE_CACHE = "cache"

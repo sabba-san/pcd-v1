@@ -5,4 +5,4 @@ module3_bp = Blueprint('module3', __name__, template_folder='templates')
 
 # IMPORT ROUTES AT THE BOTTOM
 # This is crucial so that module3_bp is created before routes.py tries to use it
-import routes
+from . import routes
