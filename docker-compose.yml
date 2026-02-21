@@ -9,8 +9,9 @@ services:
     command: conda run --no-capture-output -n pcd flask run --host=0.0.0.0 --port=5002
     ports:
       - "5002:5002"
+    env_file:
+      - .env
     environment:
-      - GROQ_API_KEY=${GROQ_API_KEY}
       - FLASK_APP=app:app
     networks:
       - pcd_network
@@ -24,11 +25,12 @@ services:
     command: /opt/conda/envs/pcd/bin/flask run --host=0.0.0.0 --port=5000
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     environment:
       - FLASK_APP=app
       - FLASK_ENV=development
       - SERVICE_TYPE=web
-      - GROQ_API_KEY=${GROQ_API_KEY}
     networks:
       - pcd_network
     volumes:
@@ -44,8 +46,9 @@ services:
     command: conda run --no-capture-output -n pcd flask run --host=0.0.0.0 --port=5003
     ports:
       - "5003:5003"
+    env_file:
+      - .env
     environment:
-      - GROQ_API_KEY=${GROQ_API_KEY}
       - FLASK_APP=micro_app:app
       - FLASK_ENV=development
       - PYTHONPATH_MAIN=/usr/src/app_main
