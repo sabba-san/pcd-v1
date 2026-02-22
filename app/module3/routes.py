@@ -24,10 +24,18 @@ def list_projects():
     projects_list = []
     
     if current_user.role == 'user':
+        projects_set = set()
+        user_defects = Defect.query.filter_by(user_id=current_user.id).all()
+        for d in user_defects:
+            if d.project_id:
+                p = Project.query.get(d.project_id)
+                if p: projects_set.add(p)
+                
         if current_user.project_id:
-             projects_query = [Project.query.get(current_user.project_id)]
-        else:
-             projects_query = [] # Show nothing if not linked
+             p = Project.query.get(current_user.project_id)
+             if p: projects_set.add(p)
+             
+        projects_query = list(projects_set)
     elif current_user.role == 'developer':
          projects_query = Project.query.filter_by(developer_name=current_user.company_name).all() # Or similar logic
          if not projects_query: # Fallback to all if name match not precise or null
@@ -153,11 +161,40 @@ def dashboard():
     elif current_user.role == 'lawyer':
         return redirect(url_for('module3.lawyer_dashboard'))
     
-    # 2. Fetch Defects for the Homeowner
+    # 2. Fetch Projects for the Homeowner (Recent Activity)
     if current_user.role == 'user':
-        defects = Defect.query.filter_by(user_id=current_user.id).order_by(Defect.created_at.desc()).all()
+        projects_set = set()
+        user_defects = Defect.query.filter_by(user_id=current_user.id).all()
+        for d in user_defects:
+            if d.project_id:
+                p = Project.query.get(d.project_id)
+                if p: projects_set.add(p)
+                
+        if current_user.project_id:
+             p = Project.query.get(current_user.project_id)
+             if p: projects_set.add(p)
+             
+        projects = sorted(list(projects_set), key=lambda x: x.created_at, reverse=True)
+        defects = user_defects
     else:
+        projects = Project.query.order_by(Project.created_at.desc()).all()
         defects = Defect.query.order_by(Defect.created_at.desc()).all()
+    
+    # Calculate status for each project
+    for proj in projects:
+        proj_defects = [d for d in defects if d.project_id == proj.id]
+        if not proj_defects:
+            proj.calculated_status = 'New'
+        else:
+            statuses = [d.status for d in proj_defects]
+            if all(s == 'completed' for s in statuses):
+                proj.calculated_status = 'Completed'
+            elif any(s in ['in_progress', 'locked', 'Processing'] for s in statuses):
+                proj.calculated_status = 'Processing'
+            elif any(s == 'rejected' for s in statuses):
+                proj.calculated_status = 'Action Required' 
+            else:
+                proj.calculated_status = 'Pending'
     
     # 3. Fetch Latest Project (for 3D Visualizer button)
     latest_project = None
@@ -173,6 +210,7 @@ def dashboard():
     
     return render_template(
         'module3/dashboard_fixed.html', 
+        projects=projects,
         defects=defects, 
         latest_scan=latest_project, # Variable name preservation for template
         latest_scan_id=latest_scan_id,

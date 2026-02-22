@@ -1,6 +1,90 @@
-{% extends "base.html" %}
+HTTP/1.1 200 OK
+Server: Werkzeug/3.0.1 Python/3.11.14
+Date: Fri, 20 Feb 2026 13:53:02 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 12367
+Vary: Cookie
+Connection: close
 
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLP Advisor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg fixed-top navbar-dark">
+        <div class="container">
+
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/module3/dashboard">
+                <i class="bi bi-building-check text-primary"></i>
+                DLP Advisor
+            </a>
+
+            
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center gap-3 text-decoration-none dropdown-toggle text-white"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+
+                    <div class="d-none d-md-block text-end">
+                        <div class="small fw-bold">Abbas Abu Dzarr</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">
+                            Abbas Abu Dzarr&#39;s Project (092112)
+                        </div>
+                    </div>
+
+                    
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                        style="width: 38px; height: 38px;">
+                        A
+                        </span>
+                    </div>
+                    
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark mt-3 shadow-lg">
+                    <li>
+                        <h6 class="dropdown-header text-muted">Account</h6>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item" href="/module3/profile">
+                            <i class="bi bi-person me-2"></i> My Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="/module3/settings">
+                            <i class="bi bi-gear me-2"></i> Settings
+                        </a>
+                    </li>
+
+                    <li>
+                        <hr class="dropdown-divider border-secondary">
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-danger fw-bold" href="/auth/logout">
+                            <i class="bi bi-box-arrow-right me-2"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+
+        </div>
+    </nav>
+
+    <div style="margin-top: 100px;"></div>
+
+    <div class="container pb-5">
+        
 <!-- SweetAlert2 CSS success send db -->
 
 <!-- SweetAlert2 CSS success send db -->
@@ -10,25 +94,14 @@
 <div class="row justify-content-center">
     <div class="col-lg-10">
 
-        <h2 class="fw-bold text-white mb-1">Dashboard</h2>
-        <div class="d-flex justify-content-between align-items-center mb-5">
-            <div>
-                <p class="text-white-50 mb-0">Welcome back, {{ current_user.full_name if current_user.full_name else
-                    current_user.username }}.</p>
-            </div>
-            <div>
-                <a href="{{ url_for('module3.download_report', report_type='homeowner', user_id=current_user.id) }}"
-                    class="btn btn-primary rounded-pill px-4 shadow-sm">
-                    <i class="bi bi-file-earmark-pdf-fill me-2"></i> Download Tribunal Report
-                </a>
-            </div>
-        </div>
+        <h2 class="fw-bold text-dark mb-1">Dashboard</h2>
+        <p class="text-muted mb-5">Welcome back, Abbas Abu Dzarr.</p>
 
         <div class="row g-4">
 
             <div class="col-md-6">
-                <a href="http://localhost:5002/?project_name={{ project_name }}&defect_count={{ defect_count }}"
-                    class="text-decoration-none">
+                <a href="http://localhost:5002/?project_name=Abbas Abu Dzarr&#39;s Project (092112)&defect_count=1"
+                    class="text-decoration-none" target="_blank">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -45,7 +118,7 @@
             </div>
 
             <div class="col-md-6">
-                <a href="{{ url_for('module3.list_projects') }}" class="text-decoration-none">
+                <a href="/module3/projects" class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -62,7 +135,7 @@
             </div>
 
             <div class="col-md-6">
-                <a href="{{ url_for('module2.insert_defect') }}" class="text-decoration-none">
+                <a href="/module2/insert_defect" class="text-decoration-none">
                     <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -79,11 +152,9 @@
             </div>
 
             <div class="col-md-6">
-                {% if latest_scan_id %}
-                <a href="{{ url_for('module3.visualize', project_id=latest_scan_id) }}" class="text-decoration-none">
-                    {% else %}
-                    <a href="javascript:void(0);" onclick="showNoProjectAlert()" class="text-decoration-none">
-                        {% endif %}
+                
+                <a href="/module3/visualize/78" class="text-decoration-none">
+                    
                         <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
                             <div class="card-body">
                                 <div class="mb-4 d-flex justify-content-between align-items-center">
@@ -120,76 +191,31 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for p in projects[:5] %}
+                            
                             <tr>
-                                <td class="ps-4 fw-bold text-white align-middle"
-                                    style="background-color: #334155; border-bottom: 1px solid #1e293b;">
-                                    {{ p.name }}
+                                <td class="ps-4 fw-bold text-white"
+                                    style="background-color: #334155; border-bottom: none;">
+                                    Abbas Abu Dzarr&#39;s Project (092112)
                                 </td>
-                                <td class="text-white-50 small align-middle"
-                                    style="background-color: #334155; border-bottom: 1px solid #1e293b;">
-                                    <div class="d-flex align-items-center">
-                                        {% if p.master_model_path %}
-                                        <i class="bi bi-box-fill text-warning me-2 fs-5"></i>
-                                        <div>
-                                            <div class="text-white text-truncate" style="max-width: 200px;"
-                                                title="{{ p.master_model_path.split('/')[-1] }}">
-                                                {{ p.master_model_path.split('/')[-1] }}
-                                            </div>
-                                            <small class="text-white-50">3D Lidar Scan</small>
-                                        </div>
-                                        {% else %}
-                                        <i class="bi bi-dash-circle text-muted me-2 fs-5"></i>
-                                        <div class="text-muted fst-italic">No Lidar Scan Uploaded</div>
-                                        {% endif %}
-                                    </div>
+                                <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">
+                                    <div class="text-white">ate</div>
+                                    <small class="text-white-50">Unit: </small>
                                 </td>
-                                <td class="align-middle"
-                                    style="background-color: #334155; border-bottom: 1px solid #1e293b;">
-                                    {% if p.calculated_status == 'New' %}
-                                    <span class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill px-3">No
-                                        Defects</span>
-                                    {% elif p.calculated_status == 'Processing' %}
-                                    <span
-                                        class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Processing...</span>
-                                    {% elif p.calculated_status == 'Action Required' %}
-                                    <span class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-3">Action
-                                        Required</span>
-                                    {% elif p.calculated_status == 'Completed' %}
-                                    <span
-                                        class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Resolved</span>
-                                    {% else %}
-                                    <span class="badge bg-info bg-opacity-25 text-info rounded-pill px-3">Pending
-                                        Defects</span>
-                                    {% endif %}
+                                <td style="background-color: #334155; border-bottom: none;">
+                                    
+                                    
                                 </td>
-                                <td class="align-middle"
-                                    style="background-color: #334155; border-bottom: 1px solid #1e293b;">
-                                    {% if p.master_model_path %}
-                                    <a href="{{ url_for('module3.visualize', project_id=p.id) }}"
-                                        class="btn btn-sm btn-outline-info border-0" title="View in 3D">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    {% endif %}
-                                    <form action="{{ url_for('module3.delete_project', project_id=p.id) }}"
-                                        method="POST"
-                                        onsubmit="return confirm('Delete this project and all its defects permanently?');"
+                                <td style="background-color: #334155; border-bottom: none;">
+                                    <form action="/module3/delete_defect/81"
+                                        method="POST" onsubmit="return confirm('Delete this defect?');"
                                         class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0"
-                                            title="Delete Project">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 </td>
                             </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center py-4 text-white-50"
-                                    style="background-color: #334155;">
-                                    No recent activity found. You have not uploaded any project scans.
-                                </td>
-                            </tr>
-                            {% endfor %}
+                            
                         </tbody>
                     </table>
                 </div>
@@ -214,7 +240,7 @@
             cancelButtonText: 'Close'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = "{{ url_for('module2.insert_defect') }}";
+                window.location.href = "/module2/insert_defect";
             }
         });
     }
@@ -232,4 +258,26 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     }
 </style>
-{% endblock %}
+
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+        
+        
+        
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+            var toastList = toastElList.map(function (toastEl) {
+                return new bootstrap.Toast(toastEl, { delay: 5000 });
+            });
+            toastList.forEach(toast => toast.show());
+        });
+    </script>
+</body>
+
+</html>

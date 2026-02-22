@@ -36,6 +36,78 @@
         height: 100%;
         opacity: 0;
         cursor: pointer;
+        z-index: 2;
+    }
+
+    .upload-zone.dragover {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .preview-card {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #1e293b;
+        border: 1px solid #334155;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .preview-card .pdf-icon {
+        font-size: 2rem;
+        color: #ef4444;
+    }
+
+    .preview-card .file-name {
+        font-size: 0.55rem;
+        color: #cbd5e1;
+        text-align: center;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 2px 4px;
+        position: absolute;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.75);
+    }
+
+    .delete-btn {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: rgba(220, 38, 38, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        padding: 0;
+        line-height: 1;
+        transition: 0.2s;
+    }
+
+    .delete-btn:hover {
+        background: #b91c1c;
+        transform: scale(1.1);
     }
 
     /* 3D Viewer Styles */
@@ -143,12 +215,14 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-white">PDF Report / Photos</label>
-                        <div class="upload-zone">
+                        <div class="upload-zone" id="pdfUploadZone">
                             <i class="bi bi-file-earmark-pdf upload-icon"></i>
                             <h6 class="text-white small">Drag PDF/Image Here</h6>
                             <p class="text-muted small mb-0">Optional</p>
-                            <input type="file" name="pdf_file" class="file-input-hidden" accept="image/*,.pdf">
+                            <input type="file" name="pdf_file" id="pdfInput" class="file-input-hidden" accept="image/*,.pdf" multiple>
                         </div>
+                        <div id="pdfPreviewContainer" class="mt-3 d-flex flex-wrap gap-2"></div>
+                        <div id="pdfFileCounter" class="text-info small mt-2 fw-bold" style="display: none;">0 files selected</div>
                     </div>
                 </div>
 
@@ -190,8 +264,9 @@
     const coordY = document.getElementById("coordY");
     const coordZ = document.getElementById("coordZ");
 
-    document.querySelectorAll('.file-input-hidden').forEach(input => {
-        input.addEventListener('change', function () {
+    const lidarInputEl = document.getElementById('lidarInput');
+    if (lidarInputEl) {
+        lidarInputEl.addEventListener('change', function () {
             const fileName = this.files[0]?.name;
             if (fileName) {
                 const h6 = this.parentElement.querySelector('h6');
@@ -199,6 +274,103 @@
                 h6.style.color = '#3b82f6';
             }
         });
+    }
+
+    // Advanced PDF/Image Upload Logic
+    const pdfInput = document.getElementById('pdfInput');
+    const pdfUploadZone = document.getElementById('pdfUploadZone');
+    const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
+    const pdfFileCounter = document.getElementById('pdfFileCounter');
+    
+    let selectedPdfFiles = [];
+
+    const updatePdfFileInput = () => {
+        const dataTransfer = new DataTransfer();
+        selectedPdfFiles.forEach(file => dataTransfer.items.add(file));
+        pdfInput.files = dataTransfer.files;
+        
+        if (selectedPdfFiles.length > 0) {
+            pdfFileCounter.style.display = 'block';
+            pdfFileCounter.textContent = `${selectedPdfFiles.length} file${selectedPdfFiles.length !== 1 ? 's' : ''} selected`;
+        } else {
+            pdfFileCounter.style.display = 'none';
+        }
+    };
+
+    const renderPdfPreviews = () => {
+        pdfPreviewContainer.innerHTML = '';
+        selectedPdfFiles.forEach((file, index) => {
+            const card = document.createElement('div');
+            card.className = 'preview-card';
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '&#10005;'; // X character
+            deleteBtn.type = 'button';
+            deleteBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                selectedPdfFiles.splice(index, 1);
+                renderPdfPreviews();
+                updatePdfFileInput();
+            };
+            
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                card.appendChild(img);
+            } else {
+                const icon = document.createElement('i');
+                icon.className = 'bi bi-file-earmark-pdf pdf-icon';
+                card.appendChild(icon);
+            }
+            
+            const nameLabel = document.createElement('div');
+            nameLabel.className = 'file-name';
+            nameLabel.textContent = file.name;
+            nameLabel.title = file.name;
+            card.appendChild(nameLabel);
+            card.appendChild(deleteBtn);
+            
+            pdfPreviewContainer.appendChild(card);
+        });
+    };
+
+    const handlePdfFiles = (files) => {
+        const newFiles = Array.from(files);
+        selectedPdfFiles = [...selectedPdfFiles, ...newFiles];
+        renderPdfPreviews();
+        updatePdfFileInput();
+    };
+
+    pdfInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handlePdfFiles(e.target.files);
+        }
+    });
+
+    pdfUploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        pdfUploadZone.classList.add('dragover');
+    });
+
+    pdfUploadZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        pdfUploadZone.classList.remove('dragover');
+    });
+
+    pdfUploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        pdfUploadZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+            handlePdfFiles(e.dataTransfer.files);
+        }
+    });
+
+    pdfUploadZone.addEventListener('click', (e) => {
+        if(e.target !== pdfInput && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+            pdfInput.click();
+        }
     });
 
     // --- Babylon.js Setup ---

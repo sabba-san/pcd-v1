@@ -42,14 +42,30 @@ def insert_defect():
             # Link to User's Project
             project_id = current_user.project_id
             
-            if not project_id:
-                # Auto-create project for unlinked user
+            if lidar_path:
+                # If a new scan is uploaded, create a new Project
                 from datetime import datetime
                 project_name = f"{current_user.full_name or current_user.email}'s Project ({datetime.now().strftime('%H%M%S')})"
                 
                 new_project = Project(
                     name=project_name, 
-                    master_model_path=lidar_path # Set master model if uploaded
+                    master_model_path=lidar_path
+                )
+                db.session.add(new_project)
+                db.session.flush()
+                
+                # Update the active project for the user
+                current_user.project_id = new_project.id
+                project_id = new_project.id
+                db.session.commit()
+                flash(f"Created new project: {project_name}", "info")
+            elif not project_id:
+                # Auto-create project for unlinked user (no scan uploaded but no active project)
+                from datetime import datetime
+                project_name = f"{current_user.full_name or current_user.email}'s Project ({datetime.now().strftime('%H%M%S')})"
+                
+                new_project = Project(
+                    name=project_name
                 )
                 db.session.add(new_project)
                 db.session.flush()
@@ -58,12 +74,6 @@ def insert_defect():
                 project_id = new_project.id
                 db.session.commit()
                 flash(f"Created new project: {project_name}", "info")
-            elif lidar_path:
-                # Update existing project model if new scan uploaded
-                project = Project.query.get(project_id)
-                if project:
-                    project.master_model_path = lidar_path
-                    db.session.commit()
             
             new_defect = Defect(
                 project_id=project_id,
