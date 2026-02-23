@@ -1242,6 +1242,13 @@
                             <option value="Critical">Critical</option>
                         </select>
                     </div>
+
+                    <div class="form-group mt-2">
+                        <label>Add Photos</label>
+                        <input type="file" id="defectImageInput" multiple accept="image/*" class="form-control"
+                            style="background:#f8fafc; color:#1e293b; border:1px solid #e2e8f0; padding: 5px;">
+                    </div>
+
                     <div class="form-group">
                         <label>Description</label>
                         <textarea id="defectDesc" readonly></textarea>
@@ -1277,7 +1284,7 @@
                 scanId: "{{ scan_id | default('') }}"
             };
         </script>
-        <script src="{{ url_for('static', filename='module3/js/visualize.js') }}"></script>
+        <script src="{{ url_for('static', filename='module3/js/visualize.js') }}?v=2"></script>
     </main>
 </body>
 

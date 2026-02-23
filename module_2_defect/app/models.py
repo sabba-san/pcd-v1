@@ -24,10 +24,17 @@ class Defect(db.Model):
     priority = db.Column(db.String(20), default='Medium')  # Urgent, High, Medium, Low
     description = db.Column(db.Text)  # Auto-populated from mesh label (non-editable)
     status = db.Column(db.String(50), default='Reported')  # Reported, Under Review, Fixed
-    image_path = db.Column(db.String(500))  # Path to snapshot image
+    images = db.relationship('DefectImage', backref='defect_ref', lazy=True, cascade="all, delete-orphan")
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=db.func.now())
     activities = db.relationship('ActivityLog', backref='defect', lazy=True)
+
+class DefectImage(db.Model):
+    __tablename__ = 'defect_images'
+    id = db.Column(db.Integer, primary_key=True)
+    defect_id = db.Column(db.Integer, db.ForeignKey('defects.id'), nullable=False)
+    image_path = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.now())
 
 # Assignment model removed
 

@@ -381,11 +381,6 @@ function renderDefectList(defects) {
                     
                     <!-- Expanded content -->
                     <div class="defect-expanded" id="expanded-${d.defectId}">
-                        <div class="defect-meta-label">Image</div>
-                        <div id="defect-img-${d.defectId}" class="defect-meta-value">
-                            <span class="no-image">Loading...</span>
-                        </div>
-                        
                         <div class="defect-meta-label">Location</div>
                         <div class="defect-meta-value">${d.location || 'Not specified'}</div>
                         
@@ -397,6 +392,11 @@ function renderDefectList(defects) {
                         
                         <div class="defect-meta-label">Severity</div>
                         <div class="defect-meta-value" style="color: ${getSeverityColorHex(d.severity)};">${d.severity || 'Medium'}</div>
+                        
+                        <div class="defect-meta-label">Image</div>
+                        <div id="defect-img-${d.defectId}" class="defect-meta-value">
+                            <span class="no-image">Loading...</span>
+                        </div>
                         
                         <div class="defect-meta-label">Description</div>
                         <div class="defect-meta-value">${d.description || 'No description'}</div>
@@ -536,8 +536,12 @@ function loadDefectDetails(defectId) {
             // Update image
             const imgContainer = document.getElementById('defect-img-' + defectId);
             if (imgContainer) {
-                if (data.imageUrl) {
-                    imgContainer.innerHTML = '<img src="' + data.imageUrl + '" class="defect-thumbnail" onclick="event.stopPropagation(); window.open(\'' + data.imageUrl + '\', \'_blank\')" alt="Defect Image">';
+                if (data.imageUrls && data.imageUrls.length > 0) {
+                    let html = '';
+                    data.imageUrls.forEach(url => {
+                        html += '<img src="' + url + '" class="defect-thumbnail" onclick="event.stopPropagation(); window.open(\'' + url + '\', \'_blank\')" alt="Defect Image" style="margin-bottom: 5px;">';
+                    });
+                    imgContainer.innerHTML = html;
                 } else {
                     imgContainer.innerHTML = '<span class="no-image">No image attached</span>';
                 }
@@ -717,6 +721,10 @@ function openDefectModal(defectId) {
             document.getElementById('defectCoords').value = `X: ${data.x}, Y: ${data.y}, Z: ${data.z}`;
             document.getElementById('defectStatus').value = data.status;
             document.getElementById('defectNotes').value = data.notes || '';
+
+            const imgInput = document.getElementById('defectImageInput');
+            if (imgInput) imgInput.value = '';
+
             if (data.imageUrl) {
                 document.getElementById('defectImage').src = data.imageUrl;
                 document.getElementById('defectImage').style.display = 'block';
@@ -773,6 +781,10 @@ function openNewDefectModal(point) {
 
     document.getElementById('defectStatus').value = 'Reported';
     document.getElementById('defectNotes').value = '';
+
+    const imgInput = document.getElementById('defectImageInput');
+    if (imgInput) imgInput.value = '';
+
     document.getElementById('defectImage').style.display = 'none';
 
     document.getElementById('defectModal').classList.add('active');
@@ -786,11 +798,25 @@ function saveDefect() {
     const notes = document.getElementById('defectNotes').value;
     const description = document.getElementById('defectDesc').value;
 
+    const formData = new FormData();
+    if (location) formData.append('location', location);
+    formData.append('defect_type', defect_type);
+    formData.append('severity', severity);
+    formData.append('status', status);
+    formData.append('notes', notes);
+    formData.append('description', description);
+
+    const fileInput = document.getElementById('defectImageInput');
+    if (fileInput && fileInput.files.length > 0) {
+        for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append('images', fileInput.files[i]);
+        }
+    }
+
     if (currentDefectId) {
         fetch(`/module3/api/defects/${currentDefectId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ location, defect_type, severity, status, notes, description })
+            body: formData
         })
             .then(response => response.json())
             .then(() => {
@@ -799,13 +825,13 @@ function saveDefect() {
             });
     } else {
         const coords = document.getElementById('defectCoords').dataset;
+        formData.append('x', parseFloat(coords.x));
+        formData.append('y', parseFloat(coords.y));
+        formData.append('z', parseFloat(coords.z));
+
         fetch('/module3/api/scans/' + window.APP_CONFIG.scanId + '/defects', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                location, defect_type, severity, status, notes, description,
-                x: parseFloat(coords.x), y: parseFloat(coords.y), z: parseFloat(coords.z)
-            })
+            body: formData
         })
             .then(response => response.json())
             .then(() => {

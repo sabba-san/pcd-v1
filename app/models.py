@@ -93,7 +93,7 @@ class Defect(db.Model):
     claim_id = db.Column(db.Integer, db.ForeignKey('tribunal_claims.id'), nullable=True)
     
     # 3D Data
-    image_path = db.Column(db.String(500))
+    images = db.relationship('DefectImage', backref='defect', lazy=True, cascade="all, delete-orphan")
     scan_path = db.Column(db.String(500))
     x_coord = db.Column(db.Float)
     y_coord = db.Column(db.Float)
@@ -111,6 +111,7 @@ class Defect(db.Model):
     scheduled_date = db.Column(db.Date)
     
     reported_date = db.Column(db.Date)
+    notes = db.Column(db.Text)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -126,10 +127,18 @@ class Defect(db.Model):
             'status': self.status,
             'defect_type': self.defect_type,
             'severity': self.severity,
-            'image_path': self.image_path,
+            'imageUrls': [img.image_path for img in self.images] if self.images else [],
             'element': self.element,
-            'location': self.location
+            'location': self.location,
+            'notes': self.notes
         }
+
+class DefectImage(db.Model):
+    __tablename__ = 'defect_images'
+    id = db.Column(db.Integer, primary_key=True)
+    defect_id = db.Column(db.Integer, db.ForeignKey('defects.id'), nullable=False)
+    image_path = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class GeneratedReport(db.Model):
     __tablename__ = 'generated_reports'

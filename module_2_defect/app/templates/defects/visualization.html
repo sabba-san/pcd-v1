@@ -1237,6 +1237,11 @@
                             <option value="Critical">Critical</option>
                         </select>
                     </div>
+                    <div class="form-group mt-2">
+                        <label>Add Photos</label>
+                        <input type="file" id="defectImageInput" multiple accept="image/*" class="form-control"
+                            style="background:#f8fafc; color:#1e293b; border:1px solid #e2e8f0; padding: 5px;">
+                    </div>
                     <div class="form-group">
                         <label>Description</label>
                         <textarea id="defectDesc" readonly></textarea>
@@ -1803,8 +1808,12 @@
                         // Update image
                         const imgContainer = document.getElementById('defect-img-' + defectId);
                         if (imgContainer) {
-                            if (data.imageUrl) {
-                                imgContainer.innerHTML = '<img src="' + data.imageUrl + '" class="defect-thumbnail" onclick="event.stopPropagation(); window.open(\'' + data.imageUrl + '\', \'_blank\')" alt="Defect Image">';
+                            if (data.imageUrls && data.imageUrls.length > 0) {
+                                let html = '';
+                                data.imageUrls.forEach(url => {
+                                    html += '<img src="' + url + '" class="defect-thumbnail" onclick="event.stopPropagation(); window.open(\'' + url + '\', \'_blank\')" alt="Defect Image" style="margin-bottom: 5px;">';
+                                });
+                                imgContainer.innerHTML = html;
                             } else {
                                 imgContainer.innerHTML = '<span class="no-image">No image attached</span>';
                             }
@@ -1952,6 +1961,10 @@
                         document.getElementById('defectCoords').value = `X: ${data.x}, Y: ${data.y}, Z: ${data.z}`;
                         document.getElementById('defectStatus').value = data.status;
                         document.getElementById('defectNotes').value = data.notes || '';
+
+                        const imgInput = document.getElementById('defectImageInput');
+                        if (imgInput) imgInput.value = '';
+
                         if (data.imageUrl) {
                             document.getElementById('defectImage').src = data.imageUrl;
                             document.getElementById('defectImage').style.display = 'block';
@@ -1973,10 +1986,24 @@
                 const severity = document.getElementById('defectSeverity').value;
                 const status = document.getElementById('defectStatus').value;
                 const notes = document.getElementById('defectNotes').value;
+
+                const formData = new FormData();
+                if (location) formData.append('location', location);
+                formData.append('defect_type', defect_type);
+                formData.append('severity', severity);
+                formData.append('status', status);
+                formData.append('notes', notes);
+
+                const fileInput = document.getElementById('defectImageInput');
+                if (fileInput && fileInput.files.length > 0) {
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        formData.append('images', fileInput.files[i]);
+                    }
+                }
+
                 fetch(`/defect/${currentDefectId}/status`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ location, defect_type, severity, status, notes })
+                    body: formData
                 })
                     .then(response => response.json())
                     .then(() => {

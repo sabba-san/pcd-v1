@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, send_from_directory, abort, render_template, url_for, current_app
 from app.extensions import db
-from app.models import Defect, Scan
+from app.models import Defect, Scan, DefectImage
 import os
 import json
 from datetime import datetime
@@ -95,9 +95,9 @@ def get_scan_defects(scan_id):
 @defects_bp.route('/defect/<int:defect_id>', methods=['GET'])
 def get_defect_details(defect_id):
     defect = Defect.query.get_or_404(defect_id)
-    image_url = None
-    if defect.image_path:
-        image_url = f'/defects/image/{defect_id}'
+    image_urls = []
+    if getattr(defect, 'images', None):
+        image_urls = [f'/defects/image/{img.id}' for img in defect.images]
     return jsonify({
         'id': defect.id,
         'element': defect.element,
@@ -109,14 +109,18 @@ def get_defect_details(defect_id):
         'y': defect.y,
         'z': defect.z,
         'status': defect.status,
-        'imageUrl': image_url,
+        'imageUrls': image_urls,
         'notes': defect.notes
     })
 
 @defects_bp.route('/defect/<int:defect_id>/status', methods=['PUT'])
 def update_defect_status(defect_id):
     defect = Defect.query.get_or_404(defect_id)
-    data = request.get_json()
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form
+        
     if 'status' in data:
         defect.status = data['status']
     if 'notes' in data:
@@ -127,6 +131,23 @@ def update_defect_status(defect_id):
         defect.defect_type = data['defect_type']
     if 'severity' in data:
         defect.severity = data['severity']
+        
+    if request.files:
+        import uuid
+        from werkzeug.utils import secure_filename
+        files = request.files.getlist('images')
+        for file in files:
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'defects')
+                os.makedirs(upload_folder, exist_ok=True)
+                file_path = os.path.join(upload_folder, unique_filename)
+                file.save(file_path)
+                relative_path = f"uploads/defects/{unique_filename}"
+                defect_image = DefectImage(defect_id=defect.id, image_path=relative_path)
+                db.session.add(defect_image)
+                
     db.session.commit()
     return jsonify({'message': 'Defect updated successfully', 'status': defect.status})
 
@@ -140,12 +161,16 @@ def delete_defect(defect_id):
 @defects_bp.route('/scans/<int:scan_id>/defects', methods=['POST'])
 def create_defect(scan_id):
     scan = Scan.query.get_or_404(scan_id)
-    data = request.get_json()
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form
+        
     defect = Defect(
         scan_id=scan_id,
-        x=data.get('x', 0),
-        y=data.get('y', 0),
-        z=data.get('z', 0),
+        x=float(data.get('x', 0)),
+        y=float(data.get('y', 0)),
+        z=float(data.get('z', 0)),
         element=data.get('element', ''),
         location=data.get('location', ''),
         defect_type=data.get('defect_type', 'Unknown'),
@@ -156,6 +181,24 @@ def create_defect(scan_id):
     )
     db.session.add(defect)
     db.session.commit()
+    
+    if request.files:
+        import uuid
+        from werkzeug.utils import secure_filename
+        files = request.files.getlist('images')
+        for file in files:
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'defects')
+                os.makedirs(upload_folder, exist_ok=True)
+                file_path = os.path.join(upload_folder, unique_filename)
+                file.save(file_path)
+                relative_path = f"uploads/defects/{unique_filename}"
+                defect_image = DefectImage(defect_id=defect.id, image_path=relative_path)
+                db.session.add(defect_image)
+        db.session.commit()
+        
     return jsonify({'message': 'Defect created', 'defectId': defect.id}), 201
 
 @defects_bp.route('/scans/<int:scan_id>/model', methods=['GET'])
@@ -168,13 +211,25 @@ def serve_model(scan_id):
     response.headers['Content-Type'] = 'model/gltf-binary'
     return response
 
-@defects_bp.route('/defects/image/<int:defect_id>', methods=['GET'])
-def serve_defect_image(defect_id):
-    defect = Defect.query.get_or_404(defect_id)
-    if not defect.image_path:
+@defects_bp.route('/defects/image/<int:image_id>', methods=['GET'])
+def serve_defect_image(image_id):
+    img = DefectImage.query.get_or_404(image_id)
+    if not img.image_path:
         abort(404)
-    upload_dir = os.path.join(current_app.instance_path, 'uploads', 'upload_data')
-    return send_from_directory(upload_dir, defect.image_path)
+    # The uploads folder path depends on how images are saved.
+    # We will assume they are saved in current_app.root_path / 'static' like module2/routes.py, 
+    # or current_app.instance_path as it currently uses here.
+    # Looking at the original: upload_dir = os.path.join(current_app.instance_path, 'uploads', 'upload_data')
+    # Actually, defect images from form are saved in static/uploads.
+    # For now, let's keep it searching first current_app.root_path / static / uploads, then instance_path
+    
+    upload_dir_static = os.path.join(current_app.root_path, 'static')
+    upload_dir_instance = os.path.join(current_app.instance_path, 'uploads', 'upload_data')
+    
+    if os.path.exists(os.path.join(upload_dir_static, img.image_path)):
+        return send_from_directory(upload_dir_static, img.image_path)
+        
+    return send_from_directory(upload_dir_instance, img.image_path.replace('uploads/', ''))
 
 @defects_bp.route('/project/<int:scan_id>', methods=['GET'])
 def view_project(scan_id):

@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.module3.extensions import db
-from app.models import Defect, Project
+from app.models import Defect, Project, DefectImage
 
 # Define the Blueprint
 bp = Blueprint('module2', __name__, url_prefix='/module2')
@@ -88,7 +88,25 @@ def insert_defect():
             db.session.add(new_defect)
             db.session.flush() # Get ID
             
-
+            # Handle multiple images
+            uploaded_images = request.files.getlist('images')
+            for img_file in uploaded_images:
+                if img_file and img_file.filename:
+                    img_filename = secure_filename(img_file.filename)
+                    # Use unique names
+                    from datetime import datetime
+                    time_prefix = datetime.now().strftime('%Y%m%d%H%M%S_')
+                    img_filename = time_prefix + img_filename
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    
+                    img_full_path = os.path.join(upload_folder, img_filename)
+                    img_file.save(img_full_path)
+                    
+                    db.session.add(DefectImage(
+                        defect_id=new_defect.id,
+                        image_path=f"uploads/{img_filename}"
+                    ))
             
             db.session.commit()
             

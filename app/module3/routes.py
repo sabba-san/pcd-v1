@@ -341,7 +341,11 @@ def api_project_defects(project_id):
         } for d in defects])
         
     if request.method == 'POST':
-        data = request.json
+        if request.is_json:
+            data = request.json
+        else:
+            data = request.form
+            
         try:
             new_defect = Defect(
                 project_id=project_id, # Linking to Project now
@@ -360,8 +364,25 @@ def api_project_defects(project_id):
             db.session.add(new_defect)
             db.session.commit()
             
-
-            db.session.commit()
+            if request.files:
+                import uuid, os
+                from werkzeug.utils import secure_filename
+                from app.models import DefectImage
+                files = request.files.getlist('images')
+                for file in files:
+                    if file and file.filename != '':
+                        filename = secure_filename(file.filename)
+                        unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'defects')
+                        os.makedirs(upload_folder, exist_ok=True)
+                        
+                        file_path = os.path.join(upload_folder, unique_filename)
+                        file.save(file_path)
+                        
+                        relative_path = f"uploads/defects/{unique_filename}"
+                        defect_image = DefectImage(defect_id=new_defect.id, image_path=relative_path)
+                        db.session.add(defect_image)
+                db.session.commit()
             
             return jsonify(new_defect.to_dict()), 201
         except Exception as e:
@@ -386,12 +407,16 @@ def api_update_defect(defect_id):
             'y': defect.y_coord,
             'z': defect.z_coord,
             'status': defect.status,
-            'imageUrl': None, # Add image logic if required
+            'imageUrls': [url_for('static', filename=img.image_path) for img in defect.images] if defect.images else [],
             'notes': defect.notes if hasattr(defect, 'notes') else ''
         })
 
     if request.method == 'PUT':
-        data = request.json
+        if request.is_json:
+            data = request.json
+        else:
+            data = request.form
+            
         if 'description' in data: defect.description = data['description']
         if 'defect_type' in data and hasattr(defect, 'defect_type'): defect.defect_type = data['defect_type']
         if 'severity' in data and hasattr(defect, 'severity'): defect.severity = data['severity']
@@ -399,6 +424,25 @@ def api_update_defect(defect_id):
         if 'location' in data: defect.location = data['location']
         if 'notes' in data and hasattr(defect, 'notes'): defect.notes = data['notes']
         
+        if request.files:
+            import uuid, os
+            from werkzeug.utils import secure_filename
+            from app.models import DefectImage
+            files = request.files.getlist('images')
+            for file in files:
+                if file and file.filename != '':
+                    filename = secure_filename(file.filename)
+                    unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'defects')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    
+                    file_path = os.path.join(upload_folder, unique_filename)
+                    file.save(file_path)
+                    
+                    relative_path = f"uploads/defects/{unique_filename}"
+                    defect_image = DefectImage(defect_id=defect.id, image_path=relative_path)
+                    db.session.add(defect_image)
+                    
         db.session.commit()
         return jsonify(defect.to_dict())
 

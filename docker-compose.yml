@@ -36,8 +36,10 @@ services:
     volumes:
       - ./:/usr/src/app
     depends_on:
-      - chatbot_service
-      - db
+      chatbot_service:
+        condition: service_started
+      db:
+        condition: service_healthy
 
   module_3_reporting:
     build:
@@ -59,7 +61,8 @@ services:
       - ./module_3_reporting:/usr/src/app
       - ./:/usr/src/app_main
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:15
@@ -74,6 +77,11 @@ services:
       - pcd_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d flaskdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 networks:
   pcd_network:
