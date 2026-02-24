@@ -42,27 +42,10 @@ def insert_defect():
             # Link to User's Project
             project_id = current_user.project_id
             
-            if lidar_path:
-                # If a new scan is uploaded, create a new Project
+            if not project_id:
+                # Auto-create project for unlinked user (fallback)
                 from datetime import datetime
-                project_name = f"{current_user.full_name or current_user.email}'s Project ({datetime.now().strftime('%H%M%S')})"
-                
-                new_project = Project(
-                    name=project_name, 
-                    master_model_path=lidar_path
-                )
-                db.session.add(new_project)
-                db.session.flush()
-                
-                # Update the active project for the user
-                current_user.project_id = new_project.id
-                project_id = new_project.id
-                db.session.commit()
-                flash(f"Created new project: {project_name}", "info")
-            elif not project_id:
-                # Auto-create project for unlinked user (no scan uploaded but no active project)
-                from datetime import datetime
-                project_name = f"{current_user.full_name or current_user.email}'s Project ({datetime.now().strftime('%H%M%S')})"
+                project_name = f"{current_user.full_name or current_user.email}'s Park"
                 
                 new_project = Project(
                     name=project_name
@@ -73,7 +56,7 @@ def insert_defect():
                 current_user.project_id = new_project.id
                 project_id = new_project.id
                 db.session.commit()
-                flash(f"Created new project: {project_name}", "info")
+                flash(f"Assigned to project: {project_name}", "info")
             
             new_defect = Defect(
                 project_id=project_id,

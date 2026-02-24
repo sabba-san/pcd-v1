@@ -336,7 +336,11 @@ if (window.APP_CONFIG.modelUrl) {
 
 // Fetch and render defects
 function loadDefects() {
-    fetch('/module3/api/scans/' + window.APP_CONFIG.scanId + '/defects')
+    let url = '/module3/api/scans/' + window.APP_CONFIG.scanId + '/defects';
+    if (window.APP_CONFIG.houseScanId) {
+        url += '?house_scan_id=' + window.APP_CONFIG.houseScanId;
+    }
+    fetch(url)
         .then(response => response.json())
         .then(defects => {
             defectsData = defects;
@@ -829,7 +833,12 @@ function saveDefect() {
         formData.append('y', parseFloat(coords.y));
         formData.append('z', parseFloat(coords.z));
 
-        fetch('/module3/api/scans/' + window.APP_CONFIG.scanId + '/defects', {
+        let postUrl = '/module3/api/scans/' + window.APP_CONFIG.scanId + '/defects';
+        if (window.APP_CONFIG.houseScanId) {
+            postUrl += '?house_scan_id=' + window.APP_CONFIG.houseScanId;
+        }
+
+        fetch(postUrl, {
             method: 'POST',
             body: formData
         })

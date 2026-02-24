@@ -64,12 +64,24 @@ def list_projects():
             else:
                 status = 'Pending'
 
+        # Determine Model Path and House Scan Fallback
+        model_path = proj.master_model_path
+        house_scan_id = None
+        
+        if not model_path:
+            # Fallback to the latest house scan (a defect with a scan_path)
+            latest_scan = Defect.query.filter_by(project_id=proj.id).filter(Defect.scan_path != None).order_by(Defect.created_at.desc()).first()
+            if latest_scan:
+                model_path = latest_scan.scan_path
+                house_scan_id = latest_scan.id
+
         projects_list.append({
             'id': proj.id,
             'name': proj.name,
             'created_at': proj.created_at,
             'defect_count': len(defects),
-            'model_path': proj.master_model_path,
+            'model_path': model_path,
+            'house_scan_id': house_scan_id,
             'status': status,
             'metadata': None 
         })
@@ -85,10 +97,19 @@ def visualize(project_id):
     # Check if model exists
     model_url = url_for('module3.serve_model', project_id=project_id) if project.master_model_path else None
     
+    # Fallback to the latest house scan for this project if no master model
+    house_scan_id = None
+    if not model_url:
+        latest_scan = Defect.query.filter_by(project_id=project.id).filter(Defect.scan_path != None).order_by(Defect.created_at.desc()).first()
+        if latest_scan:
+            model_url = url_for('module3.serve_defect_model', defect_id=latest_scan.id)
+            house_scan_id = latest_scan.id
+
     return render_template(
         'module3/visualize.html', 
         scan=project, # Template might still use 'scan' variable name
         scan_id=project_id,
+        house_scan_id=house_scan_id,
         model_url=model_url,
         project_name=project.name
     )
@@ -102,6 +123,41 @@ def serve_model(project_id):
         
     import os
     file_path = os.path.join(current_app.root_path, 'static', project.master_model_path)
+    
+    if os.path.exists(file_path):
+        directory = os.path.dirname(file_path)
+        filename = os.path.basename(file_path)
+        return send_from_directory(directory, filename)
+        
+    return "Model file not found", 404
+
+@bp.route('/visualize_defect/<int:defect_id>')
+@login_required
+def visualize_defect(defect_id):
+    # This route is used to visualize a House Scan which is stored as a Defect
+    defect = Defect.query.get_or_404(defect_id)
+    
+    # Check if model exists
+    model_url = url_for('module3.serve_defect_model', defect_id=defect_id) if defect.scan_path else None
+    
+    return render_template(
+        'module3/visualize.html', 
+        scan=defect, 
+        scan_id=defect.project_id if defect.project else None, # Pass project ID for other generic API calls
+        house_scan_id=defect.id,
+        model_url=model_url,
+        project_name=defect.project.name if defect.project else 'No Project'
+    )
+
+@bp.route('/model/defect/<int:defect_id>')
+@login_required
+def serve_defect_model(defect_id):
+    defect = Defect.query.get_or_404(defect_id)
+    if not defect.scan_path:
+        return "No model uploaded", 404
+        
+    import os
+    file_path = os.path.join(current_app.root_path, 'static', defect.scan_path)
     
     if os.path.exists(file_path):
         directory = os.path.dirname(file_path)
@@ -161,62 +217,48 @@ def dashboard():
     elif current_user.role == 'lawyer':
         return redirect(url_for('module3.lawyer_dashboard'))
     
-    # 2. Fetch Projects for the Homeowner (Recent Activity)
-    if current_user.role == 'user':
-        projects_set = set()
-        user_defects = Defect.query.filter_by(user_id=current_user.id).all()
-        for d in user_defects:
-            if d.project_id:
-                p = Project.query.get(d.project_id)
-                if p: projects_set.add(p)
-                
-        if current_user.project_id:
-             p = Project.query.get(current_user.project_id)
-             if p: projects_set.add(p)
-             
-        projects = sorted(list(projects_set), key=lambda x: x.created_at, reverse=True)
-        defects = user_defects
-    else:
-        projects = Project.query.order_by(Project.created_at.desc()).all()
-        defects = Defect.query.order_by(Defect.created_at.desc()).all()
+    # 2. Fetch Defects for the Homeowner (Recent Activity)
+    user_defects = Defect.query.filter_by(user_id=current_user.id).order_by(Defect.created_at.desc()).all()
     
-    # Calculate status for each project
-    for proj in projects:
-        proj_defects = [d for d in defects if d.project_id == proj.id]
-        if not proj_defects:
-            proj.calculated_status = 'New'
-        else:
-            statuses = [d.status for d in proj_defects]
-            if all(s == 'completed' for s in statuses):
-                proj.calculated_status = 'Completed'
-            elif any(s in ['in_progress', 'locked', 'Processing'] for s in statuses):
-                proj.calculated_status = 'Processing'
-            elif any(s == 'rejected' for s in statuses):
-                proj.calculated_status = 'Action Required' 
-            else:
-                proj.calculated_status = 'Pending'
+    # Structure recent activity into grouped_activity
+    house_scans = [d for d in user_defects if d.scan_path]
+    defect_pins = [d for d in user_defects if not d.scan_path]
     
-    # 3. Fetch Latest Project (for 3D Visualizer button)
-    latest_project = None
-    if current_user.project_id:
-        latest_project = Project.query.get(current_user.project_id)
-    else:
-        latest_project = Project.query.order_by(Project.created_at.desc()).first()
+    grouped_activity = []
+    
+    for hs in house_scans:
+        # Children are defect pins with the same project_id as the house scan
+        children = [pin for pin in defect_pins if pin.project_id == hs.project_id]
+        grouped_activity.append({
+            'scan': hs,
+            'children': children
+        })
         
-    latest_scan_id = latest_project.id if latest_project else None
+    # Also add any standalone pins that don't match any house scan's project_id
+    handled_pin_ids = {pin.id for group in grouped_activity for pin in group['children']}
+    standalone_pins = [pin for pin in defect_pins if pin.id not in handled_pin_ids]
+    for sp in standalone_pins:
+        grouped_activity.append({
+            'scan': sp,
+            'children': []
+        })
+
+    # Sort groups by scan created_at (most recent first)
+    grouped_activity.sort(key=lambda g: g['scan'].created_at if g['scan'].created_at else datetime.min, reverse=True)
     
-    # 4. Fetch Recent Activity
-    activities = []
+    # 3. Fetch Latest Scan (for 3D Visualizer button)
+    latest_scan_defect = Defect.query.filter_by(user_id=current_user.id).filter(Defect.scan_path != None).order_by(Defect.created_at.desc()).first()
+    latest_scan_id = latest_scan_defect.id if latest_scan_defect else None
+    
+    project_name = current_user.project.name if current_user.project else 'No Project'
     
     return render_template(
         'module3/dashboard_fixed.html', 
-        projects=projects,
-        defects=defects, 
-        latest_scan=latest_project, # Variable name preservation for template
+        projects=[], # To avoid breaking legacy references if any
+        grouped_activity=grouped_activity, 
         latest_scan_id=latest_scan_id,
-        activity=activities,
-        defect_count=len(defects),
-        project_name=latest_project.name if latest_project else 'No Project'
+        defect_count=len(user_defects),
+        project_name=project_name
     )
 
 @bp.route('/developer_portal')
@@ -311,8 +353,35 @@ def update_status(id, new_status):
 @bp.route('/evidence_report')
 @login_required
 def evidence_report():
-    flash("Evidence Report feature coming soon.", "info")
-    return redirect(url_for('module3.lawyer_dashboard'))
+    # Only fetch defects that are pins (no scan_path) 
+    defect_pins = Defect.query.filter(Defect.scan_path == None).order_by(Defect.created_at.desc()).all()
+    
+    cases = []
+    for d in defect_pins:
+        # Mock an AI Confidence score based on severity for demonstration
+        confidence = 85
+        if d.severity == 'High':
+            confidence = 94
+        elif d.severity == 'Low':
+            confidence = 72
+            
+        # Get the first image if it exists
+        image_url = url_for('static', filename=d.images[0].image_path) if d.images else None
+        
+        cases.append({
+            'id': d.id,
+            'unit_no': d.location or "N/A",
+            'project_name': d.project.name if d.project else "Unknown Project",
+            'description': d.description,
+            'element': d.element or 'Unknown',
+            'severity': d.severity or 'Medium',
+            'status': d.status,
+            'image_url': image_url,
+            'confidence': confidence,
+            'scan_id': d.project_id
+        })
+        
+    return render_template('module3/evidence_report.html', user=current_user.full_name, cases=cases)
 
 @bp.route('/validate_all', methods=['POST'])
 @login_required

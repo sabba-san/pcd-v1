@@ -72,10 +72,17 @@
                         </div>
                         <div class="d-flex w-100 gap-2">
                             {% if p.model_path %}
+                            {% if p.house_scan_id %}
+                            <a href="{{ url_for('module3.visualize_defect', defect_id=p.house_scan_id) }}"
+                                class="btn btn-sm btn-light flex-grow-1">
+                                <i class="bi bi-box-fill me-1"></i> 3D Model
+                            </a>
+                            {% else %}
                             <a href="{{ url_for('module3.visualize', project_id=p.id) }}"
                                 class="btn btn-sm btn-light flex-grow-1">
                                 <i class="bi bi-box-fill me-1"></i> 3D Model
                             </a>
+                            {% endif %}
                             {% else %}
                             <span class="btn btn-sm btn-secondary disabled flex-grow-1 opacity-50">
                                 <i class="bi bi-box me-1"></i> No Model

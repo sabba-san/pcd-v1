@@ -3,115 +3,142 @@
 {% block content %}
 <div class="container-fluid px-4">
 
-    <div class="d-flex justify-content-between align-items-center my-4">
+    <div class="d-flex justify-content-between align-items-end mb-5 mt-4">
         <div>
-            <a href="{{ url_for('module3.lawyer_dashboard') }}" class="text-white-50 text-decoration-none small">
-                <i class="bi bi-arrow-left me-1"></i> Back to Console
-            </a>
-            <h2 class="fw-bold text-white mt-1">Evidence Review: {{ report.case_id }}</h2>
-            <p class="text-white-50">Client: <span class="text-info">{{ report.client }}</span> | Project: {{
-                report.project }}</p>
+            <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 2px; font-size: 0.8rem;">
+                <a href="{{ url_for('module3.lawyer_dashboard') }}" class="text-info text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i> Legal Console
+                </a>
+            </h6>
+            <h2 class="fw-bold text-white display-6">Evidence Review Console</h2>
+            <p class="text-white-50 mb-0">AI-analyzed defect reports and photographic evidence.</p>
         </div>
         <div>
-            <button class="btn btn-outline-light me-2"><i class="bi bi-printer me-2"></i>Export PDF</button>
-            <button class="btn btn-primary"><i class="bi bi-check-circle-fill me-2"></i>Validate All Evidence</button>
+            <div class="bg-dark rounded-3 px-4 py-2 border border-secondary d-flex align-items-center">
+                <div class="me-3 text-end">
+                    <h3 class="fw-bold text-white mb-0">{{ cases|length }}</h3>
+                    <small class="text-white-50" style="font-size: 0.7rem;">TOTAL REPORTS</small>
+                </div>
+                <i class="bi bi-images text-white-50 fs-4"></i>
+            </div>
         </div>
     </div>
 
+    <!-- Defect Reports Grid -->
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-lg text-white" style="background-color: #1e293b;">
-                <div class="card-header bg-transparent border-secondary fw-bold text-uppercase small py-3">
-                    AI Analysis Summary
+        {% for case in cases %}
+        <div class="col-xl-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm"
+                style="background-color: #1e293b; border-radius: 12px; overflow: hidden;">
+                <!-- Image Section -->
+                <div class="position-relative" style="height: 220px; background-color: #0f172a;">
+                    {% if case.image_url %}
+                    <img src="{{ case.image_url }}" class="w-100 h-100 object-fit-cover" alt="Defect Evidence">
+                    {% else %}
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
+                        <i class="bi bi-camera-video-off fs-1 opacity-50 mb-2"></i>
+                        <span class="small fw-bold">No Evidence Attached</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Top Badges -->
+                    <div class="position-absolute top-0 w-100 p-3 d-flex justify-content-between">
+                        <span
+                            class="badge bg-dark bg-opacity-75 text-white px-3 py-2 rounded-pill shadow-sm border border-secondary">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ case.unit_no }}
+                        </span>
+                        {% if case.status == 'locked' %}
+                        <span class="badge bg-secondary px-3 py-2 rounded-pill shadow-sm">LOCKED</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">DRAFT</span>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="card-body text-center py-5">
-                    <div class="position-relative d-inline-block mb-3">
-                        <div class="rounded-circle border border-4 border-success d-flex align-items-center justify-content-center"
-                            style="width: 120px; height: 120px; box-shadow: 0 0 15px rgba(74, 222, 128, 0.4);">
-                            <div>
-                                <h2 class="fw-bold mb-0 text-success">{{ report.ai_confidence }}%</h2>
-                                <small class="text-white-50" style="font-size: 10px;">CONFIDENCE</small>
-                            </div>
+
+                <!-- Content Section -->
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="fw-bold text-white mb-1">{{ case.element }}</h5>
+                            <small class="text-white-50">{{ case.project_name }}</small>
+                        </div>
+                        <div class="text-end">
+                            {% if case.severity == 'High' %}
+                            <span
+                                class="badge bg-danger bg-opacity-25 text-danger px-2 border border-danger border-opacity-50">High
+                                Risk</span>
+                            {% elif case.severity == 'Medium' %}
+                            <span
+                                class="badge bg-warning bg-opacity-25 text-warning px-2 border border-warning border-opacity-50">Medium
+                                Risk</span>
+                            {% else %}
+                            <span
+                                class="badge bg-info bg-opacity-25 text-info px-2 border border-info border-opacity-50">Low
+                                Risk</span>
+                            {% endif %}
                         </div>
                     </div>
 
-                    <h5 class="fw-bold">AI Detection Status</h5>
-                    <p class="text-white-50 small px-4">The system has detected defects with high certainty. Requires
-                        manual verification.</p>
+                    <div class="p-3 mb-4 rounded-3" style="background-color: #0f172a; border-left: 3px solid #3b82f6;">
+                        <p class="text-white-50 small mb-0 fst-italic">"{{ case.description or 'No description
+                            provided.' }}"</p>
+                    </div>
 
                     <div
-                        class="alert bg-danger bg-opacity-25 border-danger mx-3 mt-4 d-flex align-items-center justify-content-center">
-                        <i class="bi bi-exclamation-triangle-fill text-danger me-2 fs-5"></i>
-                        <span class="text-white">Risk Level: <strong class="text-danger fw-bold ms-1 text-uppercase">{{
-                                report.risk_level }}</strong></span>
+                        class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top border-secondary border-opacity-50">
+                        <div>
+                            <small class="text-white-50 d-block mb-1"
+                                style="font-size: 0.65rem; letter-spacing: 1px;">AI CONFIDENCE SCORE</small>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1"
+                                    style="height: 6px; width: 60px; background-color: #334155;">
+                                    <div class="progress-bar {% if case.confidence >= 90 %}bg-success{% elif case.confidence >= 75 %}bg-warning{% else %}bg-danger{% endif %}"
+                                        role="progressbar" data-width="{{ case.confidence }}%"
+                                        aria-valuenow="{{ case.confidence }}" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <span class="fw-bold text-white small">{{ case.confidence }}%</span>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('module3.visualize', project_id=case.scan_id) }}"
+                                class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> 3D Context
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-8">
-            <div class="card border-0 shadow-lg" style="background-color: #1e293b;">
-                <div class="card-header bg-transparent border-secondary fw-bold text-white text-uppercase small py-3">
-                    Detected Defects Queue
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover mb-0 align-middle">
-                        <thead>
-                            <tr class="text-white-50 small">
-                                <th class="ps-4">Project / Unit</th>
-                                <th>Description</th>
-                                <th>Status</th>
-                                <th class="text-end pe-4">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for defect in defects %}
-                            <tr>
-                                <td class="ps-4 py-3">
-                                    <div class="fw-bold text-white">{{ defect['project_name'] }}</div>
-                                    <small class="text-white-50">{{ defect['unit_no'] }}</small>
-                                </td>
-                                <td>
-                                    <span class="text-white">{{ defect['description'] }}</span>
-                                </td>
-                                <td>
-                                    {% if defect['status'] == 'locked' %}
-                                    <span class="badge bg-secondary">LOCKED</span>
-                                    {% else %}
-                                    <span class="badge bg-warning text-dark">DRAFT</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-end pe-4">
-
-                                    {% if defect['status'] == 'draft' %}
-                                    <form action="{{ url_for('module3.lock_evidence', id=defect['id']) }}" method="POST"
-                                        style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Are you sure? This will lock the evidence for the Tribunal.')">
-                                            <i class="bi bi-lock-fill me-1"></i> Lock Evidence
-                                        </button>
-                                    </form>
-                                    {% else %}
-                                    <button class="btn btn-sm btn-secondary" disabled>
-                                        <i class="bi bi-check-circle-fill me-1"></i> Submitted
-                                    </button>
-                                    {% endif %}
-
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center py-4 text-white-50">
-                                    No defects found in database. <br>
-                                    <small>Go to "Insert Defect" to add one.</small>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        {% else %}
+        <div class="col-12 py-5 text-center">
+            <div class="mb-4">
+                <i class="bi bi-clipboard2-x text-muted opacity-25" style="font-size: 6rem;"></i>
             </div>
+            <h4 class="text-white fw-bold mb-2">No Evidence Reports Available</h4>
+            <p class="text-white-50 mx-auto mb-4" style="max-width: 500px;">
+                There are currently no defect pin items logged in the system. Homeowners must submit defect reports with
+                images for AI analysis to appear here.
+            </p>
+            <a href="{{ url_for('module3.lawyer_dashboard') }}" class="btn btn-outline-light rounded-pill px-4">
+                <i class="bi bi-arrow-left me-2"></i>Return to Console
+            </a>
         </div>
+        {% endfor %}
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Apply progress bar widths dynamically to avoid IDE CSS linting errors
+        document.querySelectorAll('.progress-bar[data-width]').forEach(function (bar) {
+            bar.style.width = bar.getAttribute('data-width');
+        });
+    });
+</script>
+<style>
+    .object-fit-cover {
+        object-fit: cover;
+    }
+</style>
 {% endblock %}

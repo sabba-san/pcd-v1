@@ -22,7 +22,7 @@ def upload_scan_data():
     """
     Use Case DM_01: Upload Scan Data
     User: Homeowner / Inspector
-    Goal: Upload the 3D GLB model and data file (PDF report) to the system.
+    Goal: Upload the 3D GLB model to the system.
     Precondition: None
     Postcondition: Files are stored, and automated data processing is initiated.
     """
@@ -31,12 +31,6 @@ def upload_scan_data():
 
     try:
         glb_file = request.files.get("glb_model")
-        pdf_file = request.files.get("pdf_report")
-        project_name = request.form.get("project_name", "")
-        scan_date = request.form.get("scan_date", "")
-        address = request.form.get("address", "")
-        latitude = request.form.get("latitude", "")
-        longitude = request.form.get("longitude", "")
         unit_no = request.form.get("unit_no", "")
         notes = request.form.get("notes", "")
 
@@ -44,16 +38,8 @@ def upload_scan_data():
             flash("Please upload a GLB 3D model file.", "error")
             return redirect(request.url)
 
-        if not pdf_file or pdf_file.filename == "":
-            flash("Please upload a PDF report.", "error")
-            return redirect(request.url)
-
         if not _allowed_file(glb_file.filename, ALLOWED_GLB_EXT):
             flash("Invalid 3D model file type. Only .glb is allowed.", "error")
-            return redirect(request.url)
-
-        if not _allowed_file(pdf_file.filename, ALLOWED_PDF_EXT):
-            flash("Invalid report file type. Only .pdf is allowed.", "error")
             return redirect(request.url)
 
         upload_root = os.path.join(current_app.instance_path, "uploads", "upload_data")
@@ -61,54 +47,34 @@ def upload_scan_data():
 
         timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
         upload_id = f"upload_{timestamp}"
-        image_dir = os.path.join(upload_root, f"{upload_id}_images")
 
         glb_name = secure_filename(glb_file.filename)
-        pdf_name = secure_filename(pdf_file.filename)
-
         glb_path = os.path.join(upload_root, glb_name)
-        pdf_path = os.path.join(upload_root, pdf_name)
-
         glb_file.save(glb_path)
-        pdf_file.save(pdf_path)
 
-        extracted_images = extract_pdf_images(pdf_path, image_dir)
         _persist_latest_upload_metadata(
             upload_root,
             {
                 "id": upload_id,
                 "created_at": timestamp,
-                "project_name": project_name,
-                "scan_date": scan_date,
-                "address": address,
-                "latitude": latitude,
-                "longitude": longitude,
                 "unit_no": unit_no,
                 "glb_path": glb_path,
-                "pdf_path": pdf_path,
-                "image_dir": image_dir,
-                "images": extracted_images,
-                "assignments": {"defect_to_image": {}},
                 "notes": notes,
             },
         )
 
-        _start_automated_data_processing(glb_path, pdf_path, scan_date, address, unit_no, notes)
+        _start_automated_data_processing(glb_path, unit_no, notes)
 
         flash("Scan data uploaded successfully. Automated processing has started.", "success")
-        # Redirect back to upload page for now
         return redirect(url_for("upload_data.upload_scan_data"))
     except Exception as e:
         current_app.logger.error("Error during upload: %s", str(e))
         flash(f"An error occurred during upload: {str(e)}", "error")
         return redirect(request.url)
 
-def _start_automated_data_processing(glb_path: str, pdf_path: str, scan_date: str, address: str, unit_no: str, notes: str) -> None:
+def _start_automated_data_processing(glb_path: str, unit_no: str, notes: str) -> None:
     current_app.logger.info("Starting automated processing for:")
     current_app.logger.info("GLB: %s", glb_path)
-    current_app.logger.info("PDF: %s", pdf_path)
-    current_app.logger.info("Scan Date: %s", scan_date)
-    current_app.logger.info("Address: %s", address)
     current_app.logger.info("Unit No: %s", unit_no)
     if notes:
         current_app.logger.info("Notes: %s", notes)

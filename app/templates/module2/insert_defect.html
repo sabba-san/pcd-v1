@@ -143,7 +143,7 @@
 </style>
 
 <div class="row justify-content-center">
-    <div class="col-lg-9">
+    <div class="col-xl-11 col-lg-12">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -156,7 +156,7 @@
             </div>
         </div>
 
-        <div class="card shadow-lg p-4 border-0" style="background-color: #334155;">
+        <div class="card shadow-lg p-0 border-0 overflow-hidden" style="background-color: #334155;">
             <form action="{{ url_for('module2.insert_defect') }}" method="POST" enctype="multipart/form-data">
 
                 <!-- Hidden Coordinates -->
@@ -166,74 +166,75 @@
                 <!-- Pass Project Name if needed for new scans -->
                 <input type="hidden" name="project_name" value="{{ current_user.project_name or 'Default Project' }}">
 
-                <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">1.
-                    Defect Location</h6>
+                <div class="row g-0">
+                    <!-- Left Side: 3D Viewer -->
+                    <div class="col-lg-7 p-4 border-end border-secondary">
+                        <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">
+                            1.
+                            Defect Location</h6>
 
-                <!-- 3D Viewer -->
-                <div id="canvasZone">
-                    <canvas id="renderCanvas"></canvas>
-                    <div class="instruction-overlay">
-                        <i class="fas fa-mouse-pointer me-1"></i> Click model to set location (Cyan Marker)
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label text-white">Owner Name</label>
-                        <input type="text" class="form-control" value="{{ current_user.full_name }}" readonly
-                            style="background-color: #1e293b; color: #94a3b8;">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-white">Unit No. <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary" name="unit_no"
-                            placeholder="e.g. A-85" required>
-                    </div>
-                </div>
-
-                <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">2.
-                    Defect Description</h6>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-12">
-                        <label class="form-label text-white">Detailed Description</label>
-                        <textarea class="form-control bg-dark text-white border-secondary" name="description" rows="3"
-                            placeholder="Describe the defect location..." required></textarea>
-                    </div>
-                </div>
-
-                <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">3.
-                    Evidence Upload</h6>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label text-white">3D Lidar Scan (.glb)</label>
-                        <div class="upload-zone">
-                            <i class="bi bi-box-seam upload-icon"></i>
-                            <h6 class="text-white small">Drag Lidar Scan Here</h6>
-                            <p class="text-muted small mb-0">Max 50MB (Updates Viewer)</p>
-                            <input type="file" name="lidar_file" id="lidarInput" class="file-input-hidden"
-                                accept=".glb,.gltf">
+                        <!-- 3D Viewer -->
+                        <div id="canvasZone" style="height: 500px; margin-bottom: 0;">
+                            <canvas id="renderCanvas"></canvas>
+                            <div class="instruction-overlay">
+                                <i class="fas fa-mouse-pointer me-1"></i> Click model to set location (Cyan Marker)
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-white">PDF Report / Photos</label>
-                        <div class="upload-zone" id="pdfUploadZone">
-                            <i class="bi bi-file-earmark-pdf upload-icon"></i>
-                            <h6 class="text-white small">Drag PDF/Image Here</h6>
-                            <p class="text-muted small mb-0">Optional</p>
-                            <input type="file" name="pdf_file" id="pdfInput" class="file-input-hidden" accept="image/*,.pdf" multiple>
-                        </div>
-                        <div id="pdfPreviewContainer" class="mt-3 d-flex flex-wrap gap-2"></div>
-                        <div id="pdfFileCounter" class="text-info small mt-2 fw-bold" style="display: none;">0 files selected</div>
-                    </div>
-                </div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                    <a href="{{ url_for('module3.dashboard') }}"
-                        class="btn btn-outline-secondary border-0 text-white-50 fw-bold px-4">
-                        Cancel
-                    </a>
-                    <button type="submit" name="action" value="submit" class="btn btn-primary fw-bold px-5">
-                        Submit Claim <i class="bi bi-send-fill ms-2"></i>
-                    </button>
+                    <!-- Right Side: Form Inputs -->
+                    <div class="col-lg-5 p-4 d-flex flex-column">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-white">Owner Name</label>
+                                <input type="text" class="form-control" value="{{ current_user.full_name }}" readonly
+                                    style="background-color: #1e293b; color: #94a3b8;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-white">Unit No. <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control bg-dark text-white border-secondary"
+                                    name="unit_no" placeholder="e.g. A-85" required>
+                            </div>
+                        </div>
+
+                        <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">
+                            2.
+                            Defect Description</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label text-white">Detailed Description</label>
+                                <textarea class="form-control bg-dark text-white border-secondary" name="description"
+                                    rows="4" placeholder="Describe the defect location..." required></textarea>
+                            </div>
+                        </div>
+
+                        <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">
+                            3.
+                            Evidence Upload</h6>
+                        <div class="row g-3 mb-4 flex-grow-1">
+                            <div class="col-md-12">
+                                <label class="form-label text-white">3D Lidar Scan (.glb)</label>
+                                <div class="upload-zone h-100 d-flex flex-column justify-content-center">
+                                    <i class="bi bi-box-seam upload-icon"></i>
+                                    <h6 class="text-white small">Drag Lidar Scan Here</h6>
+                                    <p class="text-muted small mb-0">Max 50MB (Updates Viewer)</p>
+                                    <input type="file" name="lidar_file" id="lidarInput" class="file-input-hidden"
+                                        accept=".glb,.gltf">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="d-grid gap-2 d-md-flex justify-content-md-end mt-auto pt-4 border-top border-secondary">
+                            <a href="{{ url_for('module3.dashboard') }}"
+                                class="btn btn-outline-secondary border-0 text-white-50 fw-bold px-4">
+                                Cancel
+                            </a>
+                            <button type="submit" name="action" value="submit" class="btn btn-primary fw-bold px-5">
+                                Submit Claim <i class="bi bi-send-fill ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
             </form>
@@ -276,102 +277,7 @@
         });
     }
 
-    // Advanced PDF/Image Upload Logic
-    const pdfInput = document.getElementById('pdfInput');
-    const pdfUploadZone = document.getElementById('pdfUploadZone');
-    const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
-    const pdfFileCounter = document.getElementById('pdfFileCounter');
-    
-    let selectedPdfFiles = [];
 
-    const updatePdfFileInput = () => {
-        const dataTransfer = new DataTransfer();
-        selectedPdfFiles.forEach(file => dataTransfer.items.add(file));
-        pdfInput.files = dataTransfer.files;
-        
-        if (selectedPdfFiles.length > 0) {
-            pdfFileCounter.style.display = 'block';
-            pdfFileCounter.textContent = `${selectedPdfFiles.length} file${selectedPdfFiles.length !== 1 ? 's' : ''} selected`;
-        } else {
-            pdfFileCounter.style.display = 'none';
-        }
-    };
-
-    const renderPdfPreviews = () => {
-        pdfPreviewContainer.innerHTML = '';
-        selectedPdfFiles.forEach((file, index) => {
-            const card = document.createElement('div');
-            card.className = 'preview-card';
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-btn';
-            deleteBtn.innerHTML = '&#10005;'; // X character
-            deleteBtn.type = 'button';
-            deleteBtn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                selectedPdfFiles.splice(index, 1);
-                renderPdfPreviews();
-                updatePdfFileInput();
-            };
-            
-            if (file.type.startsWith('image/')) {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                card.appendChild(img);
-            } else {
-                const icon = document.createElement('i');
-                icon.className = 'bi bi-file-earmark-pdf pdf-icon';
-                card.appendChild(icon);
-            }
-            
-            const nameLabel = document.createElement('div');
-            nameLabel.className = 'file-name';
-            nameLabel.textContent = file.name;
-            nameLabel.title = file.name;
-            card.appendChild(nameLabel);
-            card.appendChild(deleteBtn);
-            
-            pdfPreviewContainer.appendChild(card);
-        });
-    };
-
-    const handlePdfFiles = (files) => {
-        const newFiles = Array.from(files);
-        selectedPdfFiles = [...selectedPdfFiles, ...newFiles];
-        renderPdfPreviews();
-        updatePdfFileInput();
-    };
-
-    pdfInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handlePdfFiles(e.target.files);
-        }
-    });
-
-    pdfUploadZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        pdfUploadZone.classList.add('dragover');
-    });
-
-    pdfUploadZone.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        pdfUploadZone.classList.remove('dragover');
-    });
-
-    pdfUploadZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        pdfUploadZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length > 0) {
-            handlePdfFiles(e.dataTransfer.files);
-        }
-    });
-
-    pdfUploadZone.addEventListener('click', (e) => {
-        if(e.target !== pdfInput && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
-            pdfInput.click();
-        }
-    });
 
     // --- Babylon.js Setup ---
     const engine = new BABYLON.Engine(canvas, true);

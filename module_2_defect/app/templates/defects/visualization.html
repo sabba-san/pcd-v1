@@ -1180,6 +1180,40 @@
             </div>
         </div>
 
+        <!-- Add New Defect Modal -->
+        <div class="modal-overlay" id="addDefectModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3><i class="fas fa-plus-circle"></i> Add New Defect</h3>
+                    <button class="modal-close" onclick="closeAddModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Defect Title (Element)</label>
+                        <input type="text" id="newDefectElement" placeholder="e.g., Wall Crack, Paint Peeling" required>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Add Photos</label>
+                        <input type="file" id="newDefectImageInput" multiple accept="image/*" class="form-control"
+                            style="background:#f8fafc; color:#1e293b; border:1px solid #e2e8f0; padding: 5px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="newDefectDesc" placeholder="Describe the defect..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Coordinates</label>
+                        <input type="text" id="newDefectCoords" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="submitNewDefect()"><i class="fas fa-save"></i> Save
+                        Defect</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Defect Detail Modal -->
         <div class="modal-overlay" id="defectModal">
             <div class="modal">
@@ -1906,21 +1940,100 @@
                 }
             }
 
-            // Click handler for markers
+            // Add Defect State
+            let isAddDefectMode = false;
+            let tempMarker = null;
+            let tempCoords = null;
+
+            // Click handler for markers and model
             scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                    // Right click or special key to trigger "Add Defect" mode
+                    // For now, let's use Ctrl+Click or double click to add defect on the model
                     const pickResult = scene.pick(pointerInfo.event.clientX, pointerInfo.event.clientY);
-                    if (pickResult.hit && pickResult.pickedMesh.name.startsWith('marker')) {
-                        const defectId = pickResult.pickedMesh.defectId;
-                        const snapshotIndex = pickResult.pickedMesh.snapshotIndex;
-                        if (defectId) {
-                            openDefectModal(defectId);
-                        } else if (snapshotIndex !== undefined && snapshotIndex < defectsData.length) {
-                            openDefectModal(defectsData[snapshotIndex].defectId);
+
+                    if (pickResult.hit) {
+                        if (pickResult.pickedMesh.name.startsWith('marker')) {
+                            const defectId = pickResult.pickedMesh.defectId;
+                            const snapshotIndex = pickResult.pickedMesh.snapshotIndex;
+                            if (defectId) {
+                                openDefectModal(defectId);
+                            } else if (snapshotIndex !== undefined && snapshotIndex < defectsData.length) {
+                                openDefectModal(defectsData[snapshotIndex].defectId);
+                            }
+                        } else if (pointerInfo.event.ctrlKey || pointerInfo.event.metaKey) {
+                            // Ctrl+Click on model to add new defect
+                            openAddDefectModal(pickResult.pickedPoint);
                         }
                     }
                 }
             });
+
+            function openAddDefectModal(point) {
+                tempCoords = point;
+                document.getElementById('newDefectElement').value = '';
+                document.getElementById('newDefectDesc').value = '';
+                const imgInput = document.getElementById('newDefectImageInput');
+                if (imgInput) imgInput.value = '';
+
+                document.getElementById('newDefectCoords').value = `X: ${point.x.toFixed(2)}, Y: ${point.y.toFixed(2)}, Z: ${point.z.toFixed(2)}`;
+                document.getElementById('addDefectModal').classList.add('active');
+            }
+
+            function closeAddModal() {
+                document.getElementById('addDefectModal').classList.remove('active');
+                tempCoords = null;
+            }
+
+            function submitNewDefect() {
+                if (!tempCoords) return;
+
+                const element = document.getElementById('newDefectElement').value;
+                const description = document.getElementById('newDefectDesc').value;
+
+                if (!element) {
+                    alert('Please provide a Defect Title (Element).');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('element', element);
+                formData.append('description', description);
+                formData.append('x', tempCoords.x);
+                formData.append('y', tempCoords.y);
+                formData.append('z', tempCoords.z);
+
+                // Defaults for new defect
+                formData.append('status', 'Reported');
+                formData.append('severity', 'Medium');
+
+                const fileInput = document.getElementById('newDefectImageInput');
+                if (fileInput && fileInput.files.length > 0) {
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        formData.append('images', fileInput.files[i]);
+                    }
+                }
+
+                fetch('/scans/{{ scan_id }}/defects', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        closeAddModal();
+                        // Optional: refresh page or just reload defects
+                        loadDefects();
+                    })
+                    .catch(error => {
+                        console.error('Error saving defect:', error);
+                        alert('Failed to save defect. Check console for details.');
+                    });
+            }
 
             function selectDefect(defectId) {
                 document.querySelectorAll('.defect-card').forEach(c => c.classList.remove('selected', 'expanded'));

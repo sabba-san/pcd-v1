@@ -1533,76 +1533,77 @@
             // Load 3D model
             let rootMesh = null;
             let snapshotMeshes = [];
-            {% if model_url %}
-            console.log('Loading model from: {{ model_url }}');
-            BABYLON.SceneLoader.ImportMeshAsync('', '{{ model_url }}', '', scene, null, '.glb')
-                .then(function (result) {
-                    console.log('Model loaded successfully, meshes:', result.meshes.length);
-                    loadedMeshes = result.meshes;
-                    modelLoaded = true;
+            const modelUrl = "{{ model_url or '' }}";
+            if (modelUrl) {
+                console.log('Loading model from: ' + modelUrl);
+                BABYLON.SceneLoader.ImportMeshAsync('', modelUrl, '', scene, null, '.glb')
+                    .then(function (result) {
+                        console.log('Model loaded successfully, meshes:', result.meshes.length);
+                        loadedMeshes = result.meshes;
+                        modelLoaded = true;
 
-                    // Update mesh count
-                    document.getElementById('meshCount').textContent = result.meshes.length;
+                        // Update mesh count
+                        document.getElementById('meshCount').textContent = result.meshes.length;
 
-                    // Find Snapshot meshes
-                    result.meshes.forEach(mesh => {
-                        if (mesh.name === '__root__') {
-                            rootMesh = mesh;
-                        }
-
-                        if (mesh.name && mesh.name.toLowerCase().includes('snapshot')) {
-                            mesh.computeWorldMatrix(true);
-                            snapshotMeshes.push({
-                                mesh: mesh,
-                                name: mesh.name,
-                                position: mesh.absolutePosition.clone()
-                            });
-                            mesh.isVisible = false;
-                            console.log('Found Snapshot mesh:', mesh.name, 'at', mesh.absolutePosition.x.toFixed(2), mesh.absolutePosition.y.toFixed(2), mesh.absolutePosition.z.toFixed(2));
-                        }
-                    });
-
-                    // Apply PBR materials to all meshes
-                    applyPBRMaterials(scene);
-
-                    console.log('Total Snapshot meshes found:', snapshotMeshes.length);
-
-                    // Center camera on model
-                    if (result.meshes.length > 0) {
-                        let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-                        let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+                        // Find Snapshot meshes
                         result.meshes.forEach(mesh => {
-                            if (mesh.getBoundingInfo && mesh.name !== '__root__' && !mesh.name.toLowerCase().includes('snapshot')) {
+                            if (mesh.name === '__root__') {
+                                rootMesh = mesh;
+                            }
+
+                            if (mesh.name && mesh.name.toLowerCase().includes('snapshot')) {
                                 mesh.computeWorldMatrix(true);
-                                const boundingInfo = mesh.getBoundingInfo();
-                                min = BABYLON.Vector3.Minimize(min, boundingInfo.boundingBox.minimumWorld);
-                                max = BABYLON.Vector3.Maximize(max, boundingInfo.boundingBox.maximumWorld);
+                                snapshotMeshes.push({
+                                    mesh: mesh,
+                                    name: mesh.name,
+                                    position: mesh.absolutePosition.clone()
+                                });
+                                mesh.isVisible = false;
+                                console.log('Found Snapshot mesh:', mesh.name, 'at', mesh.absolutePosition.x.toFixed(2), mesh.absolutePosition.y.toFixed(2), mesh.absolutePosition.z.toFixed(2));
                             }
                         });
-                        modelCenter = min.add(max).scale(0.5);
-                        const size = max.subtract(min);
-                        modelBounds = { min, max, size };
 
-                        // Update model size display
-                        document.getElementById('modelSize').textContent =
-                            `${size.x.toFixed(1)} x ${size.y.toFixed(1)} x ${size.z.toFixed(1)}`;
+                        // Apply PBR materials to all meshes
+                        applyPBRMaterials(scene);
 
-                        camera.target = modelCenter;
-                        camera.radius = size.length() * 1.5;
-                        console.log('Camera centered at:', modelCenter, 'radius:', camera.radius);
+                        console.log('Total Snapshot meshes found:', snapshotMeshes.length);
 
-                        createMarkersFromSnapshots();
+                        // Center camera on model
+                        if (result.meshes.length > 0) {
+                            let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                            let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+                            result.meshes.forEach(mesh => {
+                                if (mesh.getBoundingInfo && mesh.name !== '__root__' && !mesh.name.toLowerCase().includes('snapshot')) {
+                                    mesh.computeWorldMatrix(true);
+                                    const boundingInfo = mesh.getBoundingInfo();
+                                    min = BABYLON.Vector3.Minimize(min, boundingInfo.boundingBox.minimumWorld);
+                                    max = BABYLON.Vector3.Maximize(max, boundingInfo.boundingBox.maximumWorld);
+                                }
+                            });
+                            modelCenter = min.add(max).scale(0.5);
+                            const size = max.subtract(min);
+                            modelBounds = { min, max, size };
+
+                            // Update model size display
+                            document.getElementById('modelSize').textContent =
+                                `${size.x.toFixed(1)} x ${size.y.toFixed(1)} x ${size.z.toFixed(1)}`;
+
+                            camera.target = modelCenter;
+                            camera.radius = size.length() * 1.5;
+                            console.log('Camera centered at:', modelCenter, 'radius:', camera.radius);
+
+                            createMarkersFromSnapshots();
+                            loadDefects();
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('Error loading model:', error);
                         loadDefects();
-                    }
-                })
-                .catch(function (error) {
-                    console.error('Error loading model:', error);
-                    loadDefects();
-                });
-            {% else %}
-            console.log('No model URL provided');
-            loadDefects();
-            {% endif %}
+                    });
+            } else {
+                console.log('No model URL provided');
+                loadDefects();
+            }
 
             // Fetch and render defects
             function loadDefects() {
@@ -2158,10 +2159,7 @@
                 engine.resize();
             });
 
-            // Initial load - only if no model URL
-            {% if not model_url %}
-            loadDefects();
-            {% endif %}
+            // Initial load parameter check handled above
         </script>
     </main>
 </body>
