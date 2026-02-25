@@ -33,7 +33,10 @@ def list_projects():
                 
         if current_user.project_id:
              p = Project.query.get(current_user.project_id)
-             if p: projects_set.add(p)
+             # Only show project on first login if it has a developer master model
+             # If user uploaded a scan themselves, it gets handled in user_defects loop above
+             if p and p.master_model_path:
+                 projects_set.add(p)
              
         projects_query = list(projects_set)
     elif current_user.role == 'developer':
@@ -336,7 +339,7 @@ def lawyer_dashboard():
             'scan_id': d.project_id
         })
         
-    return render_template('module3/lawyer_dashboard.html', user=current_user.full_name, cases=cases)
+    return render_template('module3/lawyer_dashboard.html', user=(current_user.firm_name or current_user.full_name), cases=cases)
 
 @bp.route('/update_status/<int:id>/<string:new_status>')
 @login_required
@@ -523,31 +526,23 @@ def api_update_defect(defect_id):
 @bp.route('/delete_project/<int:project_id>', methods=['POST'])
 @login_required
 def delete_project(project_id):
-    # Only homeowners can delete their own project reference
+    # Only homeowners can clear their data from a project
     if current_user.role != 'user':
         flash("Unauthorized action.", "danger")
         return redirect(url_for('module3.list_projects'))
 
     project = Project.query.get_or_404(project_id)
     
-    # 1. Unlink any users currently attached to this project
-    linked_users = User.query.filter_by(project_id=project_id).all()
-    for u in linked_users:
-        u.project_id = None
-    
-    # 2. Delete all defects associated with this project
-    defects = Defect.query.filter_by(project_id=project_id).all()
+    # 1. Delete all defects (markers) and GLB scans associated with this project FOR this user only
+    # We DO NOT delete the Project itself, so the user retains their chosen park name
+    defects = Defect.query.filter_by(project_id=project_id, user_id=current_user.id).all()
     for d in defects:
-        # Delete activity logs for each defect
-
         # Delete the defect itself
         db.session.delete(d)
     
-    # 3. Delete the project itself
-    db.session.delete(project)
     db.session.commit()
     
-    flash(f"Project '{project.name}' and all associated data permanently deleted.", "success")
+    flash(f"All data and scans for '{project.name}' have been cleared.", "success")
         
     return redirect(url_for('module3.list_projects'))
 

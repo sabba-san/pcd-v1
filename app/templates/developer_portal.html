@@ -59,6 +59,17 @@
                 </div>
             </div>
 
+            <!-- Print Only Summary Header -->
+            <div class="d-none d-print-block mb-4 border-bottom border-2 border-dark pb-3">
+                <p class="h5 fw-bold text-dark mt-3">Total Defects Reported for this Development: {{ defects|length }}
+                </p>
+                <div class="row mt-2">
+                    <div class="col-4"><strong>Pending:</strong> {{ stats.new }}</div>
+                    <div class="col-4"><strong>Repair in Progress:</strong> {{ stats.in_progress }}</div>
+                    <div class="col-4"><strong>Completed:</strong> {{ stats.completed }}</div>
+                </div>
+            </div>
+
             <div class="card shadow-lg border-0 overflow-hidden print-no-shadow" style="background-color: #1e293b;">
 
                 <div
@@ -80,15 +91,20 @@
                     <table class="table table-dark table-hover mb-0 align-middle print-table-white">
                         <thead class="bg-dark border-bottom border-secondary">
                             <tr>
-                                <th class="py-3 ps-4 text-white-50 small text-uppercase print-text-black">Ref ID</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black">Owner</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black">Defect Detail</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black">Severity</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black">Current Status</th>
+                                <th class="py-3 ps-4 text-white-50 small text-uppercase print-text-black"
+                                    style="width: 10%;">Ref ID</th>
+                                <th class="py-3 text-white-50 small text-uppercase print-text-black"
+                                    style="width: 15%;">Owner / Unit</th>
+                                <th class="py-3 text-white-50 small text-uppercase print-text-black"
+                                    style="width: 35%;">Defect Detail</th>
+                                <th class="py-3 text-white-50 small text-uppercase print-text-black"
+                                    style="width: 15%;">Severity</th>
+                                <th class="py-3 text-white-50 small text-uppercase print-text-black"
+                                    style="width: 15%;">Current Status</th>
                                 <th class="py-3 text-white-50 small text-uppercase d-print-none">Verification</th>
                                 <th class="py-3 text-end pe-4 text-white-50 small text-uppercase d-print-none">Action
                                 </th>
-                                <th class="d-none d-print-table-cell text-end pe-4">Signature</th>
+                                <th class="d-none d-print-table-cell text-end pe-4" style="width: 10%;">Signature</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -253,12 +269,24 @@
             --bs-table-bg: white;
             --bs-table-color: black;
             border-color: #000;
+            width: 100% !important;
+            table-layout: fixed !important;
         }
 
         .table-dark th,
         .table-dark td {
             border-bottom: 1px solid #000 !important;
             color: black !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            word-break: normal !important;
+            padding: 8px !important;
+            overflow-wrap: normal !important;
+            vertical-align: top;
+        }
+
+        tr {
+            page-break-inside: avoid !important;
         }
 
         .badge {

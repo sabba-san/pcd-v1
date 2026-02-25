@@ -27,11 +27,20 @@
                     data-bs-toggle="dropdown" aria-expanded="false">
 
                     <div class="d-none d-md-block text-end">
-                        <div class="small fw-bold">{{ current_user.full_name if current_user.full_name else
-                            current_user.username }}</div>
+                        <div class="small fw-bold">
+                            {% if current_user.role == 'developer' and current_user.company_name %}
+                            {{ current_user.company_name }}
+                            {% elif current_user.role == 'lawyer' and current_user.firm_name %}
+                            {{ current_user.firm_name }}
+                            {% else %}
+                            {{ current_user.full_name if current_user.full_name else current_user.username }}
+                            {% endif %}
+                        </div>
+                        {% if current_user.role not in ['developer', 'lawyer'] %}
                         <div class="small text-muted" style="font-size: 0.75rem;">
                             {{ current_user.project_name or 'User' }}
                         </div>
+                        {% endif %}
                     </div>
 
                     {% if session.get('username') == 'admin' %}
