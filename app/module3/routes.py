@@ -583,6 +583,13 @@ def download_report(report_type):
         if request.args.get('project_id'):
             params['project_id'] = request.args.get('project_id')
             
+        import flask_login
+        if flask_login.current_user and flask_login.current_user.is_authenticated:
+            if flask_login.current_user.role == 'developer':
+                params['dev_id'] = flask_login.current_user.id
+            if not params.get('user_id') and flask_login.current_user.role == 'user':
+                params['user_id'] = flask_login.current_user.id
+
         # Stream the PDF response back to the client
         resp = requests.get(microservice_url, params=params, stream=True)
         
