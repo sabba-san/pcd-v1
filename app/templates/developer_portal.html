@@ -81,9 +81,6 @@
                             class="btn btn-sm btn-outline-info me-2">
                             <i class="bi bi-file-earmark-pdf-fill me-2 text-info"></i>Compliance Report
                         </a>
-                        <button class="btn btn-sm btn-outline-light" onclick="window.print()">
-                            <i class="bi bi-printer me-2"></i>Print Log
-                        </button>
                     </div>
                 </div>
 
@@ -98,10 +95,13 @@
                                 <th class="py-3 text-white-50 small text-uppercase print-text-black"
                                     style="width: 35%;">Defect Detail</th>
                                 <th class="py-3 text-white-50 small text-uppercase print-text-black"
+                                    style="width: 15%;">Photos</th>
+                                <th class="py-3 text-white-50 small text-uppercase print-text-black"
                                     style="width: 15%;">Severity</th>
                                 <th class="py-3 text-white-50 small text-uppercase print-text-black"
                                     style="width: 15%;">Current Status</th>
-                                <th class="py-3 text-white-50 small text-uppercase d-print-none">Verification</th>
+                                <th class="py-3 text-white-50 small text-uppercase d-print-none text-center">
+                                    Verification</th>
                                 <th class="py-3 text-end pe-4 text-white-50 small text-uppercase d-print-none">Action
                                 </th>
                                 <th class="d-none d-print-table-cell text-end pe-4" style="width: 10%;">Signature</th>
@@ -124,6 +124,22 @@
                                         <i class="bi bi-paperclip"></i> {{ defect.filename }}
                                     </div>
                                 </td>
+                                <td>
+                                    {% if defect.images %}
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% for img in defect.images %}
+                                        <a href="{{ url_for('static', filename=img) }}" target="_blank">
+                                            <img src="{{ url_for('static', filename=img) }}" alt="Defect Photo"
+                                                class="img-thumbnail border-secondary"
+                                                style="width: 50px; height: 50px; object-fit: cover; background-color: #0f172a;">
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <span class="text-white-50 small fst-italic">No Photos</span>
+                                    {% endif %}
+                                </td>
+
                                 <td>
                                     {% if defect.severity == 'High' %}
                                     <span
@@ -153,17 +169,11 @@
                                     {% endif %}
                                 </td>
 
-                                <td class="d-print-none">
-                                    {% if defect.filename and defect.filename != 'No File' %}
+                                <td class="d-print-none text-center">
                                     <a href="{{ url_for('module3.visualize', project_id=defect.scan_id) }}"
-                                        class="btn btn-sm btn-outline-info rounded-pill px-3">
-                                        <i class="bi bi-badge-3d-fill me-1"></i> Verify Model
+                                        class="btn btn-sm btn-outline-info px-3 shadow-sm" style="white-space: nowrap;">
+                                        <i class="bi bi-badge-3d-fill me-1"></i> Open 3D Model to Verify
                                     </a>
-                                    {% else %}
-                                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>
-                                        <i class="bi bi-slash-circle me-1"></i> No Model
-                                    </button>
-                                    {% endif %}
                                 </td>
                                 <td class="text-end pe-4 d-print-none">
                                     {% if defect.status in ['locked', 'draft', 'Reported', 'New', 'Pending'] %}

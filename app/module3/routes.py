@@ -316,7 +316,8 @@ def developer_portal():
             'scan_id': d.project_id, 
             'project_name': d.project.name if d.project else "Unknown",
             'severity': d.severity,
-            'status': d.status
+            'status': d.status,
+            'images': [img.image_path for img in d.images] if d.images else []
         })
 
     return render_template('developer_portal.html', projects=projects_data, stats=stats, defects=defects)
