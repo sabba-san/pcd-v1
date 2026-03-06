@@ -612,6 +612,14 @@ function renderDefectMarkers(defects) {
         let posY = defect.y;
         let posZ = defect.z;
 
+        // Skip markers with bad coordinates to prevent crashes
+        if (posX === undefined || posX === null || isNaN(posX) ||
+            posY === undefined || posY === null || isNaN(posY) ||
+            posZ === undefined || posZ === null || isNaN(posZ)) {
+            console.warn('Skipping marker with invalid coordinates:', defect);
+            return; // Use return in forEach to skip to next iteration
+        }
+
         // Fallback if coordinates are perfectly zero (legacy DB entries without GLB extraction)
         if (posX === 0 && posY === 0 && posZ === 0 && index < snapshotMeshes.length) {
             posX = snapshotMeshes[index].position.x;
@@ -1003,3 +1011,27 @@ window.addEventListener('resize', () => {
 if (!window.APP_CONFIG.modelUrl) {
     loadDefects();
 }
+
+// Strict cleanup on exit to prevent WebGL context leaks
+window.addEventListener('beforeunload', () => {
+    console.log('Disposing 3D Viewer resources...');
+    if (scene) {
+        scene.dispose();
+    }
+    if (engine) {
+        engine.dispose();
+    }
+    markers = [];
+    defectsData = [];
+    filteredDefects = [];
+    loadedMeshes = [];
+    snapshotMeshes = [];
+});
+
+// Force fresh reload if page is restored from back/forward cache (bfcache)
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        console.log('Page restored from bfcache, forcing reload...');
+        window.location.reload();
+    }
+});

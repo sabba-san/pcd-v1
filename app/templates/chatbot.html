@@ -235,7 +235,7 @@
         chatBox.scrollTop = chatBox.scrollHeight;
 
         // Send to Backend
-        fetch("{{ url_for('module4.chat_response') }}", {
+        fetch("{{ url_for('module1.chat') }}", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: text })
@@ -258,6 +258,35 @@
                 chatBox.appendChild(errorDiv);
             });
     }
+
+    // 4. Load Chat History on Page Load
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("{{ url_for('module1.get_history') }}")
+            .then(response => response.json())
+            .then(data => {
+                const chatBox = document.getElementById('chatBox');
+                if (data.length > 0) {
+                    // Clear default welcome message
+                    chatBox.innerHTML = '';
+                    data.forEach(msg => {
+                        // User message
+                        const userDiv = document.createElement('div');
+                        userDiv.className = 'msg msg-user';
+                        userDiv.innerText = msg.user;
+                        chatBox.appendChild(userDiv);
+
+                        // Bot message
+                        const botDiv = document.createElement('div');
+                        botDiv.className = 'msg msg-bot';
+                        const botHeader = `<div class="d-flex align-items-center gap-2 mb-1"><i class="bi bi-robot text-primary"></i> <small class="fw-bold opacity-75">AI Assistant</small></div>`;
+                        botDiv.innerHTML = botHeader + msg.bot;
+                        chatBox.appendChild(botDiv);
+                    });
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            })
+            .catch(error => console.error("Could not load history:", error));
+    });
 </script>
 
 {% endblock %}

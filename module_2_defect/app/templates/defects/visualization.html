@@ -1569,76 +1569,79 @@
             // Load 3D model
             let rootMesh = null;
             let snapshotMeshes = [];
-            {% if model_url %}
-            console.log('Loading model from: {{ model_url }}');
-            BABYLON.SceneLoader.ImportMeshAsync('', '{{ model_url }}', '', scene, null, '.glb')
-                .then(function (result) {
-                    console.log('Model loaded successfully, meshes:', result.meshes.length);
-                    loadedMeshes = result.meshes;
-                    modelLoaded = true;
 
-                    // Update mesh count
-                    document.getElementById('meshCount').textContent = result.meshes.length;
+            const serverModelUrl = "{{ model_url if model_url else '' }}";
 
-                    // Find Snapshot meshes
-                    result.meshes.forEach(mesh => {
-                        if (mesh.name === '__root__') {
-                            rootMesh = mesh;
-                        }
+            if (serverModelUrl) {
+                console.log('Loading model from: ' + serverModelUrl);
+                BABYLON.SceneLoader.ImportMeshAsync('', serverModelUrl, '', scene, null, '.glb')
+                    .then(function (result) {
+                        console.log('Model loaded successfully, meshes:', result.meshes.length);
+                        loadedMeshes = result.meshes;
+                        modelLoaded = true;
 
-                        if (mesh.name && mesh.name.toLowerCase().includes('snapshot')) {
-                            mesh.computeWorldMatrix(true);
-                            snapshotMeshes.push({
-                                mesh: mesh,
-                                name: mesh.name,
-                                position: mesh.absolutePosition.clone()
-                            });
-                            mesh.isVisible = false;
-                            console.log('Found Snapshot mesh:', mesh.name, 'at', mesh.absolutePosition.x.toFixed(2), mesh.absolutePosition.y.toFixed(2), mesh.absolutePosition.z.toFixed(2));
-                        }
-                    });
+                        // Update mesh count
+                        document.getElementById('meshCount').textContent = result.meshes.length;
 
-                    // Apply PBR materials to all meshes
-                    applyPBRMaterials(scene);
-
-                    console.log('Total Snapshot meshes found:', snapshotMeshes.length);
-
-                    // Center camera on model
-                    if (result.meshes.length > 0) {
-                        let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-                        let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+                        // Find Snapshot meshes
                         result.meshes.forEach(mesh => {
-                            if (mesh.getBoundingInfo && mesh.name !== '__root__' && !mesh.name.toLowerCase().includes('snapshot')) {
+                            if (mesh.name === '__root__') {
+                                rootMesh = mesh;
+                            }
+
+                            if (mesh.name && mesh.name.toLowerCase().includes('snapshot')) {
                                 mesh.computeWorldMatrix(true);
-                                const boundingInfo = mesh.getBoundingInfo();
-                                min = BABYLON.Vector3.Minimize(min, boundingInfo.boundingBox.minimumWorld);
-                                max = BABYLON.Vector3.Maximize(max, boundingInfo.boundingBox.maximumWorld);
+                                snapshotMeshes.push({
+                                    mesh: mesh,
+                                    name: mesh.name,
+                                    position: mesh.absolutePosition.clone()
+                                });
+                                mesh.isVisible = false;
+                                console.log('Found Snapshot mesh:', mesh.name, 'at', mesh.absolutePosition.x.toFixed(2), mesh.absolutePosition.y.toFixed(2), mesh.absolutePosition.z.toFixed(2));
                             }
                         });
-                        modelCenter = min.add(max).scale(0.5);
-                        const size = max.subtract(min);
-                        modelBounds = { min, max, size };
 
-                        // Update model size display
-                        document.getElementById('modelSize').textContent =
-                            `${size.x.toFixed(1)} x ${size.y.toFixed(1)} x ${size.z.toFixed(1)}`;
+                        // Apply PBR materials to all meshes
+                        applyPBRMaterials(scene);
 
-                        camera.target = modelCenter;
-                        camera.radius = size.length() * 1.5;
-                        console.log('Camera centered at:', modelCenter, 'radius:', camera.radius);
+                        console.log('Total Snapshot meshes found:', snapshotMeshes.length);
 
-                        createMarkersFromSnapshots();
+                        // Center camera on model
+                        if (result.meshes.length > 0) {
+                            let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                            let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+                            result.meshes.forEach(mesh => {
+                                if (mesh.getBoundingInfo && mesh.name !== '__root__' && !mesh.name.toLowerCase().includes('snapshot')) {
+                                    mesh.computeWorldMatrix(true);
+                                    const boundingInfo = mesh.getBoundingInfo();
+                                    min = BABYLON.Vector3.Minimize(min, boundingInfo.boundingBox.minimumWorld);
+                                    max = BABYLON.Vector3.Maximize(max, boundingInfo.boundingBox.maximumWorld);
+                                }
+                            });
+                            modelCenter = min.add(max).scale(0.5);
+                            const size = max.subtract(min);
+                            modelBounds = { min, max, size };
+
+                            // Update model size display
+                            document.getElementById('modelSize').textContent =
+                                `${size.x.toFixed(1)} x ${size.y.toFixed(1)} x ${size.z.toFixed(1)}`;
+
+                            camera.target = modelCenter;
+                            camera.radius = size.length() * 1.5;
+                            console.log('Camera centered at:', modelCenter, 'radius:', camera.radius);
+
+                            createMarkersFromSnapshots();
+                            loadDefects();
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('Error loading model:', error);
                         loadDefects();
-                    }
-                })
-                .catch(function (error) {
-                    console.error('Error loading model:', error);
-                    loadDefects();
-                });
-            {% else %}
-            console.log('No model URL provided');
-            loadDefects();
-            {% endif %}
+                    });
+            } else {
+                console.log('No model URL provided');
+                loadDefects();
+            }
 
             // Fetch and render defects
             function loadDefects() {
@@ -1906,8 +1909,20 @@
 
                 // Fallback: create markers from database coordinates
                 defects.forEach((defect) => {
+                    let posX = defect.x;
+                    let posY = defect.y;
+                    let posZ = defect.z;
+
+                    // Skip markers with bad coordinates to prevent crashes
+                    if (posX === undefined || posX === null || isNaN(posX) ||
+                        posY === undefined || posY === null || isNaN(posY) ||
+                        posZ === undefined || posZ === null || isNaN(posZ)) {
+                        console.warn('Skipping marker with invalid coordinates:', defect);
+                        return; // Use return in forEach to skip to next iteration
+                    }
+
                     const marker = BABYLON.MeshBuilder.CreateSphere('marker' + defect.defectId, { diameter: 0.25 }, scene);
-                    marker.position = new BABYLON.Vector3(defect.x, defect.y, defect.z);
+                    marker.position = new BABYLON.Vector3(posX, posY, posZ);
 
                     const material = new BABYLON.StandardMaterial('mat' + defect.defectId, scene);
                     material.diffuseColor = getSeverityColor(defect.severity);
@@ -2275,9 +2290,33 @@
             });
 
             // Initial load - only if no model URL
-            {% if not model_url %}
-            loadDefects();
-            {% endif %}
+            if (!serverModelUrl) {
+                loadDefects();
+            }
+
+            // Strict cleanup on exit to prevent WebGL context leaks
+            window.addEventListener('beforeunload', () => {
+                console.log('Disposing 3D Viewer resources...');
+                if (scene) {
+                    scene.dispose();
+                }
+                if (engine) {
+                    engine.dispose();
+                }
+                markers = [];
+                defectsData = [];
+                filteredDefects = [];
+                loadedMeshes = [];
+                snapshotMeshes = [];
+            });
+
+            // Force fresh reload if page is restored from back/forward cache (bfcache)
+            window.addEventListener('pageshow', (event) => {
+                if (event.persisted) {
+                    console.log('Page restored from bfcache, forcing reload...');
+                    window.location.reload();
+                }
+            });
         </script>
     </main>
 </body>

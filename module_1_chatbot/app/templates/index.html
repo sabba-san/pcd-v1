@@ -58,85 +58,187 @@
                             Hello! I am your DLP Assistant. How can I help you with your property defects today?
                         </div>
                     </div>
-                    <div class="chat-input-area">
-                        <textarea id="userInput" class="chat-input" placeholder="Ask a question..." rows="1"></textarea>
-                        <button id="sendBtn" class="btn btn-primary">Send</button>
-                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <textarea id="userInput" class="chat-input" placeholder="Ask a question..." rows="1"></textarea>
+                    <button id="sendBtn" class="btn-primary">Send</button>
                 </div>
             </section>
 
-            <!-- Other Tabs (Guidelines, Assessment, etc) -->
+            <!-- Guidelines Tab -->
             <section id="guidelines" class="tab-content">
-                <div class="container">
-                    <div class="card">
-                        <h1>Defect Liability Guidelines</h1>
-                        <p>Detailed reference for HDA and DLP periods.</p>
-                        <!-- Content remains similar but styled with 'card' -->
-                        <div class="guide-section">
-                            <h3>Standard Duration</h3>
-                            <p><strong>Residential:</strong> 24 Months from Vacant Possession.</p>
+                <div class="guidelines-container">
+
+                    <article class="guidelines-paper">
+
+                        <header class="guidelines-header">
+                            <h1>Defect Liability Guidelines</h1>
+                            <p>Malaysian Property Law Reference</p>
+                        </header>
+
+                        <div class="guidelines-content">
+
+                            <div class="guide-section">
+                                <h3><span class="icon">🔍</span> Overview</h3>
+                                <p>The <strong>Defect Liability Period (DLP)</strong> is a mandatory warranty period
+                                    (typically 24 months) where the developer acts as the "contractor" to fix defects at
+                                    no cost.</p>
+                            </div>
+
+                            <div class="guide-section">
+                                <h3><span class="icon">⚖️</span> Legal Basis</h3>
+                                <ul>
+                                    <li><strong>HDA 1966:</strong> The primary Housing Development Act.</li>
+                                    <li><strong>Schedule G & H:</strong> Standard agreements for landed & strata titles.
+                                    </li>
+                                    <li><strong>CIS 7:</strong> QLASSIC quality standards.</li>
+                                </ul>
+                            </div>
+
+                            <div class="guide-section">
+                                <h3><span class="icon">📅</span> Standard Duration</h3>
+                                <ul>
+                                    <li><strong>Residential:</strong> 24 Months from Vacant Possession (VP).</li>
+                                    <li><strong>Commercial:</strong> Typically 12-24 Months (Check your SPA).</li>
+                                </ul>
+                            </div>
+
+                            <div class="guide-section">
+                                <h3><span class="icon">⚠️</span> Common Issues & Tips</h3>
+                                <ul>
+                                    <li><strong>Written Notice:</strong> Report immediately via official channels.</li>
+                                    <li><strong>Evidence:</strong> Photos/Videos are required before renovation.</li>
+                                    <li><strong>Marking:</strong> Use masking tape for visual inspection.</li>
+                                </ul>
+                            </div>
+
                         </div>
-                    </div>
+                        <div class="guidelines-footer">
+                            <button id="backToChatBtn">Back to Chat</button>
+                        </div>
+                    </article>
                 </div>
             </section>
 
+            <!-- Assessment Tab -->
             <section id="assessment" class="tab-content">
-                <div class="container">
-                    <div class="card">
-                        <h2>DLP Assessment Tool</h2>
-                        <form id="assessmentForm">
-                            <div class="form-group">
-                                <label class="form-label">Defect Type</label>
-                                <select id="defectType" class="form-control" required>
-                                    <option value="">-- Select --</option>
-                                    <option value="structural">Structural</option>
-                                    <option value="finishing">Finishing</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Run Assessment</button>
-                        </form>
-                        <div id="assessmentResult" class="mt-4"></div>
-                    </div>
+                <div class="content-header">
+                    <h2>DLP Assessment Tool</h2>
+                    <p>Evaluate defect liability based on Malaysian property law</p>
                 </div>
+                <form id="assessmentForm" class="assessment-form">
+                    <div class="form-group">
+                        <label for="defectType">Defect Type:</label>
+                        <select id="defectType" required>
+                            <option value="">-- Select Defect Type --</option>
+                            <option value="structural">Structural Defect</option>
+                            <option value="finishing">Finishing Defect</option>
+                            <option value="electrical">Electrical Defect</option>
+                            <option value="plumbing">Plumbing Defect</option>
+                            <option value="other">Other Defect</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reportedWithin">Reported Within DLP Period:</label>
+                        <select id="reportedWithin" required>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="severity">Severity Level:</label>
+                        <select id="severity" required>
+                            <option value="minor">Minor</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="repairCost">Estimated Repair Cost (RM):</label>
+                        <input type="number" id="repairCost" min="0" placeholder="Enter amount">
+                    </div>
+                    <button type="submit" class="btn-primary">Run Assessment</button>
+                </form>
+                <div id="assessmentResult" class="assessment-result"></div>
             </section>
 
+            <!-- Legal References Tab -->
             <section id="legal" class="tab-content">
-                <div class="container">
+                <div class="content-header">
                     <h2>Legal References</h2>
-                    <div class="dashboard-grid">
-                        <a href="#" class="card stat-card">
-                            <div class="stat-icon">HDA</div>
-                            <div class="stat-info">
-                                <h3>Housing Dev Act</h3>
-                            </div>
-                        </a>
-                        <a href="#" class="card stat-card">
-                            <div class="stat-icon">SMA</div>
-                            <div class="stat-info">
-                                <h3>Strata Mgmt Act</h3>
-                            </div>
-                        </a>
-                    </div>
+                    <p>Official sources and acts related to Malaysian Property Law</p>
+                </div>
+
+                <div class="legal-grid">
+
+                    <a href="https://www.iproperty.com.my/guides/what-is-hda-housing-development-act-malaysia-53570"
+                        target="_blank" class="legal-card">
+                        <div class="legal-icon">🏠</div>
+                        <div class="legal-info">
+                            <h4>Housing Development Act (HDA) <span class="external-icon">↗</span></h4>
+                            <p>The primary act governing residential property development and buyer protection.</p>
+                        </div>
+                    </a>
+
+                    <a href="https://www.ppj.gov.my/en/second-page/akta-pengurusan-strata-2013-akta-757" target="_blank"
+                        class="legal-card">
+                        <div class="legal-icon">🏢</div>
+                        <div class="legal-info">
+                            <h4>Strata Management Act 2013 <span class="external-icon">↗</span></h4>
+                            <p>Governs the maintenance and management of buildings and common property.</p>
+                        </div>
+                    </a>
+
+                    <a href="https://www.propertyguru.com.my/property-guides/what-is-schedule-g-h-i-j-certificate-of-fitness-34566"
+                        target="_blank" class="legal-card">
+                        <div class="legal-icon">📜</div>
+                        <div class="legal-info">
+                            <h4>Schedule G & H Agreements <span class="external-icon">↗</span></h4>
+                            <p>Standard Sale & Purchase Agreements (SPA) for Landed vs. Strata properties.</p>
+                        </div>
+                    </a>
+
+                    <a href="https://www.cidb.gov.my/eng/qlassic-quality-assessment-system-for-building-construction-works/"
+                        target="_blank" class="legal-card">
+                        <div class="legal-icon">🏗️</div>
+                        <div class="legal-info">
+                            <h4>CIS 7: QLASSIC Standards <span class="external-icon">↗</span></h4>
+                            <p>Quality Assessment System in Construction standards by CIDB.</p>
+                        </div>
+                    </a>
+
                 </div>
             </section>
 
+            <!-- Feedback Tab -->
             <section id="feedback" class="tab-content">
-                <div class="container">
-                    <div class="card">
-                        <h2>Send Feedback</h2>
-                        <form id="feedbackForm">
-                            <div class="form-group">
-                                <textarea id="feedbackText" class="form-control" rows="4"
-                                    placeholder="Your feedback..."></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </form>
-                    </div>
+                <div class="content-header">
+                    <h2>Send Feedback</h2>
+                    <p>Help us improve the DLP Chatbot</p>
                 </div>
+                <form id="feedbackForm" class="feedback-form">
+                    <div class="form-group">
+                        <label for="feedbackType">Feedback Type:</label>
+                        <select id="feedbackType" required>
+                            <option value="suggestion">Suggestion</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedbackText">Your Feedback:</label>
+                        <textarea id="feedbackText" rows="5" required
+                            placeholder="Please share your feedback..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Submit Feedback</button>
+                </form>
+                <div id="feedbackStatus" class="feedback-status"></div>
             </section>
 
         </main>
     </div>
+
+    <div id="notification" class="notification"></div>
 
     <!-- Linked correct JS -->
     <script src="{{ url_for('static', filename='shared/js/main.js') }}"></script>

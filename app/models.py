@@ -153,7 +153,7 @@ class GeneratedReport(db.Model):
 class ChatHistory(db.Model):
     __tablename__ = 'chat_history'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
     user_message = db.Column(db.Text)
     bot_response = db.Column(db.Text)

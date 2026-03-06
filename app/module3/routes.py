@@ -398,7 +398,8 @@ def validate_all():
 @login_required
 def api_project_defects(project_id):
     if request.method == 'GET':
-        defects = Defect.query.filter_by(project_id=project_id).all()
+        # Only fetch actual pinpoints, excluding the parent house scan records
+        defects = Defect.query.filter_by(project_id=project_id).filter(Defect.scan_path == None).all()
         return jsonify([{
             'defectId': d.id,
             'x': d.x_coord or 0.0,

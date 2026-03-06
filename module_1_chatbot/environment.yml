@@ -20,4 +20,5 @@ dependencies:
     - black
     - ollama
     - groq
+    - pymupdf
     # add other pip deps here

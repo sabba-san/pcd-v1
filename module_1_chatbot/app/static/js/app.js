@@ -19,15 +19,23 @@ class DLPChatbotApp {
     init() {
         this.cacheElements();
         this.attachEventListeners();
-        this.loadSavedData(); // Loads all chats from LocalStorage
 
         // Parse Context from URL
         const params = new URLSearchParams(window.location.search);
+
+        // Grab user_id for strict isolation
+        const userId = params.get('user_id') || 'guest';
+
+        this.storageKey = 'dlp_conversations_' + userId;
+
         this.context = {
             project_name: params.get('project_name') || 'Unknown Project',
-            defect_count: params.get('defect_count') || '0'
+            defect_count: params.get('defect_count') || '0',
+            user_id: userId
         };
         console.log("Chatbot Context Loaded:", this.context);
+
+        this.loadSavedData(); // Loads all chats from LocalStorage based on storageKey
     }
     cacheElements() {
         // Navigation & Sidebar
@@ -121,7 +129,7 @@ class DLPChatbotApp {
         }
 
         // Load Conversations
-        const saved = localStorage.getItem('dlp_conversations');
+        const saved = localStorage.getItem(this.storageKey);
         if (saved) {
             try {
                 this.conversations = JSON.parse(saved);
@@ -142,7 +150,7 @@ class DLPChatbotApp {
     }
 
     saveData() {
-        localStorage.setItem('dlp_conversations', JSON.stringify(this.conversations));
+        localStorage.setItem(this.storageKey, JSON.stringify(this.conversations));
         this.renderSidebarHistory();
     }
 

@@ -15,7 +15,8 @@ def list_projects():
     # Enhance scan data with defect counts and metadata
     projects = []
     for scan in scans:
-        defect_count = Defect.query.filter_by(scan_id=scan.id).count()
+        # Only count actual defects, not house scans
+        defect_count = Defect.query.filter_by(scan_id=scan.id).filter(Defect.scan_path == None).count()
         
         # Try to load metadata specific to this scan. We store a
         # per-scan snapshot at scan_<id>_metadata.json so that each
@@ -44,7 +45,8 @@ def list_projects():
 @defects_bp.route('/scans/<int:scan_id>/visualize', methods=['GET'])
 def visualize_scan(scan_id):
     scan = Scan.query.get_or_404(scan_id)
-    defects = Defect.query.filter_by(scan_id=scan_id).all()
+    # Exclude scan_path records
+    defects = Defect.query.filter_by(scan_id=scan_id).filter(Defect.scan_path == None).all()
     model_url = url_for('defects.serve_model', scan_id=scan_id) if scan.model_path else None
     
     # Try to load upload metadata specific to this scan
@@ -68,7 +70,8 @@ def visualize_scan(scan_id):
 @defects_bp.route('/scans/<int:scan_id>/defects', methods=['GET'])
 def get_scan_defects(scan_id):
     scan = Scan.query.get_or_404(scan_id)
-    defects = Defect.query.filter_by(scan_id=scan_id).all()
+    # Exclude scan_path records
+    defects = Defect.query.filter_by(scan_id=scan_id).filter(Defect.scan_path == None).all()
     
     # Load per-scan upload metadata to get the scan date
     upload_date = None
@@ -184,7 +187,8 @@ def serve_defect_image(defect_id):
 @defects_bp.route('/project/<int:scan_id>', methods=['GET'])
 def view_project(scan_id):
     scan = Scan.query.get_or_404(scan_id)
-    defects = Defect.query.filter_by(scan_id=scan_id).all()
+    # Exclude scan_path records
+    defects = Defect.query.filter_by(scan_id=scan_id).filter(Defect.scan_path == None).all()
     model_url = url_for('defects.serve_model', scan_id=scan_id) if scan.model_path else None
     
     # Try to load upload metadata specific to this scan
