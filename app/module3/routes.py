@@ -316,7 +316,8 @@ def developer_portal():
             'scan_id': d.project_id, 
             'project_name': d.project.name if d.project else "Unknown",
             'severity': d.severity,
-            'status': d.status
+            'status': d.status,
+            'images': [img.image_path for img in d.images] if d.images else []
         })
 
     return render_template('developer_portal.html', projects=projects_data, stats=stats, defects=defects)
@@ -397,7 +398,8 @@ def validate_all():
 @login_required
 def api_project_defects(project_id):
     if request.method == 'GET':
-        defects = Defect.query.filter_by(project_id=project_id).all()
+        # Only fetch actual pinpoints, excluding the parent house scan records
+        defects = Defect.query.filter_by(project_id=project_id).filter(Defect.scan_path == None).all()
         return jsonify([{
             'defectId': d.id,
             'x': d.x_coord or 0.0,
@@ -409,7 +411,9 @@ def api_project_defects(project_id):
             'severity': d.severity or 'Medium',
             'status': d.status or 'Reported',
             'description': d.description or '',
-            'created_at': d.created_at.strftime('%Y-%m-%d') if d.created_at else None
+            'created_at': d.created_at.strftime('%Y-%m-%d') if d.created_at else None,
+            'imageUrl': url_for('static', filename=d.images[0].image_path) if d.images else None,
+            'notes': d.notes if hasattr(d, 'notes') and d.notes else ''
         } for d in defects])
         
     if request.method == 'POST':
@@ -583,6 +587,13 @@ def download_report(report_type):
         if request.args.get('project_id'):
             params['project_id'] = request.args.get('project_id')
             
+        import flask_login
+        if flask_login.current_user and flask_login.current_user.is_authenticated:
+            if flask_login.current_user.role == 'developer':
+                params['dev_id'] = flask_login.current_user.id
+            if not params.get('user_id') and flask_login.current_user.role == 'user':
+                params['user_id'] = flask_login.current_user.id
+
         # Stream the PDF response back to the client
         resp = requests.get(microservice_url, params=params, stream=True)
         

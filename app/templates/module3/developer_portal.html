@@ -69,15 +69,18 @@
                     </button>
                 </div>
 
+                <div class="px-3 pt-3 pb-2 d-none d-print-block">
+                    <h6 class="fw-bold mb-0 print-text-black">Total Defects Reported for this Unit: {{ stats.new + stats.in_progress + stats.completed }}</h6>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-dark table-hover mb-0 align-middle print-table-white">
                         <thead class="bg-dark border-bottom border-secondary">
                             <tr>
                                 <th class="py-3 ps-4 text-white-50 small text-uppercase print-text-black">Ref ID</th>
                                 <th class="py-3 text-white-50 small text-uppercase print-text-black">Owner</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black">Defect Detail</th>
+                                <th class="py-3 text-white-50 small text-uppercase print-text-black" style="width: 40%;">Defect Detail</th>
                                 <th class="py-3 text-white-50 small text-uppercase print-text-black">Severity</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black">Current Status</th>
+                                <th class="py-3 text-white-50 small text-uppercase print-text-black" style="width: 15%;">Current Status</th>
                                 <th class="py-3 text-white-50 small text-uppercase d-print-none">Verification</th>
                                 <th class="py-3 text-end pe-4 text-white-50 small text-uppercase d-print-none">Action
                                 </th>

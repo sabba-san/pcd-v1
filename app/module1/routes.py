@@ -54,12 +54,42 @@ def chat():
         )
         
         bot_reply = chat_completion.choices[0].message.content
+        
+        # Save to ChatHistory
+        try:
+            from app.module3.extensions import db
+            from app.models import ChatHistory
+            from flask_login import current_user
+            if current_user.is_authenticated:
+                new_chat = ChatHistory(user_id=current_user.id, user_message=user_message, bot_response=bot_reply)
+                db.session.add(new_chat)
+                db.session.commit()
+        except Exception as db_err:
+            print(f"Error saving chat history: {db_err}")
+            
         return jsonify({'reply': bot_reply})
 
     except Exception as e:
         # --- DEBUG MODE: Send the real error to the frontend ---
         print(f"AI Error: {e}")
         return jsonify({'error': f"DEBUG INFO: {str(e)}"}), 500
+
+@bp.route('/history', methods=['GET'])
+def get_history():
+    from flask_login import current_user
+    from app.models import ChatHistory
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    chats = ChatHistory.query.filter_by(user_id=current_user.id).order_by(ChatHistory.timestamp.asc()).all()
+    history = []
+    for chat in chats:
+        history.append({
+            "user": chat.user_message,
+            "bot": chat.bot_response,
+            "timestamp": chat.timestamp.isoformat() if chat.timestamp else None
+        })
+    return jsonify(history)
 
 @bp.route('/feedback', methods=['POST'])
 def feedback():

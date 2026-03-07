@@ -1,19 +1,14 @@
 from groq import Groq
-from .dlp_knowledge_base import get_dlp_info, DLP_RULES
-
-# =====================================================
-# 1. CONFIGURATION (GROQ SETUP)
-# =====================================================
-
+from .dlp_knowledge_base import get_dlp_info, DLP_RULES, load_pdf_knowledge
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
 # =====================================================
 # 1. CONFIGURATION (GROQ SETUP)
 # =====================================================
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ⚠️ IMPORTANT: The API Key is now loaded from the .env file
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -31,6 +26,9 @@ except Exception as e:
 # Using the new supported model
 MODEL_NAME = "llama-3.3-70b-versatile"
 
+# Load the PDF text when the app starts
+PDF_CONTEXT = load_pdf_knowledge()
+
 # =====================================================
 # 2. SYSTEM PROMPTS
 # =====================================================
@@ -40,7 +38,7 @@ SYSTEM_INSTRUCTION = """
 You are a specialized legal assistant for Malaysian Property Law.
 
 1.  **Role:** You are an AI expert in Malaysian housing acts, strata management, and defect liability.
-2.  **Context:** You will be provided with some "Retrieved Context" from our local database.
+2.  **Context:** You will be provided with some "Retrieved Context" from our local database and official legal documents.
     - **PRIORITIZE** this context if it is relevant.
     - If the context is empty or irrelevant, **USE YOUR GENERAL KNOWLEDGE** of Malaysian law to answer helpfuly.
 3.  **Scope:**
@@ -61,18 +59,19 @@ def process_query(user_query, context=None):
     lower_query = user_query.lower()
     retrieved_context = []
     
-    # Simple Keyword Search (RAG)
+    # Simple Keyword Search (RAG fallback)
     for key in DLP_RULES.keys():
         if key in lower_query:
             info = get_dlp_info(key)
             retrieved_context.append(f"--- Info regarding '{key}' ---\n{info}")
 
-    if retrieved_context:
-        full_context_text = "\n\n".join(retrieved_context)
-    else:
-        full_context_text = "No specific documents found in internal database. Please rely on your general knowledge."
+    # Add the extracted PDF knowledge as the primary context (up to 50k chars for fast processing)
+    safe_pdf_context = PDF_CONTEXT[:50000] if PDF_CONTEXT else "No direct PDF available."
+    retrieved_context.append(f"--- Official Legal Documents Text ---\n{safe_pdf_context}")
 
-    # Format Context String
+    full_context_text = "\n\n".join(retrieved_context)
+
+    # Format Context String (ISOLATION LAYER PRESERVED)
     context_str = ""
     if context:
         project = context.get('project_name', 'Unknown')
@@ -101,7 +100,7 @@ def process_query(user_query, context=None):
                 {"role": "user", "content": user_prompt}
             ],
             model=MODEL_NAME,
-            temperature=0.3, # Low temperature = strict and factual
+            temperature=0.1, # Using Jian Wei's precise temperature 0.1
         )
         print("DEBUG: Groq returned response")
         return chat_completion.choices[0].message.content
@@ -139,7 +138,7 @@ def analyze_legal_text(document_text):
                 {"role": "user", "content": ANALYSIS_PROMPT}
             ],
             model=MODEL_NAME,
-            temperature=0.3,
+            temperature=0.1, # Using precise temperature 0.1
         )
         return chat_completion.choices[0].message.content
         

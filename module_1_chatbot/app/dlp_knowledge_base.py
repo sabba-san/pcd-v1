@@ -1,6 +1,38 @@
 """
 DLP Knowledge Base - Malaysian Property Law
 """
+import os
+import fitz  # PyMuPDF library
+
+DOCS_DIR = "legal_documents"
+KNOWLEDGE_TEXT = ""
+
+def load_pdf_knowledge():
+    """Reads all PDFs in the folder using heavy-duty PyMuPDF."""
+    global KNOWLEDGE_TEXT
+    # Adjust path if needed so it works relative to where app runs
+    docs_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), DOCS_DIR)
+    if not os.path.exists(docs_path):
+        print(f"WARNING: {docs_path} folder not found.")
+        return "No legal documents found."
+    
+    extracted_text = ""
+    for filename in os.listdir(docs_path):
+        if filename.lower().endswith(".pdf"):
+            filepath = os.path.join(docs_path, filename)
+            try:
+                # Use PyMuPDF to crack open the file
+                doc = fitz.open(filepath)
+                for page in doc:
+                    extracted_text += page.get_text() + "\n"
+                print(f"DEBUG: Successfully read PDF file: {filename}")
+            except Exception as e:
+                print(f"ERROR: Could not read {filename}: {e}")
+    
+    KNOWLEDGE_TEXT = extracted_text
+    print(f"DEBUG: Total characters loaded: {len(KNOWLEDGE_TEXT)}")
+    return KNOWLEDGE_TEXT
+
 
 DLP_RULES = {
     "what is dlp": """

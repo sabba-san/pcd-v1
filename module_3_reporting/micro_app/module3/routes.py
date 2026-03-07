@@ -86,20 +86,40 @@ def generate_report_api(report_type):
                 defects_db = Defect.query.filter_by(project_id=project.id).all()
             else:
                 defects_db = Defect.query.all()
+            
+            # If user is not provided (developer fetching for a project), find the dominant homeowner
+            if not user and defects_db:
+                for d in defects_db:
+                    if d.user and d.user.role == 'user':
+                        user = d.user
+                        break
 
         # 2. Map Database objects to Dictionaries required by PDF & AI
         defects = []
         for d in defects_db:
+            defect_image_path = d.images[0].image_path if hasattr(d, 'images') and len(d.images) > 0 else None
+            
+            unit_val = "N/A"
+            if user and hasattr(user, 'unit_no') and user.unit_no and str(user.unit_no) != "None":
+                unit_val = user.unit_no
+            elif hasattr(d, 'location') and d.location and str(d.location) != "None":
+                unit_val = d.location
+            elif hasattr(d, 'unit_no') and d.unit_no and str(d.unit_no) != "None":
+                unit_val = d.unit_no
+
             defects.append({
-                "id": str(d.id),
+                "id": d.id,
+                "project_name": project.name if project else "N/A",
+                "full_name": user.full_name if user else "N/A",
+                "unit": unit_val,
                 "desc": d.description or "No description",
-                "unit": user.unit_no if user else (d.location or "N/A"),
                 "status": d.status or "Pending",
                 "priority": d.severity or "Normal",
-                "remarks": "",
+                "remarks": d.notes if hasattr(d, 'notes') and d.notes else "",
                 "deadline": d.scheduled_date.strftime("%d-%m-%Y") if d.scheduled_date else "-",
                 "is_overdue": False,
-                "hda_compliant": True
+                "hda_compliant": True,
+                "image_path": defect_image_path
             })
 
         # Calculate stats
@@ -131,13 +151,28 @@ def generate_report_api(report_type):
             "keterangan": "Pemilik unit kediaman"
         }
 
+        developer_user = None
+        dev_id = request.args.get('dev_id', type=int)
+        if dev_id:
+            developer_user = User.query.get(dev_id)
+        elif project and project.developer_name:
+            developer_user = User.query.filter_by(role='developer', company_name=project.developer_name).first()
+            
+        penentang_nama = "Gamuda Berhad" # fallback placeholder if all else fails
+        if developer_user and developer_user.company_name:
+            penentang_nama = developer_user.company_name
+        elif project and project.developer_name:
+            penentang_nama = project.developer_name
+        elif developer_user and developer_user.full_name:
+            penentang_nama = developer_user.full_name
+            
         penentang = {
-            "nama": project.developer_name if project else "-",
-            "no_pendaftaran": project.developer_ssm if project else "-",
-            "alamat_1": project.developer_address if project else "-",
+            "nama": penentang_nama,
+            "no_pendaftaran": (developer_user.ic_number if developer_user and developer_user.ic_number else project.developer_ssm) if project else "-",
+            "alamat_1": developer_user.correspondence_address if developer_user and developer_user.correspondence_address else (project.developer_address if project else "-"),
             "alamat_2": "-",
-            "no_telefon": "-",
-            "email": "-",
+            "no_telefon": developer_user.phone_number if developer_user and developer_user.phone_number else "-",
+            "email": developer_user.email if developer_user and developer_user.email else "-",
             "keterangan": "Pemaju projek perumahan"
         }
 
@@ -376,19 +411,31 @@ def generate_report_api(report_type):
             y -= 14
             
             # Evidence
-            image_path = os.path.join(evidence_dir, f"defect_{defect['id']}.jpg")
-            if os.path.exists(image_path):
-                if y < 180:
-                    draw_footer(pdf, width, labels)
-                    pdf.showPage()
-                    y = height - 50
+            # Use real uploaded image paths for accurate images
+            if defect.get('image_path'):
+                image_path = os.path.join("/usr/src/app_main/app/static/", defect['image_path'].lstrip('/'))
+                if os.path.exists(image_path):
+                    if y < 180:
+                        draw_footer(pdf, width, labels)
+                        pdf.showPage()
+                        y = height - 50
+                    pdf.setFont("Helvetica-Oblique", 8)
+                    pdf.drawString(70, y, f"{labels['evidence']}")
+                    try:
+                        # Constrain the image to a bounding box of 200x100 to prevent overlap
+                        pdf.drawImage(ImageReader(image_path), 140, y - 110, width=200, height=100, preserveAspectRatio=True)
+                        y -= 125
+                    except Exception:
+                        pdf.drawString(140, y, ": Image Not Found")
+                        y -= 10
+                else:
+                    pdf.setFont("Helvetica-Oblique", 8)
+                    pdf.drawString(70, y, f"{labels['evidence']}")
+                    pdf.drawString(140, y, ": Image Not Found")
+            else:
                 pdf.setFont("Helvetica-Oblique", 8)
-                pdf.drawString(70, y, f"{labels['evidence']}:")
-                try:
-                    pdf.drawImage(ImageReader(image_path), 70, y - 110, width=200, height=110)
-                    y -= 125
-                except Exception:
-                    y -= 10
+                pdf.drawString(70, y, f"{labels['evidence']}")
+                pdf.drawString(140, y, ": Image Not Found")
             y -= 25
 
         # AI Report Text Processing
@@ -397,8 +444,18 @@ def generate_report_api(report_type):
             pdf.showPage()
             y = height - 50
 
+            # Margins & spacing
+            LEFT_MARGIN = 50
+            PARAGRAPH_INDENT = 70
+            RIGHT_MARGIN = width - 50
+            LINE_HEIGHT = 18
+            TEXT_WIDTH = RIGHT_MARGIN - PARAGRAPH_INDENT
+
             pdf.setFont("Helvetica-Bold", 12)
-            pdf.drawCentredString(width/2, y, "AI-GENERATED CLAIM SUMMARY REPORT" if language == "en" else "LAPORAN RINGKASAN TUNTUTAN DIJANA AI")
+            if language == "en":
+                pdf.drawCentredString(width/2, y, "AI-GENERATED CLAIM SUMMARY REPORT")
+            else:
+                pdf.drawCentredString(width/2, y, "LAPORAN RINGKASAN TUNTUTAN DIJANA AI")
             y -= 30
 
             import re
@@ -414,12 +471,80 @@ def generate_report_api(report_type):
                     draw_footer(pdf, width, labels)
                     pdf.showPage()
                     y = height - 50
+                    
                 stripped = line.strip()
-                if stripped[:2].isdigit() and stripped[1] == ".": y -= 12
-                if stripped[:2] in ["A.", "B.", "C.", "D."]: y -= 8
+                if stripped[:2].isdigit() and stripped[1] == ".":
+                    y -= 12
+                if stripped[:2] in ["A.", "B.", "C.", "D.", "E.", "F."]:
+                    y -= 8
+                if stripped.startswith("Tarikh siap") or stripped.startswith("Tarikh dijadualkan") or stripped.startswith("Tarikh Siap"):
+                    y -= 10
+                    
+                is_numbered_header = (
+                    stripped.startswith('1.') or stripped.startswith('2.') or
+                    stripped.startswith('3.') or stripped.startswith('4.') or
+                    stripped.startswith('5.') or stripped.startswith('6.') or
+                    stripped.startswith('PENAFIAN AI') or stripped.startswith('Penafian AI') or
+                    stripped.startswith('AI Disclaimer') or stripped.startswith('Laporan Sokongan') or
+                    stripped.startswith('Laporan Pematuhan') or stripped.startswith('Laporan Gambaran') or
+                    stripped.startswith('Purpose of the Report') or stripped.startswith('Summary of Reported Defects') or
+                    stripped.startswith('Defect List') or stripped.startswith('Defects That Have Exceeded') or
+                    stripped.startswith('Formal Request') or stripped.startswith('Conclusion') or
+                    stripped.startswith('Tribunal Support Report')
+                )
                 
-                pdf.setFont("Helvetica", 9)
-                y = draw_wrapped_text(pdf, stripped, 50, y, width - 100)
+                is_sub_item = (
+                    stripped.startswith('A.') or stripped.startswith('B.') or
+                    stripped.startswith('C.') or stripped.startswith('D.') or
+                    stripped.startswith('E.') or stripped.startswith('F.') or
+                    stripped.startswith('a.') or stripped.startswith('b.') or
+                    stripped.startswith('c.') or stripped.startswith('d.') or
+                    stripped.startswith('e.') or stripped.startswith('f.')
+                )
+                
+                is_defect_field = stripped.startswith((
+                    "Keterangan:", "Unit:", "Status:", "Keutamaan:", "Ulasan:",
+                    "Description:", "Priority:", "Remarks:", "Tarikh siap:",
+                    "Tarikh Siap:", "Completion Date:", "Current Status:",
+                    "Scheduled Completion Date:"
+                ))
+                
+                if is_numbered_header:
+                    pdf.setFont("Helvetica-Bold", 10)
+                    x_pos = LEFT_MARGIN
+                elif is_sub_item:
+                    pdf.setFont("Helvetica-Bold", 9)
+                    x_pos = LEFT_MARGIN + 20
+                else:
+                    pdf.setFont("Helvetica", 9)
+                    if is_defect_field:
+                        x_pos = LEFT_MARGIN + 40
+                    else:
+                        x_pos = PARAGRAPH_INDENT
+                        
+                words = stripped.split()
+                current_line = ""
+
+                for word in words:
+                    test_line = current_line + " " + word if current_line else word
+                    if pdf.stringWidth(test_line, "Helvetica", 9) <= TEXT_WIDTH:
+                        current_line = test_line
+                    else:
+                        if is_numbered_header:
+                            pdf.drawString(x_pos, y, current_line)
+                        else:
+                            draw_justified_line(pdf, current_line, x_pos, y, TEXT_WIDTH, "Helvetica", 9)
+                        y -= LINE_HEIGHT
+                        if y < 80:
+                            draw_footer(pdf, width, labels)
+                            pdf.showPage()
+                            y = height - 50
+                            pdf.setFont("Helvetica", 9)
+                        current_line = word
+
+                if current_line:
+                    pdf.drawString(x_pos, y, current_line)
+                    y -= LINE_HEIGHT
 
         # Signature page
         draw_footer(pdf, width, labels)

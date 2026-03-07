@@ -112,6 +112,9 @@ def login():
 
 @bp.route('/logout')
 def logout():
+    # Attempt to clear legacy json conversations if any, although we moved to DB
+    # We will just clear the flask session cleanly.
     logout_user()
     session.clear()
+    flash("You have been logged out.", "info")
     return redirect(url_for('auth.login'))
