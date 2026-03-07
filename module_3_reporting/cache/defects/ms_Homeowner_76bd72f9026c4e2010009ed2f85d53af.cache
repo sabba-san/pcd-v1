@@ -1,0 +1,23 @@
+[
+  {
+    "id": "6",
+    "unit": null,
+    "desc": "retak bumbung",
+    "remarks": "",
+    "priority": "Kritikal"
+  },
+  {
+    "id": "5",
+    "unit": null,
+    "desc": "retak berhampiran tingkap",
+    "remarks": "",
+    "priority": "Tinggi"
+  },
+  {
+    "id": "4",
+    "unit": null,
+    "desc": "ujian",
+    "remarks": "",
+    "priority": "Normal"
+  }
+]
