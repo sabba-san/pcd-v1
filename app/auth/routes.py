@@ -28,6 +28,10 @@ def register():
         company_name = request.form.get('developer_company')
         developer_ssm = request.form.get('developer_ssm')
         developer_address = request.form.get('developer_address') # Capturing address for developer too
+        contact_number_dev = request.form.get('contact_number_dev')
+        fax_email = request.form.get('fax_email')
+        staff_name = request.form.get('staff_name')
+        nric = request.form.get('nric')
         
         firm_name = request.form.get('law_firm')
         bar_council_id = request.form.get('bar_council_id')
@@ -70,6 +74,11 @@ def register():
             # Developer
             company_name=company_name,
             company_reg_no=developer_ssm,
+            company_address=developer_address,
+            contact_number=contact_number_dev,
+            fax_email=fax_email,
+            staff_name=staff_name,
+            nric=nric,
             
             # Lawyer
             firm_name=firm_name

@@ -49,6 +49,13 @@ class User(UserMixin, db.Model):
     company_reg_no = db.Column(db.String(50))
     firm_name = db.Column(db.String(100))
     
+    # Developer Corporate Details
+    company_address = db.Column(db.Text)
+    contact_number = db.Column(db.String(50))
+    fax_email = db.Column(db.String(120))
+    staff_name = db.Column(db.String(100))
+    nric = db.Column(db.String(50))
+    
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=True)
 
     # Relationships

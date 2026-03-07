@@ -356,9 +356,9 @@ class DLPChatbotApp {
         this.showTypingIndicator();
 
         try {
-            // FIX IS HERE: We interpret the URL directly as '/api/chat'
+            // FIX IS HERE: We interpret the URL directly as '/module1/chat'
             // We removed the ${endpoint} variable that was causing the error.
-            const response = await fetch('/api/chat', {
+            const response = await fetch('/module1/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -373,7 +373,7 @@ class DLPChatbotApp {
                 throw new Error(data.error);
             }
 
-            const botReply = data.response || "I didn't understand that.";
+            const botReply = data.reply || "I didn't understand that.";
 
             // 3. Show Bot Message
             this.removeTypingIndicator();

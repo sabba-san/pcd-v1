@@ -168,11 +168,11 @@ def generate_report_api(report_type):
             
         penentang = {
             "nama": penentang_nama,
-            "no_pendaftaran": (developer_user.ic_number if developer_user and developer_user.ic_number else project.developer_ssm) if project else "-",
-            "alamat_1": developer_user.correspondence_address if developer_user and developer_user.correspondence_address else (project.developer_address if project else "-"),
+            "no_pendaftaran": (developer_user.company_reg_no or developer_user.nric or "-") if developer_user else (project.developer_ssm if project else "-"),
+            "alamat_1": (developer_user.company_address or "-") if developer_user else (project.developer_address if project else "-"),
             "alamat_2": "-",
-            "no_telefon": developer_user.phone_number if developer_user and developer_user.phone_number else "-",
-            "email": developer_user.email if developer_user and developer_user.email else "-",
+            "no_telefon": (developer_user.contact_number or "-") if developer_user else "-",
+            "email": (developer_user.fax_email or "-") if developer_user else "-",
             "keterangan": "Pemaju projek perumahan"
         }
 

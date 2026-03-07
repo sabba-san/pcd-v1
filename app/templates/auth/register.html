@@ -123,17 +123,39 @@
             <div id="developerField" style="display: none;">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Company Name</label>
-                        <input type="text" name="developer_company" class="form-control"
+                        <label class="form-label small text-white">Company Name (Nama Syarikat)</label>
+                        <input type="text" name="developer_company" class="form-control dev-required"
                             placeholder="e.g. EcoWorld Sdn Bhd">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label small text-white">Company Registration No. (SSM)</label>
-                        <input type="text" name="developer_ssm" class="form-control" placeholder="e.g. 202301000123">
+                        <input type="text" name="developer_ssm" class="form-control dev-required"
+                            placeholder="e.g. 202301000123">
                     </div>
                     <div class="col-12 mb-3">
-                        <label class="form-label small text-white">Company Address</label>
-                        <textarea name="developer_address" class="form-control" rows="2"></textarea>
+                        <label class="form-label small text-white">Company Address (Alamat Surat Menyurat)</label>
+                        <textarea name="developer_address" class="form-control dev-required" rows="2"></textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small text-white">Contact Number (No. Telefon Syarikat)</label>
+                        <input type="text" name="contact_number_dev" class="form-control dev-required"
+                            placeholder="+603-1234 5678">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small text-white">Fax/Email (No. Faks/E-mel)</label>
+                        <input type="text" name="fax_email" class="form-control dev-required"
+                            placeholder="e.g. faks@eco.com">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small text-white">Representative Staff Name (Nama
+                            Wakil/Pekerja)</label>
+                        <input type="text" name="staff_name" class="form-control dev-required"
+                            placeholder="e.g. Ahmad Albab">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small text-white">Representative NRIC (No. Kad Pengenalan)</label>
+                        <input type="text" name="nric" class="form-control dev-required"
+                            placeholder="e.g. 900101-14-1234">
                     </div>
                 </div>
             </div>
@@ -177,11 +199,15 @@
             developerDiv.style.display = "none";
             lawyerDiv.style.display = "none";
 
+            // Remove required from dev fields
+            document.querySelectorAll('.dev-required').forEach(el => el.removeAttribute('required'));
+
             // Show relevant field
             if (role === "user") {
                 homeownerDiv.style.display = "block";
             } else if (role === "developer") {
                 developerDiv.style.display = "block";
+                document.querySelectorAll('.dev-required').forEach(el => el.setAttribute('required', ''));
             } else if (role === "lawyer") {
                 lawyerDiv.style.display = "block";
             }
