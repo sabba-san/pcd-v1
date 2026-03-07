@@ -1058,33 +1058,53 @@
             <div class="project-info-grid">
                 <div class="project-info-item">
                     <span class="project-info-label">Project Name</span>
-                    <span class="project-info-value highlight">{{ upload_metadata.project_name if upload_metadata and
-                        upload_metadata.project_name else scan.name or 'Untitled Project' }}</span>
+                    <span class="project-info-value highlight">{{ project_name }}</span>
                 </div>
                 <div class="project-info-item">
                     <span class="project-info-label">Scan ID</span>
-                    <span class="project-info-value">#{{ scan.id }} - {{ scan.name }}</span>
+                    <span class="project-info-value">
+                        {% if scan.scan_path is defined %}
+                        #{{ scan.id }} - {{ scan.title or scan.defect_type or 'House Scan' }}
+                        {% else %}
+                        #{{ scan.id }} - Master View
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="project-info-item">
                     <span class="project-info-label">Address</span>
-                    <span class="project-info-value">{{ upload_metadata.address if upload_metadata and
-                        upload_metadata.address else 'Not specified' }}</span>
+                    <span class="project-info-value">
+                        {% if scan.scan_path is defined %}
+                        {{ scan.user.correspondence_address if scan.user and scan.user.correspondence_address else 'Not
+                        specified' }}
+                        {% else %}
+                        {{ scan.developer_address or 'Not specified' }}
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="project-info-item">
                     <span class="project-info-label">Unit No.</span>
-                    <span class="project-info-value">{{ upload_metadata.unit_no if upload_metadata and
-                        upload_metadata.unit_no else 'N/A' }}</span>
+                    <span class="project-info-value">
+                        {% if scan.scan_path is defined %}
+                        {{ scan.user.unit_no if scan.user and scan.user.unit_no else 'N/A' }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="project-info-item">
                     <span class="project-info-label">Scan Date</span>
-                    <span class="project-info-value">{{ upload_metadata.scan_date if upload_metadata and
-                        upload_metadata.scan_date else (scan.created_at.strftime('%Y-%m-%d') if scan.created_at else
-                        'Unknown') }}</span>
+                    <span class="project-info-value">{{ scan.created_at.strftime('%Y-%m-%d') if scan.created_at else
+                        'Unknown' }}</span>
                 </div>
                 <div class="project-info-item">
                     <span class="project-info-label">Model File</span>
-                    <span class="project-info-value">{{ scan.model_path.split('/')[-1] if scan.model_path else 'No
-                        model' }}</span>
+                    <span class="project-info-value">
+                        {% if scan.scan_path is defined %}
+                        {{ scan.scan_path.split('/')[-1] if scan.scan_path else 'No model' }}
+                        {% else %}
+                        {{ scan.master_model_path.split('/')[-1] if scan.master_model_path else 'No model' }}
+                        {% endif %}
+                    </span>
                 </div>
             </div>
         </div>

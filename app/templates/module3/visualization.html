@@ -1908,7 +1908,7 @@
             // Click handler for markers
             scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                    const pickResult = scene.pick(pointerInfo.event.clientX, pointerInfo.event.clientY);
+                    const pickResult = scene.pick(scene.pointerX, scene.pointerY);
                     if (pickResult.hit && pickResult.pickedMesh.name.startsWith('marker')) {
                         const defectId = pickResult.pickedMesh.defectId;
                         const snapshotIndex = pickResult.pickedMesh.snapshotIndex;

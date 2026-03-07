@@ -411,7 +411,9 @@ def api_project_defects(project_id):
             'severity': d.severity or 'Medium',
             'status': d.status or 'Reported',
             'description': d.description or '',
-            'created_at': d.created_at.strftime('%Y-%m-%d') if d.created_at else None
+            'created_at': d.created_at.strftime('%Y-%m-%d') if d.created_at else None,
+            'imageUrl': url_for('static', filename=d.images[0].image_path) if d.images else None,
+            'notes': d.notes if hasattr(d, 'notes') and d.notes else ''
         } for d in defects])
         
     if request.method == 'POST':

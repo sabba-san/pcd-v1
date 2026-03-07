@@ -96,7 +96,9 @@ def get_scan_defects(scan_id):
         'severity': d.severity,
         'status': d.status,
         'description': d.description,
-        'created_at': upload_date if upload_date else (d.created_at.strftime('%Y-%m-%d') if d.created_at else None)
+        'created_at': upload_date if upload_date else (d.created_at.strftime('%Y-%m-%d') if d.created_at else None),
+        'imageUrl': f'/defects/image/{d.id}' if d.image_path else None,
+        'notes': d.notes if hasattr(d, 'notes') and d.notes else ''
     } for d in defects]
     return jsonify(defect_list)
 

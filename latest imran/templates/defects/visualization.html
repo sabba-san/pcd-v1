@@ -1674,7 +1674,10 @@
                     <div class="defect-expanded" id="expanded-${d.defectId}">
                         <div class="defect-meta-label">Image</div>
                         <div id="defect-img-${d.defectId}" class="defect-meta-value">
-                            <span class="no-image">Loading...</span>
+                            ${d.imageUrl
+                        ? '<img src="' + d.imageUrl + '" class="defect-thumbnail" onclick="event.stopPropagation(); window.open(\'' + d.imageUrl + '\', \'_blank\')" alt="Defect Image">'
+                        : '<span class="no-image">No image attached</span>'
+                    }
                         </div>
                         
                         <div class="defect-meta-label">Location</div>
@@ -1693,7 +1696,7 @@
                         <div class="defect-meta-value">${d.description || 'No description'}</div>
                         
                         <div class="defect-meta-label">Notes</div>
-                        <div id="defect-notes-${d.defectId}" class="defect-notes">Loading...</div>
+                        <div id="defect-notes-${d.defectId}" class="defect-notes">${d.notes || 'No notes added'}</div>
                         
                         <div class="defect-meta-label">Created</div>
                         <div class="defect-meta-value">${d.created_at || 'Unknown'}</div>
@@ -1810,7 +1813,6 @@
 
                 if (!wasExpanded) {
                     card.classList.add('expanded');
-                    loadDefectDetails(defectId);
 
                     // Highlight the marker
                     const defectIndex = defectsData.findIndex(d => d.defectId === defectId);
@@ -1818,29 +1820,6 @@
                         markers[defectIndex].scaling = new BABYLON.Vector3(1.5, 1.5, 1.5);
                     }
                 }
-            }
-
-            function loadDefectDetails(defectId) {
-                fetch('/defect/' + defectId)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Update image
-                        const imgContainer = document.getElementById('defect-img-' + defectId);
-                        if (imgContainer) {
-                            if (data.imageUrl) {
-                                imgContainer.innerHTML = '<img src="' + data.imageUrl + '" class="defect-thumbnail" onclick="event.stopPropagation(); window.open(\'' + data.imageUrl + '\', \'_blank\')" alt="Defect Image">';
-                            } else {
-                                imgContainer.innerHTML = '<span class="no-image">No image attached</span>';
-                            }
-                        }
-
-                        // Update notes
-                        const notesEl = document.getElementById('defect-notes-' + defectId);
-                        if (notesEl) {
-                            notesEl.textContent = data.notes || 'No notes added';
-                        }
-                    })
-                    .catch(err => console.error('Error loading defect details:', err));
             }
 
             // Create markers from GLB Snapshot meshes
@@ -1936,7 +1915,7 @@
             // Click handler for markers
             scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                    const pickResult = scene.pick(pointerInfo.event.clientX, pointerInfo.event.clientY);
+                    const pickResult = scene.pick(scene.pointerX, scene.pointerY);
                     if (pickResult.hit && pickResult.pickedMesh.name.startsWith('marker')) {
                         const defectId = pickResult.pickedMesh.defectId;
                         const snapshotIndex = pickResult.pickedMesh.snapshotIndex;
