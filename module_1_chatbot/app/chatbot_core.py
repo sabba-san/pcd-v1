@@ -1,146 +1,57 @@
 from groq import Groq
-from .dlp_knowledge_base import get_dlp_info, DLP_RULES, load_pdf_knowledge
-import os
-from dotenv import load_dotenv
+from .dlp_knowledge_base import load_pdf_knowledge
 
-# =====================================================
-# 1. CONFIGURATION (GROQ SETUP)
-# =====================================================
-
-# Load environment variables from .env file
-load_dotenv()
-
-# ⚠️ IMPORTANT: The API Key is now loaded from the .env file
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+# ⚠️ Paste your actual Groq API key here
+GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE"
 
 try:
-    if not GROQ_API_KEY:
-        print("Error: GROQ_API_KEY not found in environment variables.")
-        client = None
-    else:
-        client = Groq(api_key=GROQ_API_KEY)
+    client = Groq(api_key=GROQ_API_KEY)
 except Exception as e:
-    print(f"Groq Client Error: {e}")
+    print(f"Groq Initialization Error: {e}")
     client = None
-
-# Using the new supported model
-MODEL_NAME = "llama-3.3-70b-versatile"
 
 # Load the PDF text when the app starts
 PDF_CONTEXT = load_pdf_knowledge()
 
-# =====================================================
-# 2. SYSTEM PROMPTS
-# =====================================================
-
-# Strict prompt to ensure it only answers property law questions
-SYSTEM_INSTRUCTION = """
-You are a specialized legal assistant for Malaysian Property Law.
-
-1.  **Role:** You are an AI expert in Malaysian housing acts, strata management, and defect liability.
-2.  **Context:** You will be provided with some "Retrieved Context" from our local database and official legal documents.
-    - **PRIORITIZE** this context if it is relevant.
-    - If the context is empty or irrelevant, **USE YOUR GENERAL KNOWLEDGE** of Malaysian law to answer helpfuly.
-3.  **Scope:**
-    - **Allowed:** HDA, Strata Title, Defect Liability, Tenancy, SPA, Homeownership.
-    - **Not Allowed:** Criminal law, family law, international law, or non-legal topics.
-4.  **Tone:** Professional, helpful, and concise.
-5.  **Disclaimer:** ALWAYS end with: "This is not legal advice. Please consult a qualified Malaysian lawyer for your specific situation."
-
-If the user asks about something off-topic, politely refuse.
-"""
-
-def process_query(user_query, context=None):
+def process_query(user_query):
     if not client:
-        print("DEBUG: Client not initialized")
-        return "Error: AI Client not initialized. Check API Key."
+        return "Error: AI Client not initialized. Check your API key."
 
-    print(f"DEBUG: Processing query: {user_query}")
-    lower_query = user_query.lower()
-    retrieved_context = []
+    # Groq's Llama model can read huge amounts of text. 
+    # We pass the first 50,000 characters to keep it fast and safe.
+    safe_context = PDF_CONTEXT[:50000] if PDF_CONTEXT else "No documents available."
+
+    prompt = f"""You are a specialized legal assistant for Malaysian Property Law.
+    Read the following official legal documents carefully.
     
-    # Simple Keyword Search (RAG fallback)
-    for key in DLP_RULES.keys():
-        if key in lower_query:
-            info = get_dlp_info(key)
-            retrieved_context.append(f"--- Info regarding '{key}' ---\n{info}")
+    1. Answer the user's question using ONLY the provided Document Text.
+    2. If the Document Text does not contain the answer, strictly reply: "I don't have sufficient information from the uploaded legal documents to answer this."
+    3. End every response with: "This is not legal advice. Please consult a qualified lawyer."
 
-    # Add the extracted PDF knowledge as the primary context (up to 50k chars for fast processing)
-    safe_pdf_context = PDF_CONTEXT[:50000] if PDF_CONTEXT else "No direct PDF available."
-    retrieved_context.append(f"--- Official Legal Documents Text ---\n{safe_pdf_context}")
-
-    full_context_text = "\n\n".join(retrieved_context)
-
-    # Format Context String (ISOLATION LAYER PRESERVED)
-    context_str = ""
-    if context:
-        project = context.get('project_name', 'Unknown')
-        count = context.get('defect_count', '0')
-        context_str = f"USER CONTEXT: The user has {count} defect(s) pending at project '{project}'."
+    Document Text:
+    {safe_context}
+    
+    User Question: {user_query}
+    """
 
     try:
-        # Construct the final prompt
-        user_prompt = f"""
-        {context_str}
-
-        Retrieved Context:
-        {full_context_text}
-
-        User Question:
-        {user_query}
-        """
-        
-        print(f"DEBUG: Using new context: {context}")
-        
-        # Send to Groq
-        print("DEBUG: Sending to Groq...")
         chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": SYSTEM_INSTRUCTION},
-                {"role": "user", "content": user_prompt}
-            ],
-            model=MODEL_NAME,
-            temperature=0.1, # Using Jian Wei's precise temperature 0.1
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile",
+            temperature=0.1
         )
-        print("DEBUG: Groq returned response")
         return chat_completion.choices[0].message.content
-        
     except Exception as e:
-        print(f"DEBUG: AI Error: {e}")
         return f"AI Error: {str(e)}"
 
 def analyze_legal_text(document_text):
-    if not client:
-        return "Error: AI Client not initialized."
-
-    # Detailed prompt for document analysis
-    ANALYSIS_PROMPT = f"""
-    You are a Malaysian Property Law Analyst.
-    
-    TASK: Analyze the following legal text snippet.
-    
-    DOCUMENT TEXT:
-    "{document_text}"
-    
-    INSTRUCTIONS:
-    1. First, determine if this is related to Malaysian Property (SPA, Loan, Title, Tenancy).
-    2. If NOT related, strictly say: "I can only analyze Malaysian property documents."
-    3. If related, summarize the key point in 1 sentence.
-    4. Highlight any potential risks or "gotchas" (e.g., late interest, strict deadlines).
-    5. Explain any legal jargon in simple English.
-    6. END WITH: "This is a general explanation. Please have a lawyer review your actual document."
-    """
-    
+    if not client: return "Error: AI Client not initialized."
     try:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a helpful legal analyst."},
-                {"role": "user", "content": ANALYSIS_PROMPT}
-            ],
-            model=MODEL_NAME,
-            temperature=0.1, # Using precise temperature 0.1
+        response = client.chat.completions.create(
+            messages=[{"role": "user", "content": f"Analyze this legal text briefly:\n\n{document_text}"}],
+            model="llama-3.3-70b-versatile",
+            temperature=0.1
         )
-        return chat_completion.choices[0].message.content
-        
+        return response.choices[0].message.content
     except Exception as e:
         return f"Analysis Error: {str(e)}"

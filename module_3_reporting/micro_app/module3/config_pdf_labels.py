@@ -26,7 +26,13 @@ PDF_LABELS = {
         "status": "Status",
         "priority": "Keutamaan",
         "remarks": "Ulasan",
-        "evidence": "Bukti Kecacatan"
+        "evidence": "Bukti Kecacatan",
+
+        # Final Sections
+        "ai_disclaimer_title": "PENAFIAN AI",
+        "ai_disclaimer_text": "Laporan ini dijana dengan bantuan kecerdasan buatan (AI) bagi tujuan penyusunan dan ringkasan maklumat sahaja. Semua fakta, data dan bukti adalah berdasarkan rekod yang dikemukakan. Laporan ini tidak merupakan nasihat undang-undang dan tidak menggantikan penentuan atau keputusan Tribunal.",
+        "verification_signature": "Pengesahan dan Tandatangan",
+        "digital_hash_label": "Hasy Pengesahan Digital:"
     },
 
     "en": {
@@ -54,6 +60,12 @@ PDF_LABELS = {
         "status": "Status",
         "priority": "Priority",
         "remarks": "Remarks",
-        "evidence": "Defect Evidence"
+        "evidence": "Defect Evidence",
+
+        # Final Sections
+        "ai_disclaimer_title": "AI DISCLAIMER",
+        "ai_disclaimer_text": "This report was generated with the assistance of artificial intelligence (AI) for the purpose of organizing and summarizing information only. All facts, data, and evidence are based on submitted records. This report does not constitute legal advice and does not replace the determination or decision of the Tribunal.",
+        "verification_signature": "Verification and Signature",
+        "digital_hash_label": "Digital Validation Hash:"
     }
 }

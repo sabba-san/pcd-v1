@@ -79,8 +79,10 @@ def generate_ai_report(role, report_data, language="ms"):
     else:
         date_str = now.strftime('%d %B %Y, %H:%M')
     
+    report_title = report_data.get("konteks_peranan", {}).get("tajuk_laporan", lang_config["report_title"])
+    
     return f"""
-{lang_config["report_title"]}
+{report_title}
 {lang_config["generated_label"]}: {date_str}
 
 {ai_text}

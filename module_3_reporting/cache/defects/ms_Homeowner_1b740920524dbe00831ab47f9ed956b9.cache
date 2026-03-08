@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "unit": "No 69",
+    "desc": "rumah 1",
+    "remarks": "",
+    "priority": "Normal"
+  },
+  {
+    "id": 2,
+    "unit": "Master Bedroom",
+    "desc": "ujian 1 ",
+    "remarks": "pengujian",
+    "priority": "Tinggi"
+  },
+  {
+    "id": 3,
+    "unit": "Entrance",
+    "desc": "pengujian 2",
+    "remarks": "",
+    "priority": "Kritikal"
+  }
+]

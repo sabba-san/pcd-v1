@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "unit": "No 69",
+    "desc": "rumah ujian",
+    "remarks": "",
+    "priority": "Normal"
+  },
+  {
+    "id": 2,
+    "unit": "Master Bedroom",
+    "desc": "tingkap retak",
+    "remarks": "perbaiki segera!",
+    "priority": "Tinggi"
+  },
+  {
+    "id": 3,
+    "unit": "Kitchen",
+    "desc": "retak",
+    "remarks": "perbaiki segera",
+    "priority": "Tinggi"
+  }
+]

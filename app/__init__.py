@@ -38,39 +38,23 @@ def create_app():
 
     
     # 1. Register Login / Dashboard
-    # --- SERVICE ISOLATION ---
-    import os
-    service_type = os.getenv('SERVICE_TYPE', 'web') # Default to 'web'
+    # 1. Register Auth (Login/Register)
+    from app.auth.routes import bp as auth_bp
+    app.register_blueprint(auth_bp)
     
-    if service_type == 'chatbot':
-        # 1. Register Chatbot (Module 1)
-        from app.module1.routes import bp as module1_bp
-        app.register_blueprint(module1_bp)
-        print("Starting CHATBOT Service (Module 1 only)")
-        
-    else:
-        # Default / Web Service
-        # --- NEW: Register Auth (Login/Register) ---
-        from app.auth.routes import bp as auth_bp
-        app.register_blueprint(auth_bp)
-        # -------------------------------------------
-        
-        # 2. Register Defect Form (Module 2)
-        from app.module2.routes import bp as module2_bp
-        app.register_blueprint(module2_bp)
+    # 2. Register Defect Form (Module 2)
+    from app.module2.routes import bp as module2_bp
+    app.register_blueprint(module2_bp)
 
-        # 3. Register Reporting & Dashboard (Module 3)
-        from app.module3.routes import bp as module3_bp
-        app.register_blueprint(module3_bp)
-        
-        print("Starting WEB Service (Modules 2 & 3)")
+    # 3. Register Reporting & Dashboard (Module 3)
+    from app.module3.routes import bp as module3_bp
+    app.register_blueprint(module3_bp)
+    
+    print("Starting WEB Service (Modules 2 & 3)")
 
     # Root Redirect
-    from flask import redirect, url_for
     @app.route('/')
     def index():
-        if service_type == 'chatbot':
-             return "Chatbot Service Running"
         return redirect(url_for('auth.login'))  # <--- Make sure this says 'auth.login'
     
     return app

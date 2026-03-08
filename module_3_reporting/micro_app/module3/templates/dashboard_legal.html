@@ -38,6 +38,11 @@
         </div>
 
         <div class="buttons">
+            <!-- ✅ DIRECT DOWNLOAD -->
+            <button class="btn btn-info" onclick="downloadReportDirectly()">
+                Download Report
+            </button>
+
             <!-- ✅ AI REPORT GENERATION -->
             <button class="btn btn-primary" onclick="generateReport()">
                 Generate Full Compliance Report
@@ -97,6 +102,7 @@
                     <th>ID</th>
                     <th>Unit</th>
                     <th>Defect Description</th>
+                    <th>Deadline</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -107,6 +113,9 @@
                     <td>#{{ defect.id }}</td>
                     <td>{{ defect.unit }}</td>
                     <td>{{ defect.desc }}</td>
+                    <td>
+                        <input type="date" value="{{ defect.deadline }}" onchange="updateDefectDate({{ defect.id }}, this.value)">
+                    </td>
                     <td>
                         <span class="badge
                             {{ 'status-completed' if defect.status=='Completed'
