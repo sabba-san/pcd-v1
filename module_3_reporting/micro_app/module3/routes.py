@@ -110,8 +110,11 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
             # Fallback for empty requests or missing user
             defects_db = []
         else:
-            project = user.project or (Project.query.first() if not project else project)
-            defects_db = Defect.query.filter_by(user_id=user_id).all()
+            project = project or user.project
+            if project:
+                defects_db = Defect.query.filter_by(user_id=user_id, project_id=project.id).all()
+            else:
+                defects_db = Defect.query.filter_by(user_id=user_id).all()
     else:
         if project:
             defects_db = Defect.query.filter_by(project_id=project.id).all()
@@ -126,8 +129,10 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
 
     defects = []
     for d in defects_db:
-        defect_image_path = d.images[0].image_path if hasattr(d, 'images') and len(d.images) > 0 else None
-        
+        image_path = None
+        if hasattr(d, 'images') and len(d.images) > 0:
+            image_path = "/" + d.images[0].image_path.lstrip('/')
+            
         unit_val = "N/A"
         if user and hasattr(user, 'unit_no') and user.unit_no and str(user.unit_no) != "None":
             unit_val = user.unit_no
@@ -148,9 +153,9 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
             "urgency": d.severity or "Normal",
             "remarks": d.notes if hasattr(d, 'notes') and d.notes else "",
             "deadline": d.scheduled_date.strftime("%Y-%m-%d") if d.scheduled_date else "",
-            "is_overdue": False,
+            "is_overdue": bool(d.scheduled_date and d.status not in ["Completed", "Fixed", "Telah Diselesaikan"] and d.scheduled_date < datetime.now()),
             "hda_compliant": True,
-            "image_path": defect_image_path
+            "image_path": image_path
         })
 
     # Stats
@@ -219,12 +224,37 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
 # NEW DASHBOARD ROUTE (Merges Nabilah's UI with Active DB)
 # =================================================
 @routes.route("/")
-def dashboard():
-    role = request.args.get("role", "Homeowner")
+@routes.route("/dashboard")
+@routes.route("/dashboard/<int:project_id>")
+def dashboard(project_id=None):
+    role = request.args.get("role")
     
+    try:
+        from flask_login import current_user
+        from flask import current_app
+        if hasattr(current_app, 'login_manager') and current_app.login_manager is not None:
+            if current_user and current_user.is_authenticated and not role:
+                role = current_user.role.capitalize()
+    except Exception:
+        pass
+        
+    if not role:
+        role = "Homeowner"
+        
     # NEW: Fetch DB values dynamically based on args instead of dummy_data
     user_id = request.args.get('user_id', type=int)
-    project_id = request.args.get('project_id', type=int)
+    
+    try:
+        from flask_login import current_user
+        from flask import current_app
+        if hasattr(current_app, 'login_manager') and current_app.login_manager is not None:
+            if current_user and current_user.is_authenticated and not user_id:
+                user_id = current_user.id
+    except Exception:
+        pass
+
+    if project_id is None:
+        project_id = request.args.get('project_id', type=int)
     
     data = fetch_defects_and_data_from_db(role, user_id, project_id)
     defects = data["defects"]
@@ -242,20 +272,12 @@ def dashboard():
         else:
             d["remarks"] = ""
 
-    template = (
-        "dashboard_homeowner.html"
-        if role == "Homeowner"
-        else "dashboard_developer.html"
-        if role == "Developer"
-        else "dashboard_legal.html"
-    )
-
-    return render_template(
-        template,
-        role=role,
-        defects=defects,
-        stats=stats
-    )
+    if role == "Developer":
+        return render_template('dashboard_developer.html', role=role, defects=defects, stats=stats)
+    elif role == "Legal":
+        return render_template('dashboard_legal.html', role=role, defects=defects, stats=stats)
+    else: # Default to Homeowner
+        return render_template('dashboard_homeowner.html', role=role, defects=defects, stats=stats)
 
 
 # =================================================
@@ -279,7 +301,58 @@ def generate_report_api_legacy(report_type):
         
         data = fetch_defects_and_data_from_db(role, user_id, project_id)
         
-        return export_pdf_internal(role, language, "", data)
+        # --- NEW CODE: Force AI Generation before building PDF ---
+        ai_summary_text = ""
+        try:
+            # Build structures for AI model prompt
+            def build_summary_stats(s):
+                return {
+                    "jumlah_kecacatan": s.get("total", 0),
+                    "belum_diselesaikan": s.get("pending", 0),
+                    "telah_diselesaikan": s.get("completed", 0),
+                    "kritikal": s.get("critical", 0)
+                }
+            def build_role_context(r, lang):
+                if r == "Homeowner":
+                    return {"tajuk_laporan": "BORANG 1 - PERNYATAAN TUNTUTAN" if lang == "ms" else "FORM 1 - STATEMENT OF CLAIM", "tujuan": "Laporan ini disediakan bagi merumuskan kecacatan yang berlaku dalam tempoh Defect Liability Period (DLP) untuk rujukan Tribunal."}
+                if r == "Developer":
+                    return {"tajuk_laporan": "LAPORAN PEMATUHAN DLP" if lang == "ms" else "DLP COMPLIANCE REPORT", "tujuan": "Laporan ini disediakan untuk menunjukkan status pembaikan dan pematuhan pemaju terhadap kecacatan yang dilaporkan."}
+                return {"tajuk_laporan": "LAPORAN RUJUKAN TRIBUNAL DLP" if lang == "ms" else "TRIBUNAL REFERENCE REPORT (DLP)", "tujuan": "Laporan ini disediakan sebagai gambaran keseluruhan status kecacatan dan pematuhan untuk rujukan Tribunal."}
+            
+            report_data = {
+                "maklumat_kes": data['maklumat_kes'],
+                "pihak_yang_menuntut": data['pihak_yang_menuntut'],
+                "penentang": data['penentang'],
+                "konteks_peranan": build_role_context(role, language),
+                "ringkasan_statistik": build_summary_stats(data['stats']),
+                "senarai_kecacatan": build_defect_list(data['defects'], role),
+                "nota_penting": "Laporan ini dijana oleh sistem sebagai dokumen sokongan kepada Borang 1 Tribunal Tuntutan Pengguna Malaysia (TTPM)."
+            }
+            
+            ai_summary_text = generate_ai_report(role, report_data, language)
+            
+            # Accurate stats patching
+            summary = report_data.get("ringkasan_statistik", {})
+            total_defects = summary.get("jumlah_kecacatan", 0)
+            pending_count = summary.get("belum_diselesaikan", 0)
+            completed_count = summary.get("telah_diselesaikan", 0)
+            
+            if language == "en":
+                correct_summary = f"Claim Summary:\nTotal Defects Reported: {total_defects}\nPending: {pending_count}\nCompleted: {completed_count}"
+            else:
+                correct_summary = f"Ringkasan Tuntutan:\nJumlah Kecacatan Dilaporkan: {total_defects}\nBelum Diselesaikan: {pending_count}\nTelah Diselesaikan: {completed_count}"
+            
+            import re
+            ai_summary_text = re.sub(r"(Claim Summary:.*?)(?=\n[A-Z]|\Z)", correct_summary + "\n", ai_summary_text, flags=re.DOTALL)
+            ai_summary_text = re.sub(r"(Ringkasan Tuntutan:.*?)(?=\n[A-Z]|\Z)", correct_summary + "\n", ai_summary_text, flags=re.DOTALL)
+            
+            if not ai_summary_text or len(ai_summary_text.strip()) < 50:
+                ai_summary_text = "Summary generation unavailable."
+        except Exception as e:
+            current_app.logger.error(f"Forced AI Generation Failed: {str(e)}")
+            ai_summary_text = "Summary generation unavailable."
+
+        return export_pdf_internal(role, language, ai_summary_text, data)
 
     except Exception as e:
         import traceback

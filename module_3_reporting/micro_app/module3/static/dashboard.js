@@ -26,51 +26,61 @@ function showToast(msg, type = 'success') {
 // ===============================
 // Generate report (all roles)
 // ===============================
+<<<<<<< HEAD
 function generateReport() {
     const role = document.querySelector("strong").innerText;
-    const language = document.getElementById("language-select").value;
 
     fetch("/generate_ai_report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: role, language: language })
+        body: JSON.stringify({ role: role })
     })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("report-output").style.display = "block";
+        document.getElementById("timestamp-placeholder").innerText = data.generated_at;
+        document.getElementById("report-json").innerText = data.report;
+
+        document.getElementById("export-btn").disabled = false;
+    })
+    .catch(() => {
+        alert("AI report generation failed.");
+    });
+=======
+function generateReport(btn) {
+    btn.disabled = true;
+    btn.innerText = 'Generating...';
+
+    fetch('/generate_report', { method: 'POST' })
         .then(res => res.json())
         .then(data => {
-            document.getElementById("report-output").style.display = "block";
-            document.getElementById("timestamp-placeholder").innerText = data.generated_at;
-            document.getElementById("report-json").innerText = data.report;
+            const output = document.getElementById('report-output');
+            const pre = document.getElementById('report-json');
 
-            document.getElementById("export-btn").disabled = false;
+            if (output && pre) {
+                output.style.display = 'block';
+                pre.innerText =
+                    `Type: ${data.metadata.report_type}\n` +
+                    `Date: ${data.metadata.generated_on}\n` +
+                    `Signature: ${data.metadata.digital_signature_hash}`;
+            }
+
+            showToast('Report generated successfully', 'success');
+
+            const exportBtn = document.getElementById('export-btn');
+            if (exportBtn) exportBtn.disabled = false;
         })
         .catch(() => {
-            alert("AI report generation failed.");
-        });
-}
-
-function downloadReportDirectly() {
-    const role = document.querySelector("strong").innerText.toLowerCase();
-    const language = document.getElementById("language-select").value;
-    window.location.href = `/api/generate_report/${role}?language=${language}`;
-}
-
-function updateDefectDate(defectId, newDate) {
-    if (!newDate) return;
-
-    fetch("/api/update_defect_date", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: defectId, date: newDate })
-    })
-        .then(res => res.json())
-        .then(data => {
-            showToast(data.message, data.message.includes("Error") ? 'error' : 'success');
+            showToast('Failed to generate report', 'error');
+            const exportBtn = document.getElementById('export-btn');
+            if (exportBtn) exportBtn.disabled = true;
         })
-        .catch(() => {
-            showToast("Failed to update date.", "error");
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerText = 'Generate Report';
         });
+>>>>>>> e0000786b661f15f3de3bda2b6d651ea1ff70783
 }
-
 
 // ===============================
 // Homeowner only: Add remark

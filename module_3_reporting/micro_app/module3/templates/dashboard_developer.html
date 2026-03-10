@@ -138,9 +138,12 @@
                         <td>{{ defect.unit }}</td>
                         <td>{{ defect.desc }}</td>
 
-                        <td style="color: {{ 'red' if defect.is_overdue else 'white' }}">
-                            <input type="date" value="{{ defect.deadline }}"
-                                onchange="updateDefectDate({{ defect.id }}, this.value)">
+                        {% if defect.is_overdue %}
+                        <td style="color: red;">
+                            {% else %}
+                        <td style="color: white;">
+                            {% endif %}
+                            {{ defect.deadline }}
                         </td>
 
                         <td>
@@ -160,7 +163,8 @@
 
                         <td>
                             {% if defect.status != 'Completed' %}
-                            <button class="btn btn-sm btn-primary" onclick="updateStatus({{ defect.id }})">
+                            <button class="btn btn-sm btn-primary" data-defect-id="{{ defect.id }}"
+                                onclick="updateStatus(this.dataset.defectId)">
                                 Update
                             </button>
                             {% else %}

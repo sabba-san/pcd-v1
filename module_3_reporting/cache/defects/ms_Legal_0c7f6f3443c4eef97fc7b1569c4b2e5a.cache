@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "unit": "No 68",
+    "desc": "ujian\r\n",
+    "remarks": "",
+    "priority": "Normal"
+  },
+  {
+    "id": 3,
+    "unit": "Bilik Tidur Utama",
+    "desc": "retak",
+    "remarks": "",
+    "priority": "Sederhana"
+  },
+  {
+    "id": 4,
+    "unit": "Pintu Masuk",
+    "desc": "retak",
+    "remarks": "",
+    "priority": "Tinggi"
+  }
+]

@@ -8,7 +8,9 @@ from flask import Flask
 sys.path.append(os.environ.get("PYTHONPATH_MAIN", "/usr/src/app_main"))
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, 
+                template_folder=os.path.join(os.path.dirname(__file__), 'module3', 'templates'),
+                static_folder=os.path.join(os.path.dirname(__file__), 'module3', 'static'))
     
     # Configure database
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
@@ -31,7 +33,7 @@ def create_app():
                 module = __import__(f"micro_app.{mod}.routes", fromlist=["bp", "routes"])
                 bp = getattr(module, "bp", None) or getattr(module, "routes", None)
                 if bp:
-                    app.register_blueprint(bp, url_prefix=f"/{mod}")
+                    app.register_blueprint(bp)
                     print(f"Registered blueprint for {mod}", file=sys.stderr)
                 else:
                     print(f"No blueprint 'bp' or 'routes' found in micro_app.{mod}.routes", file=sys.stderr)
