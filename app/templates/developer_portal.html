@@ -77,9 +77,9 @@
                     <h6 class="text-white m-0 fw-bold"><i class="bi bi-list-task me-2"></i>Prioritized Task List</h6>
                     <div>
                         {% set target_pid = defects[0].scan_id if defects else 0 %}
-                        <a href="{{ url_for('module3.download_report', report_type='developer', project_id=target_pid) }}"
+                        <a href="http://localhost:5003/dashboard/{{ target_pid }}"
                             class="btn btn-sm btn-outline-info me-2">
-                            <i class="bi bi-file-earmark-pdf-fill me-2 text-info"></i>Compliance Report
+                            <i class="bi bi-graph-up-arrow me-2 text-info"></i>Report
                         </a>
                     </div>
                 </div>
@@ -176,20 +176,26 @@
                                     </a>
                                 </td>
                                 <td class="text-end pe-4 d-print-none">
-                                    {% if defect.status in ['locked', 'draft', 'Reported', 'New', 'Pending'] %}
-                                    <a href="{{ url_for('module3.update_status', id=defect.id, new_status='in_progress') }}"
-                                        class="btn btn-sm btn-primary fw-bold px-3 shadow-sm">
-                                        <i class="bi bi-play-fill me-1"></i>Start Job
-                                    </a>
-                                    {% elif defect.status in ['in_progress', 'Processing', 'Under Review'] %}
-                                    <a href="{{ url_for('module3.update_status', id=defect.id, new_status='Fixed') }}"
-                                        class="btn btn-sm btn-success fw-bold px-3 shadow-sm">
-                                        <i class="bi bi-check-lg me-1"></i>Finish
-                                    </a>
-                                    {% elif defect.status in ['completed', 'Fixed'] %}
-                                    <span class="text-success small fw-bold"><i
-                                            class="bi bi-check-circle-fill me-1"></i> Complete</span>
-                                    {% endif %}
+                                    <div class="d-flex justify-content-end align-items-center gap-2">
+                                        {% if defect.status in ['locked', 'draft', 'Reported', 'New', 'Pending'] %}
+                                        <a href="{{ url_for('module3.update_status', id=defect.id, new_status='in_progress') }}"
+                                            class="btn btn-sm btn-primary fw-bold px-3 shadow-sm d-flex align-items-center justify-content-center"
+                                            style="min-width: 110px;">
+                                            <i class="bi bi-play-fill me-1"></i>Start Job
+                                        </a>
+                                        {% elif defect.status in ['in_progress', 'Processing', 'Under Review'] %}
+                                        <a href="{{ url_for('module3.update_status', id=defect.id, new_status='Fixed') }}"
+                                            class="btn btn-sm btn-success fw-bold px-3 shadow-sm d-flex align-items-center justify-content-center"
+                                            style="min-width: 110px;">
+                                            <i class="bi bi-check-lg me-1"></i>Finish
+                                        </a>
+                                        {% elif defect.status in ['completed', 'Fixed'] %}
+                                        <div class="text-success small fw-bold d-flex align-items-center justify-content-center"
+                                            style="min-width: 110px;">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Complete
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                 </td>
                                 <td class="d-none d-print-table-cell text-end pe-4"
                                     style="border-bottom: 1px solid #ccc;">

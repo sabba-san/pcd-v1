@@ -1,275 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>{{ role }} Dashboard</title>
+    <title>{{ role }} Dashboard</title>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <!-- ================= HEADER ================= -->
-    <div class="header">
-        <div>
-            <h1>{{ role }} <span>Defect Dashboard</span></h1>
+        <!-- ================= HEADER ================= -->
+        <div class="header"
+            style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
 
-            <label>Select Role:
-                <select onchange="changeRole(this)">
-                    <option value="Homeowner" {{ 'selected' if role=='Homeowner' }}>Homeowner</option>
-                    <option value="Legal" {{ 'selected' if role=='Legal' }}>Legal</option>
-                    <option value="Developer" {{ 'selected' if role=='Developer' }}>Developer</option>
-                </select>
-            </label>
+            <!-- Left: Back Button -->
+            <div style="flex: 1; min-width: 200px;">
+                <a href="javascript:history.back()" class="btn btn-outline"
+                    style="border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); color: #e0e0e0; padding: 8px 15px; border-radius: 6px; text-decoration: none; display: inline-block; font-size: 14px;">
+                    &larr; Back to Main Dashboard
+                </a>
+            </div>
 
-            <label style="margin-left: 15px;">Report Language:
-                <select id="language-select">
-                    <option value="ms" selected>Bahasa Malaysia</option>
-                    <option value="en">English</option>
-                </select>
-            </label>
+            <!-- Center: Title & Roles -->
+            <div style="flex: 2; text-align: center; min-width: 300px;">
+                <h1 style="margin-top: 0;">{{ role }} <span>Defect Dashboard</span></h1>
 
-            <p style="color:#aaa;">
-                Logged in as:
-                <strong style="color:white">{{ role }}</strong>
-            </p>
+                <label>Select Role:
+                    <select onchange="changeRole(this)">
+                        <option value="Homeowner" {{ 'selected' if role=='Homeowner' }}>Homeowner</option>
+                        <option value="Legal" {{ 'selected' if role=='Legal' }}>Legal</option>
+                        <option value="Developer" {{ 'selected' if role=='Developer' }}>Developer</option>
+                    </select>
+                </label>
+
+                <p style="color:#aaa; margin-top: 10px;">
+                    Logged in as:
+                    <strong style="color:white">{{ role }}</strong>
+                </p>
+            </div>
+
+            <!-- Right: Actions & Language -->
+            <div class="buttons"
+                style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; min-width: 200px;">
+                <label style="margin-bottom: 5px;">Report Language:
+                    <select id="language-select">
+                        <option value="ms" selected>Bahasa Malaysia</option>
+                        <option value="en">English</option>
+                    </select>
+                </label>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        Generate Claim Report
+                    </button>
+
+                    <form id="pdf-form" action="{{ url_for('routes.export_pdf') }}" method="POST" style="margin: 0;">
+                        <input type="hidden" name="role" value="{{ role }}">
+                        <input type="hidden" name="language" id="pdf-language" value="ms">
+                        <input type="hidden" name="ai_report" id="pdf-ai-report" value="">
+                        <button id="export-btn" class="btn btn-success" disabled>
+                            Export PDF
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <div class="buttons">
-            <button class="btn btn-primary" onclick="generateReport()">
-                Generate Claim Report
-            </button>
+        <!-- ================= STATS ================= -->
+        <div class="stats-grid">
+            <div class="stat-card status-total">
+                <div class="stat-number">{{ stats.total }}</div>
+                <div class="stat-label">Reported Defects</div>
+            </div>
 
-            <form id="pdf-form" action="{{ url_for('routes.export_pdf') }}" method="POST" style="display:inline;">
-                <input type="hidden" name="role" value="{{ role }}">
-                <input type="hidden" name="language" id="pdf-language" value="ms">
-                <input type="hidden" name="ai_report" id="pdf-ai-report" value="">
-                <button id="export-btn"
-                    class="btn btn-success"
-                    disabled>
-                Export PDF
-            </button>
-            </form>
-        </div>
-    </div>
+            <div class="stat-card status-pending">
+                <div class="stat-number">{{ stats.pending }}</div>
+                <div class="stat-label">Pending</div>
+            </div>
 
-    <!-- ================= STATS ================= -->
-    <div class="stats-grid">
-        <div class="stat-card status-total">
-            <div class="stat-number">{{ stats.total }}</div>
-            <div class="stat-label">Reported Defects</div>
+            <div class="stat-card status-completed">
+                <div class="stat-number">{{ stats.completed }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
         </div>
 
-        <div class="stat-card status-pending">
-            <div class="stat-number">{{ stats.pending }}</div>
-            <div class="stat-label">Pending</div>
+        <!-- ================= REPORT PREVIEW ================= -->
+        <div id="report-output" style="display:none;">
+            <h2>AI Claim Report Preview</h2>
+
+            <div class="report-meta">
+                <small>
+                    Generated on:
+                    <span id="timestamp-placeholder"></span>
+                    | Language: <span id="language-placeholder"></span>
+                </small>
+            </div>
+
+            <pre id="report-json"
+                style="white-space: pre-wrap; background: #1e1e1e; padding: 15px; border-radius: 8px; color: #e0e0e0; font-size: 13px; line-height: 1.6;"></pre>
         </div>
 
-        <div class="stat-card status-completed">
-            <div class="stat-number">{{ stats.completed }}</div>
-            <div class="stat-label">Completed</div>
-        </div>
-    </div>
+        <!-- ================= DEFECT TABLE ================= -->
+        <div class="card">
+            <h2>My Reported Defects</h2>
 
-    <!-- ================= REPORT PREVIEW ================= -->
-    <div id="report-output" style="display:none;">
-        <h2>AI Claim Report Preview</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Unit</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Remark</th>
+                    </tr>
+                </thead>
 
-        <div class="report-meta">
-            <small>
-                Generated on:
-                <span id="timestamp-placeholder"></span>
-                | Language: <span id="language-placeholder"></span>
-            </small>
-        </div>
+                <tbody>
+                    {% for defect in defects %}
+                    <tr>
+                        <td>#{{ defect.id }}</td>
+                        <td>{{ defect.unit }}</td>
+                        <td>{{ defect.desc }}</td>
 
-        <pre id="report-json" style="white-space: pre-wrap; background: #1e1e1e; padding: 15px; border-radius: 8px; color: #e0e0e0; font-size: 13px; line-height: 1.6;"></pre>
-    </div>
-
-    <!-- ================= DEFECT TABLE ================= -->
-    <div class="card">
-        <h2>My Reported Defects</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Unit</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Remark</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for defect in defects %}
-                <tr>
-                    <td>#{{ defect.id }}</td>
-                    <td>{{ defect.unit }}</td>
-                    <td>{{ defect.desc }}</td>
-
-                    <td>
-                        <span class="badge
+                        <td>
+                            <span class="badge
                             {{ 'status-completed' if defect.status=='Completed'
                                else 'status-pending' }}">
-                            {{ defect.status }}
-                        </span>
-                    </td>
+                                {{ defect.status }}
+                            </span>
+                        </td>
 
-                    <td>
-                        <button class="btn btn-secondary"
-                                onclick="openRemarkModal({{ defect.id }})">
-                            Add Note
-                        </button>
+                        <td>
+                            <button class="btn btn-secondary" data-defect-id="{{ defect.id }}"
+                                onclick="openRemarkModal(this.dataset.defectId)">
+                                Add Note
+                            </button>
 
-                        <div id="remark-{{ defect.id }}"
-                             class="ai-narrative-block">
-                            {{ defect.remarks }}
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                            <div id="remark-{{ defect.id }}" class="ai-narrative-block">
+                                {{ defect.remarks }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
-</div>
+    <!-- ================= REMARK MODAL ================= -->
+    <div id="remark-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h2>Add Personal Remark</h2>
 
-<!-- ================= REMARK MODAL ================= -->
-<div id="remark-modal" class="modal-overlay" style="display:none;">
-    <div class="modal-content">
-        <h2>Add Personal Remark</h2>
+            <p>
+                Defect #
+                <strong id="modal-defect-id"></strong>
+            </p>
 
-        <p>
-            Defect #
-            <strong id="modal-defect-id"></strong>
-        </p>
+            <textarea id="remark-textarea" placeholder="Enter your note..."></textarea>
 
-        <textarea id="remark-textarea"
-                  placeholder="Enter your note..."></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeRemarkModal()">
+                    Cancel
+                </button>
 
-        <div class="modal-actions">
-            <button class="btn btn-secondary" onclick="closeRemarkModal()">
-                Cancel
-            </button>
-
-            <button class="btn btn-primary" onclick="saveRemark()">
-                Save
-            </button>
+                <button class="btn btn-primary" onclick="saveRemark()">
+                    Save
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- ================= JAVASCRIPT ================= -->
-<script>
-let currentDefectId = null;
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+        let currentDefectId = null;
 
-function changeRole(select) {
-    window.location.href = "/?role=" + select.value;
-}
-
-/* REPORT GENERATION */
-function generateReport() {
-    const language = document.getElementById("language-select").value;
-    
-    // Update PDF form language
-    document.getElementById("pdf-language").value = language;
-    
-    fetch("/generate_ai_report", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            role: "{{ role }}",
-            language: language
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.error) {
-            alert("Error: " + data.error);
-            return;
+        function changeRole(select) {
+            window.location.href = "/?role=" + select.value;
         }
-        
-        // Show report section
-        document.getElementById("report-output").style.display = "block";
 
-        // Timestamp from backend (important for tribunal)
-        document.getElementById("timestamp-placeholder").innerText =
-            data.generated_at;
-        
-        // Language indicator
-        document.getElementById("language-placeholder").innerText =
-            data.language === "ms" ? "Bahasa Malaysia" : "English";
+        /* REPORT GENERATION */
+        function generateReport() {
+            const language = document.getElementById("language-select").value;
 
-        // AI report text
-        document.getElementById("report-json").innerText =
-            data.report;
-        
-        // Store AI report for PDF export
-        document.getElementById("pdf-ai-report").value = data.report;
+            // Update PDF form language
+            document.getElementById("pdf-language").value = language;
 
-        // Enable PDF export ONLY after AI report exists
-        document.getElementById("export-btn").disabled = false;
-    })
-    .catch(err => {
-        alert("Failed to generate AI report.");
-        console.error(err);
-    });
-}
+            fetch("/generate_ai_report", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    role: "{{ role }}",
+                    language: language
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("Error: " + data.error);
+                        return;
+                    }
 
-/* REMARK MODAL */
-function openRemarkModal(id) {
-    currentDefectId = id;
-    document.getElementById("modal-defect-id").innerText = id;
-    document.getElementById("remark-textarea").value = "";
-    document.getElementById("remark-modal").style.display = "flex";
-}
+                    // Show report section
+                    document.getElementById("report-output").style.display = "block";
 
-function closeRemarkModal() {
-    document.getElementById("remark-modal").style.display = "none";
-}
+                    // Timestamp from backend (important for tribunal)
+                    document.getElementById("timestamp-placeholder").innerText =
+                        data.generated_at;
 
-/* SAVE REMARK → BACKEND */
-function saveRemark() {
-    const remark = document.getElementById("remark-textarea").value.trim();
+                    // Language indicator
+                    document.getElementById("language-placeholder").innerText =
+                        data.language === "ms" ? "Bahasa Malaysia" : "English";
 
-    if (!remark) {
-        alert("Please enter a remark.");
-        return;
-    }
+                    // AI report text
+                    document.getElementById("report-json").innerText =
+                        data.report;
 
-    fetch("/add_remark", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            id: currentDefectId,
-            remark: remark,
-            role: "Homeowner"
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById(`remark-${currentDefectId}`).innerText = remark;
-            alert("Remark saved successfully.");
-            closeRemarkModal();
-        } else {
-            alert("Failed to save remark: " + (data.error || "Unknown error"));
+                    // Store AI report for PDF export
+                    document.getElementById("pdf-ai-report").value = data.report;
+
+                    // Enable PDF export ONLY after AI report exists
+                    document.getElementById("export-btn").disabled = false;
+                })
+                .catch(err => {
+                    alert("Failed to generate AI report.");
+                    console.error(err);
+                });
         }
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Server error while saving remark.");
-    });
-}
 
-</script>
+        /* REMARK MODAL */
+        function openRemarkModal(id) {
+            currentDefectId = id;
+            document.getElementById("modal-defect-id").innerText = id;
+            document.getElementById("remark-textarea").value = "";
+            document.getElementById("remark-modal").style.display = "flex";
+        }
+
+        function closeRemarkModal() {
+            document.getElementById("remark-modal").style.display = "none";
+        }
+
+        /* SAVE REMARK → BACKEND */
+        function saveRemark() {
+            const remark = document.getElementById("remark-textarea").value.trim();
+
+            if (!remark) {
+                alert("Please enter a remark.");
+                return;
+            }
+
+            fetch("/add_remark", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: currentDefectId,
+                    remark: remark,
+                    role: "Homeowner"
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(`remark-${currentDefectId}`).innerText = remark;
+                        alert("Remark saved successfully.");
+                        closeRemarkModal();
+                    } else {
+                        alert("Failed to save remark: " + (data.error || "Unknown error"));
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Server error while saving remark.");
+                });
+        }
+
+    </script>
 
 </body>
+
 </html>

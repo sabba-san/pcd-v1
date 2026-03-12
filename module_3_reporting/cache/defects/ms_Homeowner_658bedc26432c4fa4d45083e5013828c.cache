@@ -1,0 +1,23 @@
+[
+  {
+    "id": 3,
+    "unit": "Living Room",
+    "desc": "ujian2",
+    "remarks": "",
+    "priority": "Kritikal"
+  },
+  {
+    "id": 2,
+    "unit": "Master Bedroom",
+    "desc": "ujian1 ",
+    "remarks": "",
+    "priority": "Kritikal"
+  },
+  {
+    "id": 1,
+    "unit": "No 69",
+    "desc": "pengujian",
+    "remarks": "mata dummy",
+    "priority": "Normal"
+  }
+]

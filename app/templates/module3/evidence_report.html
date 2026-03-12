@@ -14,12 +14,23 @@
             <p class="text-white-50 mb-0">AI-analyzed defect reports and photographic evidence.</p>
         </div>
         <div>
-            <div class="bg-dark rounded-3 px-4 py-2 border border-secondary d-flex align-items-center">
+            <div class="bg-dark rounded-3 px-4 py-2 border border-secondary d-flex align-items-center mb-3">
                 <div class="me-3 text-end">
                     <h3 class="fw-bold text-white mb-0">{{ cases|length }}</h3>
                     <small class="text-white-50" style="font-size: 0.7rem;">TOTAL REPORTS</small>
                 </div>
                 <i class="bi bi-images text-white-50 fs-4"></i>
+            </div>
+
+            <div class="d-flex flex-column gap-2">
+                <a href="http://localhost:5003/module3/api/generate_report/legal?language=en"
+                    class="btn btn-outline-info btn-sm rounded-pill fw-bold action-btn w-100" target="_blank">
+                    <i class="bi bi-printer me-1"></i> Print Summary (English)
+                </a>
+                <a href="http://localhost:5003/module3/api/generate_report/legal?language=ms"
+                    class="btn btn-outline-info btn-sm rounded-pill fw-bold action-btn w-100" target="_blank">
+                    <i class="bi bi-printer me-1"></i> Print Summary (Malay)
+                </a>
             </div>
         </div>
     </div>

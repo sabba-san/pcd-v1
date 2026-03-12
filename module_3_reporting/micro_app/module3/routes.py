@@ -102,6 +102,13 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
     Fetches real data from DB, acting as the bridge replacing `dummy_data.py`.
     Returns dict containing: defects, stats, maklumat_kes, pihak_yang_menuntut, penentang
     """
+    try:
+        from flask_login import current_user
+        if not user_id and current_user and current_user.is_authenticated:
+            user_id = current_user.id
+    except Exception:
+        pass
+
     user = User.query.get(user_id) if user_id else None
     project = Project.query.get(project_id) if project_id else None
     
@@ -143,19 +150,22 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
 
         defects.append({
             "id": d.id,
+            "description": d.description or "No description",
+            "unit": unit_val,
+            "status": d.status or "Pending",
+            "severity": d.severity or "Normal",
+            "image_path": image_path,
+            
             "project_name": project.name if project else "N/A",
             "full_name": user.full_name if user else "N/A",
-            "unit": unit_val,
             "desc": d.description or "No description",
-            "status": d.status or "Pending",
             "priority": d.severity or "Normal",
             # Fallback urgencys for Nabilah's UI mapping
             "urgency": d.severity or "Normal",
             "remarks": d.notes if hasattr(d, 'notes') and d.notes else "",
             "deadline": d.scheduled_date.strftime("%Y-%m-%d") if d.scheduled_date else "",
             "is_overdue": bool(d.scheduled_date and d.status not in ["Completed", "Fixed", "Telah Diselesaikan"] and d.scheduled_date < datetime.now()),
-            "hda_compliant": True,
-            "image_path": image_path
+            "hda_compliant": True
         })
 
     # Stats
@@ -178,12 +188,12 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
     }
 
     pihak_yang_menuntut = {
-        "nama": user.full_name if user else "N/A",
-        "no_kp": user.ic_number if user else "-",
-        "alamat_1": user.correspondence_address if user else "-",
+        "nama": user.full_name if (user and user.full_name) else "N/A",
+        "no_kp": user.ic_number if (user and user.ic_number) else "-",
+        "alamat_1": user.correspondence_address if (user and user.correspondence_address) else "-",
         "alamat_2": "-",
-        "no_telefon": user.phone_number if user else "-",
-        "email": user.email if user else "-",
+        "no_telefon": user.phone_number if (user and user.phone_number) else "-",
+        "email": user.email if (user and user.email) else "-",
         "keterangan": "Pemilik unit kediaman"
     }
 
@@ -204,8 +214,8 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
         
     penentang = {
         "nama": penentang_nama,
-        "no_pendaftaran": (developer_user.company_reg_no or developer_user.nric or "-") if developer_user else (project.developer_ssm if project else "-"),
-        "alamat_1": (developer_user.company_address or "-") if developer_user else (project.developer_address if project else "-"),
+        "no_pendaftaran": (developer_user.company_reg_no or developer_user.nric or "-") if developer_user else (project.developer_ssm if (project and project.developer_ssm) else "-"),
+        "alamat_1": (developer_user.company_address or "-") if developer_user else (project.developer_address if (project and project.developer_address) else "-"),
         "alamat_2": "-",
         "no_telefon": (developer_user.contact_number or "-") if developer_user else "-",
         "email": (developer_user.fax_email or "-") if developer_user else "-",
@@ -227,31 +237,24 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
 @routes.route("/dashboard")
 @routes.route("/dashboard/<int:project_id>")
 def dashboard(project_id=None):
-    role = request.args.get("role")
+    from flask_login import current_user
+    from flask import current_app, redirect, abort
     
-    try:
-        from flask_login import current_user
-        from flask import current_app
-        if hasattr(current_app, 'login_manager') and current_app.login_manager is not None:
-            if current_user and current_user.is_authenticated and not role:
-                role = current_user.role.capitalize()
-    except Exception:
-        pass
-        
-    if not role:
+    if not current_user or not current_user.is_authenticated:
+        return redirect("http://localhost:5000/") # Or handle 401
+    
+    user_role = current_user.role.lower() if hasattr(current_user, 'role') else ''
+    
+    if user_role == 'homeowner' or user_role == 'user':
         role = "Homeowner"
+    elif user_role == 'developer':
+        role = "Developer"
+    elif user_role in ['legal', 'lawyer']:
+        role = "Legal"
+    else:
+        return "Unauthorized role.", 403
         
-    # NEW: Fetch DB values dynamically based on args instead of dummy_data
-    user_id = request.args.get('user_id', type=int)
-    
-    try:
-        from flask_login import current_user
-        from flask import current_app
-        if hasattr(current_app, 'login_manager') and current_app.login_manager is not None:
-            if current_user and current_user.is_authenticated and not user_id:
-                user_id = current_user.id
-    except Exception:
-        pass
+    user_id = current_user.id
 
     if project_id is None:
         project_id = request.args.get('project_id', type=int)
@@ -272,12 +275,21 @@ def dashboard(project_id=None):
         else:
             d["remarks"] = ""
 
+    total_defects = stats["total"]
+    pending_defects = stats["pending"]
+    resolved_defects = stats["completed"]
+
     if role == "Developer":
-        return render_template('dashboard_developer.html', role=role, defects=defects, stats=stats)
+        return render_template('dashboard_developer.html', role=role, defects=defects, stats=stats,
+                               total_defects=total_defects, resolved_defects=resolved_defects, pending_defects=pending_defects)
     elif role == "Legal":
-        return render_template('dashboard_legal.html', role=role, defects=defects, stats=stats)
-    else: # Default to Homeowner
-        return render_template('dashboard_homeowner.html', role=role, defects=defects, stats=stats)
+        return render_template('dashboard_legal.html', role=role, defects=defects, stats=stats,
+                               total_defects=total_defects, resolved_defects=resolved_defects, pending_defects=pending_defects)
+    elif role == "Homeowner":
+        return render_template('dashboard_homeowner.html', role=role, defects=defects, stats=stats,
+                               total_defects=total_defects, resolved_defects=resolved_defects, pending_defects=pending_defects)
+    else:
+        return "Unauthorized role.", 403
 
 
 # =================================================
@@ -288,15 +300,32 @@ def generate_report_api_legacy(report_type):
     # This was originally `/api/generate_report/<report_type>`.
     # It acts identically to the original to prevent breakage.
     try:
+        from flask_login import current_user
+        if not current_user or not current_user.is_authenticated:
+            return jsonify({"error": "Unauthorized"}), 403
+            
+        user_role = current_user.role.lower() if hasattr(current_user, 'role') else ''
+        if user_role == 'homeowner' or user_role == 'user':
+            role = "Homeowner"
+        elif user_role == 'developer':
+            role = "Developer"
+        elif user_role in ['legal', 'lawyer']:
+            role = "Legal"
+        else:
+            return jsonify({"error": "Unauthorized role"}), 403
+            
         language = request.args.get('language', 'en')
         role_map = {
             "homeowner": "Homeowner",
             "developer": "Developer",
             "legal": "Legal"
         }
-        role = role_map.get(report_type.lower(), "Homeowner")
+        requested_role = role_map.get(report_type.lower(), "Homeowner")
+        
+        if requested_role != role:
+            return jsonify({"error": "Cannot generate report for a different role"}), 403
 
-        user_id = request.args.get('user_id', type=int)
+        user_id = current_user.id
         project_id = request.args.get('project_id', type=int)
         
         data = fetch_defects_and_data_from_db(role, user_id, project_id)
@@ -1018,15 +1047,26 @@ def export_pdf_internal(role, language, ai_report_text, data):
             
         y = height - 120
 
+    # ============================================
+    # PAGE 2: RINGKASAN & SENARAI KECACATAN
+    # ============================================
+    draw_footer(pdf, width, labels, digital_hash)
+    pdf.showPage()
+    y = height - 50
+    
+    # --- RINGKASAN TUNTUTAN (Claim Summary) ---
     pdf.setFont("Helvetica-Bold", 10)
     if language == "en":
         pdf.drawString(50, y, "Claim Summary:")
     else:
         pdf.drawString(50, y, "Ringkasan Tuntutan:")
-
+    
+    # Draw box for claim summary
     box_top = y - 10
     box_height = 80
     pdf.rect(50, box_top - box_height, width - 100, box_height)
+    
+    # Summary statistics inside the box
     y -= 25
     pdf.setFont("Helvetica", 9)
     summary = report_data['ringkasan_statistik']
@@ -1042,21 +1082,24 @@ def export_pdf_internal(role, language, ai_report_text, data):
         pdf.drawString(60, y, f"Belum Diselesaikan: {summary['belum_diselesaikan']}")
         y -= 15
         pdf.drawString(60, y, f"Telah Diselesaikan: {summary['telah_diselesaikan']}")
-
+    
+    # Move y below the box
     y = box_top - box_height - 20
-
-    # Defect List
+    
+    # --- SENARAI KECACATAN (Defect List) ---
     y -= 35
     pdf.setFont("Helvetica-Bold", 10)
     if language == "en":
         pdf.drawString(50, y, "Defect List:")
     else:
         pdf.drawString(50, y, "Senarai Kecacatan:")
-
+    
     y -= 20
     pdf.setFont("Helvetica", 9)
-
+    
     for i, defect in enumerate(defects, 1):
+
+        # Ensure enough space for ONE full defect block
         if y < 260:
             draw_footer(pdf, width, labels, digital_hash)
             pdf.showPage()
@@ -1068,43 +1111,71 @@ def export_pdf_internal(role, language, ai_report_text, data):
                 pdf.drawString(50, y, "Senarai Kecacatan (sambungan):")
             y -= 30
 
-        HEADER_X = 50
-        LABEL_X  = 70
-        VALUE_X  = 120
+        # ===============================
+        # CONSISTENT INDENT POSITIONS
+        # ===============================
+        HEADER_X = 50      # a. Kecacatan ID
+        LABEL_X  = 70      # Keterangan / Unit / Status
+        VALUE_X  = 120     # isi selepas :
         TEXT_WIDTH = width - VALUE_X - 50
+
+        # ===== DEFECT HEADER =====
         pdf.setFont("Helvetica-Bold", 10)
-        pdf.drawString(HEADER_X, y, f"{chr(64+i)}. {labels['defect_id']} {defect['id']}:")
+        pdf.drawString(
+            HEADER_X,
+            y,
+            f"{chr(64+i)}. {labels['defect_id']} {defect['id']}:"
+        )
         y -= 16
 
         pdf.setFont("Helvetica", 9)
-        pdf.drawString(LABEL_X, y, labels["description"])
-        y = draw_wrapped_text(pdf, f": {defect['desc']}", VALUE_X, y, TEXT_WIDTH)
 
+        # ---- Keterangan ----
+        desc_text = defect['desc']
+        pdf.drawString(LABEL_X, y, labels["description"])
+        y = draw_wrapped_text(
+            pdf,
+            f": {desc_text}",
+            VALUE_X,
+            y,
+            TEXT_WIDTH
+        )
+
+        # ---- Unit ----
         pdf.drawString(LABEL_X, y, labels["unit"])
         pdf.drawString(VALUE_X, y, f": {defect['unit']}")
         y -= 14
 
+        # ---- Status ----
         pdf.drawString(LABEL_X, y, labels["status"])
-        pdf.drawString(VALUE_X, y, f": {defect['status']}")
+        status_text = defect["status"]
+        pdf.drawString(VALUE_X, y, f": {status_text}")
         y -= 14
 
+        # ---- Keutamaan (jika ada) ----
         if defect.get("priority"):
             pdf.drawString(LABEL_X, y, labels["priority"])
             pdf.drawString(VALUE_X, y, f": {defect['priority']}")
             y -= 14
 
+        # ---- Ulasan (Homeowner sahaja) ----
         if role == "Homeowner" and defect.get("remarks"):
             pdf.drawString(LABEL_X, y, labels["remarks"])
-            y = draw_wrapped_text(pdf, f": {defect['remarks']}", VALUE_X, y, TEXT_WIDTH)
+            y = draw_wrapped_text(
+                pdf,
+                f": {defect['remarks']}",
+                VALUE_X,
+                y,
+                TEXT_WIDTH
+            )
 
+        # ---- Bukti Kecacatan ----
         image_path = None
-        # Try local static directory if image_path exists in data
         if defect.get('image_path'):
             image_path_candidate = os.path.join("/usr/src/app_main/app/static/", defect['image_path'].lstrip('/'))
             if os.path.exists(image_path_candidate):
                  image_path = image_path_candidate
 
-        # Fallback to evidence dir
         if not image_path:
              alt_image = os.path.join(evidence_dir, f"defect_{defect['id']}.jpg")
              if os.path.exists(alt_image):
@@ -1119,74 +1190,191 @@ def export_pdf_internal(role, language, ai_report_text, data):
             pdf.setFont("Helvetica-Oblique", 8)
             pdf.drawString(LABEL_X, y, f"{labels['evidence']}:")
             y -= 10
-            pdf.drawImage(ImageReader(image_path), LABEL_X, y - 110, width=200, height=110, preserveAspectRatio=True)
-            y -= 125
-        else:
-            pdf.setFont("Helvetica-Oblique", 8)
-            pdf.drawString(LABEL_X, y, f"{labels['evidence']}")
-            pdf.drawString(VALUE_X, y, ": Image Not Found")
-            y -= 10
 
+            pdf.drawImage(
+                ImageReader(image_path),
+                LABEL_X,
+                y - 110,
+                width=200,
+                height=110
+            )
+            y -= 125
+
+        # Space between defects
         y -= 25
 
-    # AI REPORT SECTION
+    # ============================================
+    # AI REPORT SECTION (Ringkasan Tuntutan)
+    # ============================================
     if ai_report_text:
         draw_footer(pdf, width, labels, digital_hash)
         pdf.showPage()
         y = height - 50
 
+        # Margins & spacing
         LEFT_MARGIN = 50
         PARAGRAPH_INDENT = 70
         RIGHT_MARGIN = width - 50
         LINE_HEIGHT = 18
         TEXT_WIDTH = RIGHT_MARGIN - PARAGRAPH_INDENT
 
+        # AI Report Header
         pdf.setFont("Helvetica-Bold", 12)
         if language == "en":
             pdf.drawCentredString(width/2, y, "AI-GENERATED CLAIM SUMMARY REPORT")
         else:
             pdf.drawCentredString(width/2, y, "LAPORAN RINGKASAN TUNTUTAN DIJANA AI")
+
         y -= 30
 
+        # Clean AI report text
+        import re
         clean_text = ai_report_text
-        clean_text = clean_text.replace('**', '').replace('*', '').replace('##', '').replace('#', '').replace('\r\n', '\n').replace('\r', '\n')
+        clean_text = clean_text.replace('**', '')
+        clean_text = clean_text.replace('*', '')
+        clean_text = clean_text.replace('##', '')
+        clean_text = clean_text.replace('#', '')
+        clean_text = clean_text.replace('\r\n', '\n')
+        clean_text = clean_text.replace('\r', '\n')
         clean_text = re.sub(r'[^\x00-\x7F]+', '', clean_text)
+        # TRANSLATE PRIORITY INSIDE AI REPORT TEXT
         if language == "en":
-            clean_text = clean_text.replace("Status: Telah Diselesaikan", "Status: Completed").replace("Status: Belum Diselesaikan", "Status: Pending").replace("Status: Dalam Tindakan", "Status: In Progress").replace("Status: Tertangguh", "Status: Delayed")
-            clean_text = clean_text.replace("Keutamaan:", "Priority:").replace("Priority: Tinggi", "Priority: High").replace("Priority: Sederhana", "Priority: Medium").replace("Priority: Rendah", "Priority: Low")
-        elif language == "ms":
-            clean_text = clean_text.replace("Status: Completed", "Status: Telah Diselesaikan").replace("Status: Pending", "Status: Belum Diselesaikan").replace("Status: In Progress", "Status: Dalam Tindakan").replace("Status: Delayed", "Status: Tertangguh")
-            clean_text = clean_text.replace("Priority:", "Keutamaan:").replace("Keutamaan: High", "Keutamaan: Tinggi").replace("Keutamaan: Medium", "Keutamaan: Sederhana").replace("Keutamaan: Low", "Keutamaan: Rendah")
+            # Force ALL status to English
+            clean_text = clean_text.replace("Status: Telah Diselesaikan", "Status: Completed")
+            clean_text = clean_text.replace("Status: Belum Diselesaikan", "Status: Pending")
+            clean_text = clean_text.replace("Status: Dalam Tindakan", "Status: In Progress")
+            clean_text = clean_text.replace("Status: Tertangguh", "Status: Delayed")
 
+            # Priority
+            clean_text = clean_text.replace("Keutamaan:", "Priority:")
+            clean_text = clean_text.replace("Priority: Tinggi", "Priority: High")
+            clean_text = clean_text.replace("Priority: Sederhana", "Priority: Medium")
+            clean_text = clean_text.replace("Priority: Rendah", "Priority: Low")
+
+        elif language == "ms":
+            # Force ALL status to Bahasa Malaysia
+            clean_text = clean_text.replace("Status: Completed", "Status: Telah Diselesaikan")
+            clean_text = clean_text.replace("Status: Pending", "Status: Belum Diselesaikan")
+            clean_text = clean_text.replace("Status: In Progress", "Status: Dalam Tindakan")
+            clean_text = clean_text.replace("Status: Delayed", "Status: Tertangguh")
+
+            # Priority
+            clean_text = clean_text.replace("Priority:", "Keutamaan:")
+            clean_text = clean_text.replace("Keutamaan: High", "Keutamaan: Tinggi")
+            clean_text = clean_text.replace("Keutamaan: Medium", "Keutamaan: Sederhana")
+            clean_text = clean_text.replace("Keutamaan: Low", "Keutamaan: Rendah")
+
+        # =================================================
+        # FIX REMARKS LANGUAGE USING DEFECT DATA (AUTHORITATIVE)
+        # =================================================
         if language == "ms":
             for defect in defects:
-                if defect.get("remarks"): clean_text = clean_text.replace("Ulasan:", "Ulasan:")
+                if defect.get("remarks"):
+                    clean_text = clean_text.replace(
+                        "Ulasan:",
+                        "Ulasan:"
+                    )
+
         elif language == "en":
             for defect in defects:
-                if defect.get("remarks"): clean_text = clean_text.replace("Remarks:", "Remarks:")
+                if defect.get("remarks"):
+                    clean_text = clean_text.replace(
+                        "Remarks:",
+                        "Remarks:"
+                    )
 
+        # Split AI report into lines
         lines = clean_text.split('\n')
+
         prev_line_is_sub_item = False
 
         for line in lines:
+            # Empty line spacing
             if not line.strip():
                 y -= 8
                 prev_line_is_sub_item = False
                 continue
+
+            # Page break
             if y < 80:
                 draw_footer(pdf, width, labels, digital_hash)
                 pdf.showPage()
                 y = height - 50
 
             stripped = line.strip()
-            if stripped[:2].isdigit() and stripped[1] == ".": y -= 12
-            if stripped[:2] in ["A.", "B.", "C.", "D.", "E.", "F."]: y -= 8
-            if stripped.startswith("Tarikh siap") or stripped.startswith("Tarikh dijadualkan") or stripped.startswith("Tarikh Siap"): y -= 10
 
-            is_numbered_header = stripped.startswith(('1.', '2.', '3.', '4.', '5.', '6.', 'PENAFIAN AI', 'Penafian AI', 'AI Disclaimer', 'Laporan Sokongan', 'Laporan Pematuhan', 'Laporan Gambaran', 'Purpose of the Report', 'Summary of Reported Defects', 'Defect List', 'Defects That Have Exceeded', 'Formal Request', 'Conclusion', 'Tribunal Support Report'))
-            is_sub_item = stripped.startswith(('A.', 'B.', 'C.', 'D.', 'E.', 'F.', 'a.', 'b.', 'c.', 'd.', 'e.', 'f.'))
-            is_defect_field = stripped.startswith(("Keterangan:", "Unit:", "Status:", "Keutamaan:", "Ulasan:", "Description:", "Priority:", "Remarks:", "Tarikh siap:", "Tarikh Siap:", "Completion Date:", "Current Status:", "Scheduled Completion Date:"))
+            # -----------------------------------------
+            # FORMAL SPACING RULES (TRIBUNAL-GRADE)
+            # -----------------------------------------
 
+            # Extra space before numbered sections (2., 3., etc.)
+            if stripped[:2].isdigit() and stripped[1] == ".":
+                y -= 12   # space before new main section
+
+            # Extra space before lettered items (A., B., C.)
+            if stripped[:2] in ["A.", "B.", "C.", "D.", "E.", "F."]:
+                y -= 8    # space before each defect item
+
+            # Extra space after finishing one defect block
+            if stripped.startswith("Tarikh siap") or stripped.startswith("Tarikh dijadualkan") or stripped.startswith("Tarikh Siap"):
+                y -= 10   # space after one defect
+
+            # Detect headers (LEFT ALIGN ONLY)
+            is_numbered_header = (
+                stripped.startswith('1.') or
+                stripped.startswith('2.') or
+                stripped.startswith('3.') or
+                stripped.startswith('4.') or
+                stripped.startswith('5.') or
+                stripped.startswith('6.') or
+                stripped.startswith('PENAFIAN AI') or
+                stripped.startswith('Penafian AI') or
+                stripped.startswith('AI Disclaimer') or
+                stripped.startswith('Laporan Sokongan') or
+                stripped.startswith('Laporan Pematuhan') or
+                stripped.startswith('Laporan Gambaran') or
+                stripped.startswith('Purpose of the Report') or
+                stripped.startswith('Summary of Reported Defects') or
+                stripped.startswith('Defect List') or
+                stripped.startswith('Defects That Have Exceeded') or
+                stripped.startswith('Formal Request') or
+                stripped.startswith('Conclusion') or
+                stripped.startswith('Tribunal Support Report')
+            )
+
+            is_sub_item = (
+                stripped.startswith('A.') or
+                stripped.startswith('B.') or
+                stripped.startswith('C.') or
+                stripped.startswith('D.') or
+                stripped.startswith('E.') or
+                stripped.startswith('F.') or
+                stripped.startswith('a.') or
+                stripped.startswith('b.') or
+                stripped.startswith('c.') or
+                stripped.startswith('d.') or
+                stripped.startswith('e.') or
+                stripped.startswith('f.')
+            )
+
+            # Defect detail fields
+            is_defect_field = stripped.startswith((
+                "Keterangan:",
+                "Unit:",
+                "Status:",
+                "Keutamaan:",
+                "Ulasan:",
+                "Description:",
+                "Priority:",
+                "Remarks:",
+                "Tarikh siap:",
+                "Tarikh Siap:",
+                "Completion Date:",
+                "Current Status:",
+                "Scheduled Completion Date:"
+            ))
+
+            # Font & indent
             if is_numbered_header:
                 pdf.setFont("Helvetica-Bold", 10)
                 x_pos = LEFT_MARGIN
@@ -1195,10 +1383,16 @@ def export_pdf_internal(role, language, ai_report_text, data):
                 x_pos = LEFT_MARGIN + 20
             else:
                 pdf.setFont("Helvetica", 9)
-                if is_defect_field: x_pos = LEFT_MARGIN + 40
-                else: x_pos = PARAGRAPH_INDENT
+                if is_defect_field:
+                    x_pos = LEFT_MARGIN + 40
+                else:
+                    x_pos = PARAGRAPH_INDENT
 
             prev_line_is_sub_item = is_sub_item
+
+            # ============================================
+            # WORD WRAP + JUSTIFY (ISI PERENGGAN SAHAJA)
+            # ============================================
             words = stripped.split()
             current_line = ""
 
@@ -1207,25 +1401,44 @@ def export_pdf_internal(role, language, ai_report_text, data):
                 if pdf.stringWidth(test_line, "Helvetica", 9) <= TEXT_WIDTH:
                     current_line = test_line
                 else:
-                    if is_numbered_header: pdf.drawString(x_pos, y, current_line)
-                    else: draw_justified_line(pdf, current_line, x_pos, y, TEXT_WIDTH, "Helvetica", 9)
+                    if is_numbered_header:
+                        # Header → kiri sahaja
+                        pdf.drawString(x_pos, y, current_line)
+                    else:
+                        # ISI → JUSTIFY DI SINI
+                        draw_justified_line(
+                            pdf,
+                            current_line,
+                            x_pos,
+                            y,
+                            TEXT_WIDTH,
+                            "Helvetica",
+                            9
+                        )
+
                     y -= LINE_HEIGHT
                     if y < 80:
                         draw_footer(pdf, width, labels, digital_hash)
                         pdf.showPage()
                         y = height - 50
                         pdf.setFont("Helvetica", 9)
+
                     current_line = word
 
+            # Last line (JANGAN justify – standard dokumen rasmi)
             if current_line:
                 pdf.drawString(x_pos, y, current_line)
                 y -= LINE_HEIGHT
 
-    # SIGNATURE PAGE
+    # ============================================
+    # SIGNATURE & METERAI (HALAMAN BERASINGAN)
+    # ============================================
+    # Start signature on a new page (BEST PRACTICE)
     draw_footer(pdf, width, labels, digital_hash)
     pdf.showPage()
     y = height - 50
 
+    # Title
     pdf.setFont("Helvetica-Bold", 11)
     if language == "en":
         pdf.drawCentredString(width / 2, y, "Verification and Signature")
@@ -1233,17 +1446,28 @@ def export_pdf_internal(role, language, ai_report_text, data):
         pdf.drawCentredString(width / 2, y, "Pengesahan dan Tandatangan")
     
     y -= 90
+
+    # Signature section
     pdf.setFont("Helvetica", 9)
 
+    # Left: short line for date
     short_line = "." * 55
+    # Right: long line for signature
     long_line = "." * 90
+
+    # Calculate widths
     short_width = pdf.stringWidth(short_line, "Helvetica", 9)
     long_width = pdf.stringWidth(long_line, "Helvetica", 9)
+
+    # Positions - left starts at 50, right ends at width-50
     left_x = 50
     right_x = width - 50 - long_width
+
+    # Centers for labels
     left_center = left_x + (short_width / 2)
     right_center = right_x + (long_width / 2)
 
+    # Row 1: Tarikh + Tandatangan
     pdf.drawString(left_x, y, short_line)
     pdf.drawString(right_x, y, long_line)
     y -= 20
@@ -1254,7 +1478,10 @@ def export_pdf_internal(role, language, ai_report_text, data):
         pdf.drawCentredString(left_center, y, "Tarikh")
         pdf.drawCentredString(right_center, y, "Tandatangan/Cap ibu jari Pihak Yang Menuntut")
 
+    # Row spacing (lebih luas)
     y -= 90
+
+    # Row 2: Tarikh Pemfailan + Setiausaha
     pdf.drawString(left_x, y, short_line)
     pdf.drawString(right_x, y, long_line)
     y -= 20
@@ -1265,6 +1492,7 @@ def export_pdf_internal(role, language, ai_report_text, data):
         pdf.drawCentredString(left_center, y, "Tarikh Pemfailan")
         pdf.drawCentredString(right_center, y, "Setiausaha/Pegawai Tribunal")
 
+    # Meterai
     y -= 100
     pdf.setFont("Helvetica-Bold", 10)
     if language == "en":

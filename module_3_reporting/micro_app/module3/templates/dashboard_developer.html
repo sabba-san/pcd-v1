@@ -14,9 +14,20 @@
     <div class="container">
 
         <!-- ================= HEADER ================= -->
-        <div class="header">
-            <div>
-                <h1>{{ role }} <span>Repair Compliance</span></h1>
+        <div class="header"
+            style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
+
+            <!-- Left: Back Button -->
+            <div style="flex: 1; min-width: 200px;">
+                <a href="javascript:history.back()" class="btn btn-outline"
+                    style="border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); color: #e0e0e0; padding: 8px 15px; border-radius: 6px; text-decoration: none; display: inline-block; font-size: 14px;">
+                    &larr; Back to Main Dashboard
+                </a>
+            </div>
+
+            <!-- Center: Title & Roles -->
+            <div style="flex: 2; text-align: center; min-width: 300px;">
+                <h1 style="margin-top: 0;">{{ role }} <span>Repair Compliance</span></h1>
 
                 <label>Select Role:
                     <select onchange="changeRole(this)">
@@ -26,37 +37,41 @@
                     </select>
                 </label>
 
-                <label style="margin-left: 15px;">Report Language:
+                <p style="color:#aaa; margin-top: 10px;">
+                    Logged in as:
+                    <strong style="color:white">{{ role }}</strong>
+                </p>
+            </div>
+
+            <!-- Right: Actions & Language -->
+            <div class="buttons"
+                style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; min-width: 200px;">
+                <label style="margin-bottom: 5px;">Report Language:
                     <select id="language-select">
                         <option value="ms" selected>Bahasa Malaysia</option>
                         <option value="en">English</option>
                     </select>
                 </label>
 
-                <p style="color:#aaa;">
-                    Logged in as:
-                    <strong style="color:white">{{ role }}</strong>
-                </p>
-            </div>
-
-            <div class="buttons">
-                <button class="btn btn-secondary" onclick="viewGanttChart()">
-                    <i class="fas fa-chart-bar"></i> View Repair Timeline
-                </button>
-
-                <!-- ✅ AI REPORT GENERATION (KEPT) -->
-                <button class="btn btn-primary" onclick="generateReport()">
-                    Generate AI Compliance Report
-                </button>
-
-                <form id="pdf-form" action="{{ url_for('routes.export_pdf') }}" method="POST" style="display:inline;">
-                    <input type="hidden" name="role" value="{{ role }}">
-                    <input type="hidden" name="language" id="pdf-language" value="ms">
-                    <input type="hidden" name="ai_report" id="pdf-ai-report" value="">
-                    <button class="btn btn-success" id="export-btn" disabled>
-                        Export PDF
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="viewGanttChart()">
+                        <i class="fas fa-chart-bar"></i> View Repair Timeline
                     </button>
-                </form>
+
+                    <!-- ✅ AI REPORT GENERATION (KEPT) -->
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        Generate AI Compliance Report
+                    </button>
+
+                    <form id="pdf-form" action="{{ url_for('routes.export_pdf') }}" method="POST" style="margin: 0;">
+                        <input type="hidden" name="role" value="{{ role }}">
+                        <input type="hidden" name="language" id="pdf-language" value="ms">
+                        <input type="hidden" name="ai_report" id="pdf-ai-report" value="">
+                        <button class="btn btn-success" id="export-btn" disabled>
+                            Export PDF
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 
