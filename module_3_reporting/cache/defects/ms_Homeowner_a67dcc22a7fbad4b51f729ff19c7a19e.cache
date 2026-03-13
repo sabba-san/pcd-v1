@@ -1,0 +1,23 @@
+[
+  {
+    "id": 3,
+    "unit": "Living Room",
+    "desc": "ujian 2",
+    "remarks": "kecacatan 3",
+    "priority": "Kritikal"
+  },
+  {
+    "id": 2,
+    "unit": "Bilik Tidur Utama",
+    "desc": "ujian 1 ",
+    "remarks": "kecacatan 2",
+    "priority": "Kritikal"
+  },
+  {
+    "id": 1,
+    "unit": "No 69",
+    "desc": "pengujian",
+    "remarks": "titik dummy",
+    "priority": "Normal"
+  }
+]

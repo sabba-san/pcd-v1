@@ -19,8 +19,7 @@
 
             <!-- Left: Back Button -->
             <div style="flex: 1; min-width: 200px;">
-                <a href="javascript:history.back()" class="btn btn-outline"
-                    style="border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); color: #e0e0e0; padding: 8px 15px; border-radius: 6px; text-decoration: none; display: inline-block; font-size: 14px;">
+                <a href="javascript:history.back()" class="btn btn-outline">
                     &larr; Back to Main Dashboard
                 </a>
             </div>
@@ -37,9 +36,9 @@
                     </select>
                 </label>
 
-                <p style="color:#aaa; margin-top: 10px;">
+                <p style="color:var(--text-secondary); margin-top: 10px;">
                     Logged in as:
-                    <strong style="color:white">{{ role }}</strong>
+                    <strong style="color:var(--text-main)">{{ role }}</strong>
                 </p>
             </div>
 
@@ -106,7 +105,7 @@
             </div>
 
             <pre id="report-json"
-                style="white-space: pre-wrap; background: #1e1e1e; padding: 15px; border-radius: 8px; color: #e0e0e0; font-size: 13px; line-height: 1.6;"></pre>
+                style="white-space: pre-wrap; background: #ffffff; padding: 15px; border-radius: 8px; color: #2c3e50; font-size: 13px; line-height: 1.6; border: 1px solid #eeeeee;"></pre>
         </div>
 
         <!-- ================= DEFECT TABLE ================= -->
@@ -154,10 +153,10 @@
                         <td>{{ defect.desc }}</td>
 
                         {% if defect.is_overdue %}
-                        <td style="color: red;">
-                            {% else %}
-                        <td style="color: white;">
-                            {% endif %}
+                        <td style="color: var(--accent-error); font-weight: 500;">
+                        {% else %}
+                        <td>
+                        {% endif %}
                             {{ defect.deadline }}
                         </td>
 

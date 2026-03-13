@@ -201,9 +201,14 @@ def fetch_defects_and_data_from_db(role, user_id, project_id):
     dev_id = request.args.get('dev_id', type=int)
     if dev_id:
         developer_user = User.query.get(dev_id)
-    elif project and project.developer_name:
-        developer_user = User.query.filter_by(role='developer', company_name=project.developer_name).first()
-        
+    else:
+        if project and project.developer_name:
+            developer_user = User.query.filter_by(role='developer', company_name=project.developer_name).first()
+        if not developer_user and project:
+            developer_user = User.query.filter_by(role='developer', project_id=project.id).first()
+        if not developer_user:
+            developer_user = User.query.filter_by(role='developer').first()
+            
     penentang_nama = "Gamuda Berhad"
     if developer_user and developer_user.company_name:
         penentang_nama = developer_user.company_name
@@ -1048,11 +1053,8 @@ def export_pdf_internal(role, language, ai_report_text, data):
         y = height - 120
 
     # ============================================
-    # PAGE 2: RINGKASAN & SENARAI KECACATAN
+    # RINGKASAN & SENARAI KECACATAN
     # ============================================
-    draw_footer(pdf, width, labels, digital_hash)
-    pdf.showPage()
-    y = height - 50
     
     # --- RINGKASAN TUNTUTAN (Claim Summary) ---
     pdf.setFont("Helvetica-Bold", 10)
@@ -1088,6 +1090,11 @@ def export_pdf_internal(role, language, ai_report_text, data):
     
     # --- SENARAI KECACATAN (Defect List) ---
     y -= 35
+    if y < 100:
+        draw_footer(pdf, width, labels, digital_hash)
+        pdf.showPage()
+        y = height - 50
+
     pdf.setFont("Helvetica-Bold", 10)
     if language == "en":
         pdf.drawString(50, y, "Defect List:")
@@ -1100,7 +1107,7 @@ def export_pdf_internal(role, language, ai_report_text, data):
     for i, defect in enumerate(defects, 1):
 
         # Ensure enough space for ONE full defect block
-        if y < 260:
+        if y < 100:
             draw_footer(pdf, width, labels, digital_hash)
             pdf.showPage()
             y = height - 50
@@ -1207,9 +1214,12 @@ def export_pdf_internal(role, language, ai_report_text, data):
     # AI REPORT SECTION (Ringkasan Tuntutan)
     # ============================================
     if ai_report_text:
-        draw_footer(pdf, width, labels, digital_hash)
-        pdf.showPage()
-        y = height - 50
+        if y < 200:
+            draw_footer(pdf, width, labels, digital_hash)
+            pdf.showPage()
+            y = height - 50
+        else:
+            y -= 40  # Space before AI Report if continuing on same page
 
         # Margins & spacing
         LEFT_MARGIN = 50
