@@ -5,108 +5,122 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold text-white mb-1"><i class="bi bi-folder-fill me-2 text-primary"></i>My Projects</h2>
-            <p class="text-muted">Select a project to view defects in the 3D visualization viewer.</p>
+            <h2 class="fw-bold mb-1" style="font-family:'Montserrat',sans-serif; color:var(--text-primary);"><i
+                    class="bi bi-folder-fill me-2" style="color:var(--primary-blue);"></i>My Projects</h2>
+            <p style="color:var(--text-secondary);">Select a project to view defects in the 3D visualization viewer.</p>
         </div>
         <a href="{{ url_for('module2.insert_defect') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-2"></i> New Project
         </a>
     </div>
 
-    <div class="card bg-dark border-secondary mb-4">
+    <div class="card mb-4">
         <div class="card-body p-2">
             <div class="input-group">
-                <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control bg-transparent border-0 text-white"
+                <span class="input-group-text bg-transparent border-0" style="color:var(--text-secondary);"><i
+                        class="bi bi-search"></i></span>
+                <input type="text" class="form-control border-0"
+                    style="background:transparent; color:var(--text-primary);"
                     placeholder="Search projects by name, ID, or location...">
             </div>
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="project-grid">
 
         {% for p in projects %}
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm" style="background-color: #334155; transition: transform 0.2s;">
-                <div class="card-body">
+        <div class="card project-card-item h-100">
+            <div class="card-body">
 
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-box-seam fs-4 text-info me-2"></i>
-                            <div>
-                                <h6 class="text-white fw-bold mb-0">{{ p.name }}</h6>
-                                <small class="text-white-50">ID: #{{ p.id }}</small>
-                            </div>
-                        </div>
-
-                        {% if p.status == 'Processing' %}
-                        <span class="badge bg-warning text-dark">{{ p.status }}</span>
-                        {% elif p.status == 'Completed' %}
-                        <span class="badge bg-success">{{ p.status }}</span>
-                        {% else %}
-                        <span class="badge bg-info">{{ p.status }}</span>
-                        {% endif %}
-                    </div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <small class="text-uppercase text-muted" style="font-size: 10px;">Scan Date</small>
-                            <div class="text-white small fw-bold">{{ p.created_at.strftime('%Y-%m-%d') }}</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-uppercase text-muted" style="font-size: 10px;">Unit No</small>
-                            <div class="text-white small fw-bold">{{ p.name }}</div>
-                        </div>
-                        <div class="col-12 mt-2">
-                            <small class="text-uppercase text-muted" style="font-size: 10px;">Address</small>
-                            <div class="text-white-50 small text-truncate">{{ p.address }}</div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-box-seam fs-4 me-2" style="color:var(--primary-blue);"></i>
+                        <div>
+                            <h6 class="fw-bold mb-0"
+                                style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">{{ p.name }}
+                            </h6>
+                            <small style="color:var(--text-secondary);">ID: #{{ p.id }}</small>
                         </div>
                     </div>
 
-                    <hr class="border-secondary opacity-50">
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-warning small">
-                            <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>{{ p.defect_count }}</strong>
-                            defects
-                        </div>
-                        <div class="d-flex w-100 gap-2">
-                            {% if p.model_path %}
-                            {% if p.house_scan_id %}
-                            <a href="{{ url_for('module3.visualize_defect', defect_id=p.house_scan_id) }}"
-                                class="btn btn-sm btn-light flex-grow-1">
-                                <i class="bi bi-box-fill me-1"></i> 3D Model
-                            </a>
-                            {% else %}
-                            <a href="{{ url_for('module3.visualize', project_id=p.id) }}"
-                                class="btn btn-sm btn-light flex-grow-1">
-                                <i class="bi bi-box-fill me-1"></i> 3D Model
-                            </a>
-                            {% endif %}
-                            {% else %}
-                            <span class="btn btn-sm btn-secondary disabled flex-grow-1 opacity-50">
-                                <i class="bi bi-box me-1"></i> No Model
-                            </span>
-                            {% endif %}
-                            <form action="{{ url_for('module3.delete_project', project_id=p.id) }}" method="POST"
-                                onsubmit="return confirm('Are you sure you want to permanently delete this project? All associated defects and data will be lost.');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Project">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
+                    {% if p.status == 'Processing' %}
+                    <span class="badge"
+                        style="background:#FEF9C3; color:#854D0E; border-radius:999px; font-size:0.75rem;">{{ p.status
+                        }}</span>
+                    {% elif p.status == 'Completed' %}
+                    <span class="badge"
+                        style="background:#DCFCE7; color:#166534; border-radius:999px; font-size:0.75rem;">{{ p.status
+                        }}</span>
+                    {% else %}
+                    <span class="badge"
+                        style="background:#DBEAFE; color:#1E40AF; border-radius:999px; font-size:0.75rem;">{{ p.status
+                        }}</span>
+                    {% endif %}
                 </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <small class="text-uppercase fw-semibold d-block"
+                            style="font-size:10px; color:var(--text-secondary); letter-spacing:0.05em;">Scan
+                            Date</small>
+                        <div class="small fw-bold" style="color:var(--text-primary);">{{
+                            p.created_at.strftime('%Y-%m-%d') }}</div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-uppercase fw-semibold d-block"
+                            style="font-size:10px; color:var(--text-secondary); letter-spacing:0.05em;">Unit No</small>
+                        <div class="small fw-bold" style="color:var(--text-primary);">{{ p.name }}</div>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <small class="text-uppercase fw-semibold d-block"
+                            style="font-size:10px; color:var(--text-secondary); letter-spacing:0.05em;">Address</small>
+                        <div class="small text-truncate" style="color:var(--text-secondary);">{{ p.address }}</div>
+                    </div>
+                </div>
+
+                <hr style="border-color:var(--border-color); opacity:1;">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="small fw-semibold" style="color:#D97706;">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>{{ p.defect_count }}</strong>
+                        defects
+                    </div>
+                    <div class="d-flex gap-2">
+                        {% if p.model_path %}
+                        {% if p.house_scan_id %}
+                        <a href="{{ url_for('module3.visualize_defect', defect_id=p.house_scan_id) }}"
+                            class="btn btn-sm btn-primary">
+                            <i class="bi bi-box-fill me-1"></i> 3D Model
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('module3.visualize', project_id=p.id) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-box-fill me-1"></i> 3D Model
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <span class="btn btn-sm btn-secondary disabled opacity-50">
+                            <i class="bi bi-box me-1"></i> No Model
+                        </span>
+                        {% endif %}
+                        <form action="{{ url_for('module3.delete_project', project_id=p.id) }}" method="POST"
+                            onsubmit="return confirm('Are you sure you want to permanently delete this project? All associated defects and data will be lost.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Project">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
             </div>
         </div>
         {% else %}
-        <div class="col-12 text-center py-5">
-            <div class="text-muted mb-3">
+        <div class="text-center py-5" style="grid-column: 1 / -1;">
+            <div class="mb-3" style="color:var(--text-secondary);">
                 <i class="bi bi-folder-x display-1"></i>
             </div>
-            <h4 class="text-white">No Projects Found</h4>
-            <p class="text-muted mb-4">You are not currently linked to any housing project.</p>
+            <h4 style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">No Projects Found</h4>
+            <p style="color:var(--text-secondary);" class="mb-4">You are not currently linked to any housing project.
+            </p>
             <a href="{{ url_for('module2.insert_defect') }}" class="btn btn-primary px-4 py-2">
                 <i class="bi bi-plus-lg me-2"></i> Join a Project
             </a>

@@ -542,6 +542,32 @@ a:hover {
     background-color: rgba(37, 99, 235, 0.08) !important;
 }
 
+/* =====================
+   PROJECT CARDS GRID
+   ===================== */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+    width: 100%;
+}
+
+.project-grid .card,
+.project-card-item {
+    width: 100% !important;
+    margin: 0 !important;
+    height: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-grid .card:hover,
+.project-card-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.1) !important;
+    border-color: #BFDBFE !important;
+}
+
 /* ============== */
 @media print {
     @page {
