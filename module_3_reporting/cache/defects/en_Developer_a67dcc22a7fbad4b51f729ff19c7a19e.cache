@@ -1,0 +1,23 @@
+[
+  {
+    "id": 3,
+    "unit": "Living Room",
+    "desc": "Examination",
+    "remarks": "Notable Imperfection 3",
+    "priority": "Of Utmost Importance"
+  },
+  {
+    "id": 2,
+    "unit": "Master Bedroom",
+    "desc": "Preliminary Inspection",
+    "remarks": "Notable Imperfection 2",
+    "priority": "Of Utmost Importance"
+  },
+  {
+    "id": 1,
+    "unit": "No 69",
+    "desc": "Initial Assessment",
+    "remarks": "Placeholder Observation",
+    "priority": "Standard"
+  }
+]
