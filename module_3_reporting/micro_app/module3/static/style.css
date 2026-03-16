@@ -508,6 +508,46 @@ select:focus {
     background-color: var(--primary-blue);
 }
 
+/* =====================================================
+   ENTERPRISE ENFORCEMENT OVERRIDES
+   ===================================================== */
+
+/* --- Task 1: Force solid white card backgrounds --- */
+.card,
+.summary-card,
+.defect-item,
+.dashboard-card,
+.stat-card,
+.modal-content,
+[class*="card"] {
+    background-color: var(--bg-card, #ffffff) !important;
+    border: 1px solid var(--border-color, #E2E8F0) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* --- Task 2: Enterprise Blue — Buttons --- */
+.btn-primary {
+    background-color: var(--primary-blue, #2563EB) !important;
+    border-color: var(--primary-blue, #2563EB) !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--primary-blue-hover, #1D4ED8) !important;
+    border-color: var(--primary-blue-hover, #1D4ED8) !important;
+    color: #ffffff !important;
+}
+
+/* --- Task 2: Enterprise Blue — Utilities --- */
+.text-primary {
+    color: var(--primary-blue, #2563EB) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-blue, #2563EB) !important;
+}
+
 /* =====================
    INLINE OVERRIDES (color attr)
    ===================== */

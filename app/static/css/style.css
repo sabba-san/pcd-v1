@@ -36,8 +36,18 @@ body {
 /* =====================
    TYPOGRAPHY
    ===================== */
-h1, h2, h3, h4, h5, h6,
-.h1, .h2, .h3, .h4, .h5, .h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6,
 .card-title {
     font-family: 'Montserrat', sans-serif;
     color: var(--text-primary);
@@ -50,10 +60,21 @@ p {
 }
 
 /* Override Bootstrap dark text helpers */
-.text-white { color: var(--text-primary) !important; }
-.text-white-50 { color: var(--text-secondary) !important; }
-.text-muted { color: var(--text-secondary) !important; }
-.text-info { color: var(--primary-blue) !important; }
+.text-white {
+    color: var(--text-primary) !important;
+}
+
+.text-white-50 {
+    color: var(--text-secondary) !important;
+}
+
+.text-muted {
+    color: var(--text-secondary) !important;
+}
+
+.text-info {
+    color: var(--primary-blue) !important;
+}
 
 /* =====================
    NAVBAR
@@ -61,18 +82,21 @@ p {
 .navbar {
     background-color: var(--bg-card) !important;
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+
 .navbar-brand {
     font-family: 'Montserrat', sans-serif;
     color: var(--text-primary) !important;
     font-weight: 700;
 }
+
 .navbar-nav .nav-link {
     font-family: 'Open Sans', sans-serif;
     color: var(--text-secondary) !important;
     font-weight: 500;
 }
+
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
     color: var(--primary-blue) !important;
@@ -85,12 +109,14 @@ p {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     color: var(--text-secondary);
 }
+
 .card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
+
 .card-header {
     background-color: var(--bg-card);
     border-bottom: 1px solid var(--border-color);
@@ -116,9 +142,10 @@ p {
     padding: 10px 24px;
     font-weight: 600;
 }
+
 .btn-primary:hover {
     background-color: var(--primary-blue-hover);
-    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .btn-outline-light {
@@ -126,6 +153,7 @@ p {
     color: var(--text-primary);
     background-color: var(--bg-card);
 }
+
 .btn-outline-light:hover {
     background-color: var(--bg-main);
     color: var(--primary-blue);
@@ -136,6 +164,7 @@ p {
     color: var(--primary-blue);
     background-color: transparent;
 }
+
 .btn-outline-info:hover {
     background-color: var(--primary-blue);
     color: #fff;
@@ -146,12 +175,14 @@ p {
     border: none;
     color: #fff;
 }
+
 .btn-success:hover {
     background-color: #15803D;
 }
 
 /* Disabled */
-button:disabled, .btn:disabled {
+button:disabled,
+.btn:disabled {
     background-color: #E2E8F0 !important;
     color: #94A3B8 !important;
     cursor: not-allowed;
@@ -177,21 +208,25 @@ button:disabled, .btn:disabled {
     background: #DCFCE7 !important;
     color: #166534 !important;
 }
+
 .badge.bg-warning,
 .bg-warning.bg-opacity-25 {
     background: #FEF9C3 !important;
     color: #854D0E !important;
 }
+
 .badge.bg-danger,
 .bg-danger.bg-opacity-25 {
     background: #FEE2E2 !important;
     color: #991B1B !important;
 }
+
 .badge.bg-info,
 .bg-info.bg-opacity-25 {
     background: #DBEAFE !important;
     color: #1E40AF !important;
 }
+
 .badge.bg-secondary {
     background: #F1F5F9 !important;
     color: var(--text-secondary) !important;
@@ -200,12 +235,15 @@ button:disabled, .btn:disabled {
 /* =====================
    TABLES
    ===================== */
-.table, table {
+.table,
+table {
     font-family: 'Open Sans', sans-serif;
     color: var(--text-secondary);
     border-color: var(--border-color);
 }
-.table th, table th,
+
+.table th,
+table th,
 thead th {
     background-color: #F1F5F9;
     color: var(--text-primary);
@@ -215,11 +253,14 @@ thead th {
     letter-spacing: 0.04em;
     border-bottom: 1px solid var(--border-color) !important;
 }
-.table td, table td {
+
+.table td,
+table td {
     vertical-align: middle;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-secondary);
 }
+
 /* Override dark table Bootstrap classes */
 .table-dark {
     --bs-table-bg: var(--bg-card);
@@ -227,17 +268,20 @@ thead th {
     --bs-table-border-color: var(--border-color);
     --bs-table-hover-bg: #F8FAFF;
 }
+
 .table-dark thead th {
     background-color: #F1F5F9 !important;
     color: var(--text-primary) !important;
     border-bottom: 1px solid var(--border-color) !important;
 }
+
 .table-dark td {
     color: var(--text-secondary) !important;
     background-color: var(--bg-card) !important;
     border-color: var(--border-color) !important;
 }
-.table-dark.table-hover tbody tr:hover > * {
+
+.table-dark.table-hover tbody tr:hover>* {
     background-color: #F8FAFF !important;
     color: var(--text-primary) !important;
 }
@@ -251,7 +295,9 @@ label {
     font-weight: 500;
     font-size: 0.9rem;
 }
-.form-control, .form-select {
+
+.form-control,
+.form-select {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     color: var(--text-primary) !important;
@@ -259,20 +305,25 @@ label {
     font-family: 'Open Sans', sans-serif;
     padding: 10px 14px;
 }
-.form-control:focus, .form-select:focus {
+
+.form-control:focus,
+.form-select:focus {
     background-color: var(--bg-card);
     color: var(--text-primary);
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     outline: none;
 }
-.form-control:disabled, .form-control[readonly],
+
+.form-control:disabled,
+.form-control[readonly],
 fieldset[disabled] .form-control {
     background-color: var(--bg-main) !important;
     color: var(--text-secondary) !important;
     opacity: 1 !important;
     border-color: var(--border-color);
 }
+
 .form-control::placeholder {
     color: #94A3B8 !important;
     opacity: 1;
@@ -285,6 +336,7 @@ a {
     color: var(--primary-blue);
     text-decoration: none;
 }
+
 a:hover {
     color: var(--primary-blue-hover);
     text-decoration: underline;
@@ -296,18 +348,21 @@ a:hover {
 .dropdown-menu {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border-radius: 8px;
 }
+
 .dropdown-item {
     font-family: 'Open Sans', sans-serif;
     color: var(--text-secondary) !important;
     font-size: 0.9rem;
 }
+
 .dropdown-item:hover {
     background-color: var(--bg-main);
     color: var(--primary-blue) !important;
 }
+
 /* Legacy dark dropdown override */
 .dropdown-menu-dark {
     background-color: var(--bg-card);
@@ -321,6 +376,7 @@ a:hover {
     background-color: var(--bg-card) !important;
     border-right: 1px solid var(--border-color) !important;
 }
+
 .list-group-item {
     background-color: transparent;
     color: var(--text-secondary);
@@ -328,12 +384,14 @@ a:hover {
     border-bottom: 1px solid var(--border-color);
     font-family: 'Open Sans', sans-serif;
 }
+
 .list-group-item:hover {
     background-color: var(--bg-main) !important;
     color: var(--primary-blue) !important;
 }
+
 .active-project {
-    background: linear-gradient(90deg, rgba(37,99,235,0.08) 0%, rgba(37,99,235,0) 100%) !important;
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0) 100%) !important;
     border-left: 3px solid var(--primary-blue) !important;
     color: var(--primary-blue) !important;
 }
@@ -345,10 +403,11 @@ a:hover {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
 }
+
 .hover-effect:hover {
     background-color: #F0F5FF !important;
     transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(37,99,235,0.1) !important;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.1) !important;
 }
 
 /* =====================
@@ -359,16 +418,19 @@ a:hover {
     font-family: 'Open Sans', sans-serif;
     font-size: 0.9rem;
 }
+
 .alert-success {
     background: #DCFCE7;
     color: #166534;
     border: 1px solid #BBF7D0;
 }
+
 .alert-danger {
     background: #FEE2E2;
     color: #991B1B;
     border: 1px solid #FECACA;
 }
+
 .alert-info {
     background: #DBEAFE;
     color: #1E40AF;
@@ -378,35 +440,160 @@ a:hover {
 /* =====================
    PRINT OVERRIDES
    ===================== */
+/* =====================================================
+   ENTERPRISE ENFORCEMENT OVERRIDES
+   (appended after base styles to ensure specificity)
+   ===================================================== */
+
+/* --- Task 1: Force solid white card backgrounds --- */
+.card,
+.summary-card,
+.defect-item,
+.dashboard-card,
+.stat-card,
+.modal-content,
+[class*="card"] {
+    background-color: var(--bg-card, #ffffff) !important;
+    border: 1px solid var(--border-color, #E2E8F0) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Specific Bootstrap card sub-elements */
+.card-body,
+.card-footer {
+    background-color: var(--bg-card, #ffffff) !important;
+}
+
+.card-header {
+    background-color: #F8F9FA !important;
+    border-bottom: 1px solid var(--border-color, #E2E8F0) !important;
+}
+
+/* --- Task 2: Enterprise Blue — Buttons --- */
+.btn-primary {
+    background-color: var(--primary-blue, #2563EB) !important;
+    border-color: var(--primary-blue, #2563EB) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--primary-blue-hover, #1D4ED8) !important;
+    border-color: var(--primary-blue-hover, #1D4ED8) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-blue, #2563EB) !important;
+    color: var(--primary-blue, #2563EB) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background-color: var(--primary-blue, #2563EB) !important;
+    border-color: var(--primary-blue, #2563EB) !important;
+    color: #ffffff !important;
+}
+
+/* --- Task 2: Enterprise Blue — Text & Icon utilities --- */
+.text-primary {
+    color: var(--primary-blue, #2563EB) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-blue, #2563EB) !important;
+}
+
+.bg-primary.bg-opacity-10 {
+    background-color: rgba(37, 99, 235, 0.10) !important;
+}
+
+.border-primary {
+    border-color: var(--primary-blue, #2563EB) !important;
+}
+
+/* Outline-info used as secondary action — remap to enterprise blue */
+.btn-outline-info {
+    border-color: var(--primary-blue, #2563EB) !important;
+    color: var(--primary-blue, #2563EB) !important;
+}
+
+.btn-outline-info:hover {
+    background-color: var(--primary-blue, #2563EB) !important;
+    color: #ffffff !important;
+}
+
+.text-info {
+    color: var(--primary-blue, #2563EB) !important;
+}
+
+.bg-info,
+.bg-info.bg-opacity-10 {
+    background-color: rgba(37, 99, 235, 0.10) !important;
+}
+
+/* Icon accent containers */
+.p-3.rounded-3[class*="bg-primary"],
+.p-3.rounded-3[class*="bg-info"] {
+    background-color: rgba(37, 99, 235, 0.08) !important;
+}
+
+/* ============== */
 @media print {
-    @page { size: landscape; margin: 1cm; }
+    @page {
+        size: landscape;
+        margin: 1cm;
+    }
 
     body {
         background-color: white !important;
         color: black !important;
     }
-    .col-md-3, .d-print-none, .navbar { display: none !important; }
-    .col-md-9, .col-xl-10, .print-container {
+
+    .col-md-3,
+    .d-print-none,
+    .navbar {
+        display: none !important;
+    }
+
+    .col-md-9,
+    .col-xl-10,
+    .print-container {
         background-color: white !important;
         width: 100% !important;
         padding: 0 !important;
     }
+
     .card {
         border: 1px solid #ccc !important;
         box-shadow: none !important;
     }
-    table { width: 100% !important; table-layout: fixed !important; }
-    th, td {
+
+    table {
+        width: 100% !important;
+        table-layout: fixed !important;
+    }
+
+    th,
+    td {
         color: black !important;
         border: 1px solid #ccc !important;
         white-space: normal !important;
         word-break: break-word;
         padding: 8px !important;
     }
+
     .badge {
         border: 1px solid black !important;
         color: black !important;
         background: transparent !important;
     }
-    tr { page-break-inside: avoid !important; }
+
+    tr {
+        page-break-inside: avoid !important;
+    }
 }
