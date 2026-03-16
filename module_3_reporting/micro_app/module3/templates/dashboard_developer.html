@@ -38,7 +38,7 @@
 
                 <p style="color:var(--text-secondary); margin-top: 10px;">
                     Logged in as:
-                    <strong style="color:var(--text-main)">{{ role }}</strong>
+                    <strong style="color:var(--text-primary)">{{ role }}</strong>
                 </p>
             </div>
 
@@ -52,12 +52,12 @@
                     </select>
                 </label>
 
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
                     <button class="btn btn-secondary" onclick="viewGanttChart()">
                         <i class="fas fa-chart-bar"></i> View Repair Timeline
                     </button>
 
-                    <!-- ✅ AI REPORT GENERATION (KEPT) -->
+                    <!-- AI REPORT GENERATION -->
                     <button class="btn btn-primary" onclick="generateReport()">
                         Generate AI Compliance Report
                     </button>
@@ -105,16 +105,16 @@
             </div>
 
             <pre id="report-json"
-                style="white-space: pre-wrap; background: #ffffff; padding: 15px; border-radius: 8px; color: #2c3e50; font-size: 13px; line-height: 1.6; border: 1px solid #eeeeee;"></pre>
+                style="white-space: pre-wrap; background: var(--bg-card); padding: 16px; border-radius: 8px; color: var(--text-primary); font-size: 13px; line-height: 1.6; border: 1px solid var(--border-color);"></pre>
         </div>
 
         <!-- ================= DEFECT TABLE ================= -->
         <div class="card">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
 
-                <h2>Assigned Defects & Compliance</h2>
+                <h2>Assigned Defects &amp; Compliance</h2>
 
-                <div class="filters">
+                <div class="filters" style="display:flex; gap:10px;">
                     <select id="filter-status" onchange="filterTable()">
                         <option value="all">All Statuses</option>
                         <option value="Pending">Pending</option>
@@ -153,10 +153,10 @@
                         <td>{{ defect.desc }}</td>
 
                         {% if defect.is_overdue %}
-                        <td style="color: var(--accent-error); font-weight: 500;">
-                        {% else %}
+                        <td style="color: var(--accent-error); font-weight: 600;">
+                            {% else %}
                         <td>
-                        {% endif %}
+                            {% endif %}
                             {{ defect.deadline }}
                         </td>
 
@@ -248,7 +248,7 @@
                 .then(data => {
                     alert(data.message);
                     closeModal();
-                    location.reload(); // reload to reflect update
+                    location.reload();
                 })
                 .catch(err => {
                     alert("Failed to update status.");

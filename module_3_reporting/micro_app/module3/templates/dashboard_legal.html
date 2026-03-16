@@ -37,7 +37,7 @@
 
                 <p style="color:var(--text-secondary); margin-top: 10px;">
                     Logged in as:
-                    <strong style="color:var(--text-main)">{{ role }}</strong>
+                    <strong style="color:var(--text-primary)">{{ role }}</strong>
                 </p>
             </div>
 
@@ -52,7 +52,7 @@
                 </label>
 
                 <div style="display: flex; gap: 10px;">
-                    <!-- ✅ AI REPORT GENERATION (KEPT) -->
+                    <!-- AI REPORT GENERATION -->
                     <button class="btn btn-primary" onclick="generateReport()">
                         Generate Full Compliance Report
                     </button>
@@ -100,7 +100,7 @@
             </div>
 
             <pre id="report-json"
-                style="white-space: pre-wrap; background: #ffffff; padding: 15px; border-radius: 8px; color: #2c3e50; font-size: 13px; line-height: 1.6; border: 1px solid #eeeeee;"></pre>
+                style="white-space: pre-wrap; background: var(--bg-card); padding: 16px; border-radius: 8px; color: var(--text-primary); font-size: 13px; line-height: 1.6; border: 1px solid var(--border-color);"></pre>
         </div>
 
         <!-- ================= READ-ONLY TABLE ================= -->

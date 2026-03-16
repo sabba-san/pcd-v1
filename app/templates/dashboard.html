@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- SweetAlert2 CSS success send db -->
+<!-- SweetAlert2 CSS -->
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 {% for category, message in messages %}
@@ -19,17 +19,16 @@
 <div class="row justify-content-center">
     <div class="col-lg-10">
 
-        <h2 class="fw-bold text-white mb-1">Dashboard</h2>
+        <h2 class="fw-bold mb-1" style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">Dashboard</h2>
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
-                <p class="text-white-50 mb-0">Welcome back, {{ current_user.full_name if current_user.full_name else
-                    current_user.username }}.</p>
+                <p class="mb-0" style="color:var(--text-secondary);">Welcome back, {{ current_user.full_name if current_user.full_name else current_user.username }}.</p>
             </div>
             <div>
                 {% set cid = current_user.claims[0].id if current_user.claims else 1 %}
                 <a href="{{ url_for('module3.download_report', report_type='homeowner', claim_id=cid) }}"
-                    class="btn btn-outline-light rounded-pill px-4 shadow-sm">
-                    <i class="bi bi-file-earmark-pdf-fill me-2 text-danger"></i> Download Tribunal Report
+                    class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-file-earmark-pdf-fill me-2 text-white"></i> Download Tribunal Report
                 </a>
             </div>
         </div>
@@ -40,16 +39,16 @@
                 <!-- EXTERNAL LINK TO CHATBOT SERVICE -->
                 <a href="http://localhost:5002/?project_name={{ current_user.project_name or 'N/A' }}&defect_count={{ defects|length }}"
                     class="text-decoration-none">
-                    <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                    <div class="card h-100 p-4 border hover-effect">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
-                                <div class="bg-primary bg-opacity-10 p-3 rounded-3">
-                                    <i class="bi bi-chat-text-fill fs-3 text-primary"></i>
+                                <div class="p-3 rounded-3" style="background:rgba(37,99,235,0.08);">
+                                    <i class="bi bi-chat-text-fill fs-3" style="color:var(--primary-blue);"></i>
                                 </div>
-                                <i class="bi bi-chevron-right text-muted"></i>
+                                <i class="bi bi-chevron-right" style="color:var(--text-secondary);"></i>
                             </div>
-                            <h4 class="fw-bold text-white mb-2">Legal AI Consultation</h4>
-                            <p class="text-white-50 small">Instant HDA analysis for your defects.</p>
+                            <h4 class="fw-bold mb-2" style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">Legal AI Consultation</h4>
+                            <p class="small mb-0" style="color:var(--text-secondary);">Instant HDA analysis for your defects.</p>
                         </div>
                     </div>
                 </a>
@@ -57,16 +56,16 @@
 
             <div class="col-md-6">
                 <a href="{{ url_for('module3.list_projects') }}" class="text-decoration-none">
-                    <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                    <div class="card h-100 p-4 border hover-effect">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
-                                <div class="bg-info bg-opacity-10 p-3 rounded-3">
-                                    <i class="bi bi-grid-fill fs-3 text-info"></i>
+                                <div class="p-3 rounded-3" style="background:rgba(6,182,212,0.08);">
+                                    <i class="bi bi-grid-fill fs-3" style="color:#0891B2;"></i>
                                 </div>
-                                <i class="bi bi-chevron-right text-muted"></i>
+                                <i class="bi bi-chevron-right" style="color:var(--text-secondary);"></i>
                             </div>
-                            <h4 class="fw-bold text-white mb-2">My Projects</h4>
-                            <p class="text-white-50 small">View all properties and defect status.</p>
+                            <h4 class="fw-bold mb-2" style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">My Projects</h4>
+                            <p class="small mb-0" style="color:var(--text-secondary);">View all properties and defect status.</p>
                         </div>
                     </div>
                 </a>
@@ -74,16 +73,16 @@
 
             <div class="col-md-6">
                 <a href="{{ url_for('module2.insert_defect') }}" class="text-decoration-none">
-                    <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                    <div class="card h-100 p-4 border hover-effect">
                         <div class="card-body">
                             <div class="mb-4 d-flex justify-content-between align-items-center">
-                                <div class="bg-success bg-opacity-10 p-3 rounded-3">
-                                    <i class="bi bi-cloud-arrow-up-fill fs-3 text-success"></i>
+                                <div class="p-3 rounded-3" style="background:rgba(22,163,74,0.08);">
+                                    <i class="bi bi-cloud-arrow-up-fill fs-3" style="color:#16A34A;"></i>
                                 </div>
-                                <i class="bi bi-chevron-right text-muted"></i>
+                                <i class="bi bi-chevron-right" style="color:var(--text-secondary);"></i>
                             </div>
-                            <h4 class="fw-bold text-white mb-2">Add New Defect</h4>
-                            <p class="text-white-50 small">Upload 3D model and PDF data.</p>
+                            <h4 class="fw-bold mb-2" style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">Add New Defect</h4>
+                            <p class="small mb-0" style="color:var(--text-secondary);">Upload 3D model and PDF data.</p>
                         </div>
                     </div>
                 </a>
@@ -95,16 +94,16 @@
                     {% else %}
                     <a href="javascript:void(0);" onclick="showNoProjectAlert()" class="text-decoration-none">
                         {% endif %}
-                        <div class="card h-100 p-4 border-0 hover-effect" style="background-color: #334155;">
+                        <div class="card h-100 p-4 border hover-effect">
                             <div class="card-body">
                                 <div class="mb-4 d-flex justify-content-between align-items-center">
-                                    <div class="bg-warning bg-opacity-10 p-3 rounded-3">
-                                        <i class="bi bi-box-fill fs-3 text-warning"></i>
+                                    <div class="p-3 rounded-3" style="background:rgba(217,119,6,0.08);">
+                                        <i class="bi bi-box-fill fs-3" style="color:#D97706;"></i>
                                     </div>
-                                    <i class="bi bi-chevron-right text-muted"></i>
+                                    <i class="bi bi-chevron-right" style="color:var(--text-secondary);"></i>
                                 </div>
-                                <h4 class="fw-bold text-white mb-2">3D Visualizer</h4>
-                                <p class="text-white-50 small">Interact with defects in 3D space.</p>
+                                <h4 class="fw-bold mb-2" style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">3D Visualizer</h4>
+                                <p class="small mb-0" style="color:var(--text-secondary);">Interact with defects in 3D space.</p>
                             </div>
                         </div>
                     </a>
@@ -113,55 +112,45 @@
         </div>
 
         <div class="mt-5">
-            <h6 class="fw-bold text-muted text-uppercase small mb-3">Recent Activity</h6>
-            <div class="card p-0 overflow-hidden border-0 shadow-lg" style="background-color: #334155;">
+            <h6 class="fw-semibold text-uppercase small mb-3" style="font-family:'Montserrat',sans-serif; color:var(--text-secondary); letter-spacing:0.08em;">Recent Activity</h6>
+            <div class="card p-0 overflow-hidden">
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover mb-0 align-middle" style="background-color: #334155;">
+                    <table class="table mb-0 align-middle">
                         <thead>
                             <tr>
-                                <th class="ps-4 py-3 text-white-50 fw-normal small text-uppercase"
-                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">House No</th>
-                                <th class="py-3 text-white-50 fw-normal small text-uppercase"
-                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Defect Detail
-                                </th>
-                                <th class="py-3 text-white-50 fw-normal small text-uppercase"
-                                    style="background-color: #1e293b; border-bottom: 1px solid #475569;">Status</th>
+                                <th class="ps-4 py-3">House No</th>
+                                <th class="py-3">Defect Detail</th>
+                                <th class="py-3">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for defect in defects[:5] %}
                             <tr>
-                                <td class="ps-4 fw-bold text-white"
-                                    style="background-color: #334155; border-bottom: none;">
+                                <td class="ps-4 fw-semibold" style="color:var(--text-primary);">
                                     {{ defect.project.name if defect.project else 'No Project' }}
                                 </td>
-                                <td class="text-white-50 small" style="background-color: #334155; border-bottom: none;">
-                                    <div class="text-white">{{ defect.description }}</div>
-                                    <small class="text-white-50">Unit: {{ defect.location }}</small>
+                                <td>
+                                    <div class="fw-semibold" style="color:var(--text-primary);">{{ defect.description }}</div>
+                                    <small style="color:var(--text-secondary);">Unit: {{ defect.location }}</small>
                                 </td>
-                                <td style="background-color: #334155; border-bottom: none;">
+                                <td>
                                     {% if defect.status in ['draft', 'Reported', 'New', 'locked'] %}
-                                    <span class="badge bg-info bg-opacity-25 text-info rounded-pill px-3">New
-                                        Claim</span>
+                                    <span class="badge status-info-pill">New Claim</span>
                                     {% elif defect.status == 'in_progress' %}
-                                    <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">In
-                                        Progress</span>
+                                    <span class="badge status-warning-pill">In Progress</span>
                                     {% elif defect.status == 'completed' %}
-                                    <span
-                                        class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Done</span>
+                                    <span class="badge status-success-pill">Done</span>
                                     {% elif defect.status == 'rejected' %}
-                                    <span
-                                        class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-3">Rejected</span>
+                                    <span class="badge status-danger-pill">Rejected</span>
                                     {% else %}
-                                    <span class="badge bg-light text-dark rounded-pill px-3">{{ defect.status
-                                        }}</span>
+                                    <span class="badge status-default-pill">{{ defect.status }}</span>
                                     {% endif %}
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="3" class="text-center py-4 text-white-50"
-                                    style="background-color: #334155;">
+                                <td colspan="3" class="text-center py-4" style="color:var(--text-secondary);">
+                                    <i class="bi bi-inbox fs-4 d-block mb-2"></i>
                                     No recent activity found.
                                 </td>
                             </tr>
@@ -182,9 +171,7 @@
             icon: 'info',
             title: 'No Project Found',
             text: 'You haven\'t uploaded any defect scans yet. Please submit a new defect to use the 3D Visualizer.',
-            background: '#1e293b',
-            color: '#fff',
-            confirmButtonColor: '#3b82f6',
+            confirmButtonColor: '#2563EB',
             confirmButtonText: 'Add a Defect',
             showCancelButton: true,
             cancelButtonText: 'Close'
@@ -197,15 +184,21 @@
 </script>
 
 <style>
+    /* Enterprise badge pills for this template */
+    .badge.status-info-pill    { background:#DBEAFE; color:#1E40AF; border-radius:999px; font-size:0.75rem; font-weight:600; }
+    .badge.status-warning-pill { background:#FEF9C3; color:#854D0E; border-radius:999px; font-size:0.75rem; font-weight:600; }
+    .badge.status-success-pill { background:#DCFCE7; color:#166534; border-radius:999px; font-size:0.75rem; font-weight:600; }
+    .badge.status-danger-pill  { background:#FEE2E2; color:#991B1B; border-radius:999px; font-size:0.75rem; font-weight:600; }
+    .badge.status-default-pill { background:#F1F5F9; color:#475569; border-radius:999px; font-size:0.75rem; font-weight:600; }
+
     .hover-effect {
-        transition: transform 0.2s ease, background-color 0.2s ease;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
         cursor: pointer;
     }
-
     .hover-effect:hover {
-        background-color: #475569 !important;
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(37,99,235,0.1) !important;
+        border-color: #BFDBFE !important;
     }
 </style>
 {% endblock %}

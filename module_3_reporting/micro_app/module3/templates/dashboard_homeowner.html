@@ -4,9 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>{{ role }} Dashboard</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
@@ -39,7 +37,7 @@
 
                 <p style="color:var(--text-secondary); margin-top: 10px;">
                     Logged in as:
-                    <strong style="color:var(--text-main)">{{ role }}</strong>
+                    <strong style="color:var(--text-primary)">{{ role }}</strong>
                 </p>
             </div>
 
@@ -101,7 +99,7 @@
             </div>
 
             <pre id="report-json"
-                style="white-space: pre-wrap; background: #ffffff; padding: 15px; border-radius: 8px; color: #2c3e50; font-size: 13px; line-height: 1.6; border: 1px solid #eeeeee;"></pre>
+                style="white-space: pre-wrap; background: var(--bg-card); padding: 16px; border-radius: 8px; color: var(--text-primary); font-size: 13px; line-height: 1.6; border: 1px solid var(--border-color);"></pre>
         </div>
 
         <!-- ================= DEFECT TABLE ================= -->
@@ -135,7 +133,7 @@
                         </td>
 
                         <td>
-                            <button class="btn btn-secondary" data-defect-id="{{ defect.id }}"
+                            <button class="btn btn-secondary btn-sm" data-defect-id="{{ defect.id }}"
                                 onclick="openRemarkModal(this.dataset.defectId)">
                                 Add Note
                             </button>
