@@ -56,23 +56,18 @@
                     </p>
                 </div>
                 <div class="d-flex gap-2 d-print-none">
-                    <div class="px-3 py-2 rounded border text-center"
-                        style="background:var(--bg-card); border-color:var(--border-color)!important;">
+                    <div class="px-3 py-2 summary-card border-blue text-center" style="min-width: 100px;">
                         <span class="d-block fw-bold h5 m-0" style="color:var(--text-primary);">{{ stats.new }}</span>
                         <small class="text-uppercase"
-                            style="font-size:10px; color:var(--text-secondary); letter-spacing:0.05em;">PENDING</small>
+                            style="font-size:10px; color:var(--text-secondary);">PENDING</small>
                     </div>
-                    <div class="px-3 py-2 rounded border text-center"
-                        style="background:#FFFBEB; border-color:#FDE68A!important;">
+                    <div class="px-3 py-2 summary-card border-yellow text-center" style="min-width: 100px;">
                         <span class="d-block fw-bold h5 m-0" style="color:#D97706;">{{ stats.in_progress }}</span>
-                        <small class="text-uppercase"
-                            style="font-size:10px; color:#D97706; letter-spacing:0.05em;">WIP</small>
+                        <small class="text-uppercase" style="font-size:10px; color:#D97706;">WIP</small>
                     </div>
-                    <div class="px-3 py-2 rounded border text-center"
-                        style="background:#F0FDF4; border-color:#BBF7D0!important;">
+                    <div class="px-3 py-2 summary-card border-green text-center" style="min-width: 100px;">
                         <span class="d-block fw-bold h5 m-0" style="color:#16A34A;">{{ stats.completed }}</span>
-                        <small class="text-uppercase"
-                            style="font-size:10px; color:#16A34A; letter-spacing:0.05em;">DONE</small>
+                        <small class="text-uppercase" style="font-size:10px; color:#16A34A;">DONE</small>
                     </div>
                 </div>
             </div>

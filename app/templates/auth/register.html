@@ -6,83 +6,166 @@
     <title>Register - DLP Advisor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <style>
+        /* =====================
+           REGISTER PAGE — Clean Light Minimalist Enterprise
+           ===================== */
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            height: 100vh;
+            background-color: #F8F9FA;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            font-family: 'Open Sans', sans-serif;
+            padding: 2rem 1rem;
         }
 
-        .login-card {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
+        .register-card {
+            background-color: #ffffff;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
             width: 100%;
-            max-width: 800px;
-            padding: 2rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 820px;
+            padding: 2.5rem;
         }
 
-        .form-control,
-        .form-select {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid #334155;
-            color: white;
+        .register-card .brand-icon {
+            font-size: 2.5rem;
+            color: #2563EB;
         }
 
-        .form-control:focus,
-        .form-select:focus {
-            background: rgba(15, 23, 42, 0.8);
-            border-color: #3b82f6;
-            color: white;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        .register-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 0.25rem;
         }
 
-        /* Dropdown arrow fix */
-        .form-select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        .register-card .subtitle {
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        /* Labels */
+        .register-card .form-label {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #1E293B;
+        }
+
+        /* Inputs & selects */
+        .register-card .form-control,
+        .register-card .form-select {
+            background-color: #F8F9FA;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            color: #1E293B !important;
+            padding: 0.75rem 1rem;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .register-card .form-control:focus,
+        .register-card .form-select:focus {
+            background-color: #ffffff;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            color: #1E293B !important;
+            outline: none;
+        }
+
+        .register-card .form-control::placeholder {
+            color: #94A3B8;
+            opacity: 1;
+        }
+
+        /* Dropdown arrow (dark on light bg) */
+        .register-card .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%231E293B' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 1rem center;
-            background-size: 16px 12px;
+            background-size: 14px 10px;
         }
 
-        /* Placeholder visibility */
-        .form-control::placeholder {
-            color: #d1d5db;
-            /* Light gray */
-            opacity: 1;
+        /* Textarea */
+        .register-card textarea.form-control {
+            resize: none;
+        }
+
+        /* Submit button */
+        .register-card .btn-register {
+            background-color: #2563EB;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .register-card .btn-register:hover {
+            background-color: #1D4ED8;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Login link */
+        .register-card .login-link-row {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #475569;
+            margin-top: 0.5rem;
+        }
+
+        .register-card .login-link-row a {
+            color: #2563EB;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .register-card .login-link-row a:hover {
+            color: #1D4ED8;
+            text-decoration: underline;
+        }
+
+        /* Section divider */
+        .role-fields-divider {
+            border-top: 1px solid #E2E8F0;
+            margin: 1rem 0 1.25rem;
         }
     </style>
 </head>
 
 <body>
-    <div class="login-card">
+    <div class="register-card">
         <div class="text-center mb-4">
-            <i class="bi bi-buildings-fill text-primary display-4"></i>
-            <h3 class="fw-bold mt-2">Create Account</h3>
-            <p class="text-white">Join the DLP Advisor Platform</p>
+            <i class="bi bi-buildings-fill brand-icon"></i>
+            <h3 class="mt-2">Create Account</h3>
+            <p class="subtitle">Join the DLP Advisor Platform</p>
         </div>
-
-        <!-- Flash messages handled by base.html Toasts -->
 
         <form action="{{ url_for('auth.register') }}" method="POST">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label small text-white">Full Name</label>
+                    <label class="form-label">Full Name</label>
                     <input type="text" name="full_name" class="form-control" placeholder="e.g. Ali Baba" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label small text-white">Email</label>
+                    <label class="form-label">Email</label>
                     <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label small text-white">I am a...</label>
+                <label class="form-label">I am a...</label>
                 <select name="role" id="roleSelect" class="form-select" onchange="toggleFields()" required>
                     <option value="user">Homeowner</option>
                     <option value="developer">Housing Developer</option>
@@ -90,10 +173,12 @@
                 </select>
             </div>
 
+            <!-- Homeowner fields -->
             <div id="homeownerField">
+                <hr class="role-fields-divider">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Select Your Housing Project</label>
+                        <label class="form-label">Select Your Housing Project</label>
                         <select name="project_name_select" id="projectSelect" class="form-select"
                             onchange="toggleCustomProject()">
                             <option value="ASMARINDA12">ASMARINDA12</option>
@@ -105,84 +190,87 @@
                             placeholder="Enter your Project Name..." style="display: none;">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">IC Number</label>
+                        <label class="form-label">IC Number</label>
                         <input type="text" name="ic_number" class="form-control" placeholder="e.g 900101-14-1234">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Phone Number</label>
+                        <label class="form-label">Phone Number</label>
                         <input type="text" name="phone_number" class="form-control" placeholder="+6012-345 6789">
                     </div>
                     <div class="col-12 mb-3">
-                        <label class="form-label small text-white">Correspondence Address</label>
+                        <label class="form-label">Correspondence Address</label>
                         <textarea name="correspondence_address" class="form-control" rows="2"
                             placeholder="Start typing address..."></textarea>
                     </div>
                 </div>
             </div>
 
+            <!-- Developer fields -->
             <div id="developerField" style="display: none;">
+                <hr class="role-fields-divider">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Company Name (Nama Syarikat)</label>
+                        <label class="form-label">Company Name (Nama Syarikat)</label>
                         <input type="text" name="developer_company" class="form-control dev-required"
                             placeholder="e.g. EcoWorld Sdn Bhd">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Company Registration No. (SSM)</label>
+                        <label class="form-label">Company Registration No. (SSM)</label>
                         <input type="text" name="developer_ssm" class="form-control dev-required"
                             placeholder="e.g. 202301000123">
                     </div>
                     <div class="col-12 mb-3">
-                        <label class="form-label small text-white">Company Address (Alamat Surat Menyurat)</label>
+                        <label class="form-label">Company Address (Alamat Surat Menyurat)</label>
                         <textarea name="developer_address" class="form-control dev-required" rows="2"></textarea>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Contact Number (No. Telefon Syarikat)</label>
+                        <label class="form-label">Contact Number (No. Telefon Syarikat)</label>
                         <input type="text" name="contact_number_dev" class="form-control dev-required"
                             placeholder="+603-1234 5678">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Fax/Email (No. Faks/E-mel)</label>
+                        <label class="form-label">Fax / Email (No. Faks/E-mel)</label>
                         <input type="text" name="fax_email" class="form-control dev-required"
                             placeholder="e.g. faks@eco.com">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Representative Staff Name (Nama
-                            Wakil/Pekerja)</label>
+                        <label class="form-label">Representative Staff Name (Nama Wakil/Pekerja)</label>
                         <input type="text" name="staff_name" class="form-control dev-required"
                             placeholder="e.g. Ahmad Albab">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Representative NRIC (No. Kad Pengenalan)</label>
+                        <label class="form-label">Representative NRIC (No. Kad Pengenalan)</label>
                         <input type="text" name="nric" class="form-control dev-required"
                             placeholder="e.g. 900101-14-1234">
                     </div>
                 </div>
             </div>
 
+            <!-- Lawyer fields -->
             <div id="lawyerField" style="display: none;">
+                <hr class="role-fields-divider">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Law Firm Name</label>
-                        <input type="text" name="law_firm" class="form-control" placeholder="e.g. Zulaikha & Partners">
+                        <label class="form-label">Law Firm Name</label>
+                        <input type="text" name="law_firm" class="form-control"
+                            placeholder="e.g. Zulaikha &amp; Partners">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label small text-white">Bar Council ID</label>
+                        <label class="form-label">Bar Council ID</label>
                         <input type="text" name="bar_council_id" class="form-control" placeholder="e.g. BC/A/123">
                     </div>
                 </div>
             </div>
 
             <div class="mb-4">
-                <label class="form-label small text-white">Password</label>
+                <label class="form-label">Password</label>
                 <input type="password" name="password" class="form-control" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mb-3">Register</button>
+            <button type="submit" class="btn-register mb-3">Register</button>
 
-            <div class="text-center">
-                <small class="text-white-50">Already have an account? <a href="{{ url_for('auth.login') }}"
-                        class="text-info text-decoration-none">Login</a></small>
+            <div class="login-link-row">
+                Already have an account? <a href="{{ url_for('auth.login') }}">Login</a>
             </div>
         </form>
     </div>

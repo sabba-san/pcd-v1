@@ -76,17 +76,17 @@
 
         <!-- ================= STATS ================= -->
         <div class="stats-grid">
-            <div class="stat-card status-pending">
+            <div class="summary-card border-yellow" style="padding: 24px; text-align: center;">
                 <div class="stat-number">{{ stats.pending }}</div>
                 <div class="stat-label">Pending Repairs</div>
             </div>
 
-            <div class="stat-card status-warning">
+            <div class="summary-card border-orange" style="padding: 24px; text-align: center;">
                 <div class="stat-number">{{ stats.critical }}</div>
                 <div class="stat-label">Critical / LAD Risk</div>
             </div>
 
-            <div class="stat-card status-completed">
+            <div class="summary-card border-green" style="padding: 24px; text-align: center;">
                 <div class="stat-number">{{ stats.completed }}</div>
                 <div class="stat-label">Completed Repairs</div>
             </div>

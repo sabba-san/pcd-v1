@@ -71,18 +71,18 @@
 
         <!-- ================= STATS ================= -->
         <div class="stats-grid">
-            <div class="stat-card status-total">
-                <div class="stat-number">{{ stats.total }}</div>
+            <div class="summary-card border-blue" style="padding: 24px; text-align: center;">
+                <div class="stat-number" style="color: var(--text-primary);">{{ stats.total }}</div>
                 <div class="stat-label">Total Defects</div>
             </div>
 
-            <div class="stat-card status-pending">
-                <div class="stat-number">{{ stats.pending }}</div>
+            <div class="summary-card border-yellow" style="padding: 24px; text-align: center;">
+                <div class="stat-number" style="color: var(--text-primary);">{{ stats.pending }}</div>
                 <div class="stat-label">Pending Compliance</div>
             </div>
 
-            <div class="stat-card status-completed">
-                <div class="stat-number">{{ stats.completed }}</div>
+            <div class="summary-card border-green" style="padding: 24px; text-align: center;">
+                <div class="stat-number" style="color: var(--text-primary);">{{ stats.completed }}</div>
                 <div class="stat-label">Resolved</div>
             </div>
         </div>

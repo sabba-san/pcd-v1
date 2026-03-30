@@ -508,13 +508,9 @@ select:focus {
     background-color: var(--primary-blue);
 }
 
-/* =====================================================
-   ENTERPRISE ENFORCEMENT OVERRIDES
-   ===================================================== */
-
-/* --- Task 1: Force solid white card backgrounds --- */
+    color: #16a34a !important;
+}/* --- Task 1: Force solid white card backgrounds --- */
 .card,
-.summary-card,
 .defect-item,
 .dashboard-card,
 .stat-card,
@@ -575,3 +571,62 @@ label {
     color: var(--text-primary);
     font-weight: 500;
 }
+
+/* =====================
+   FLASH / ALERT MESSAGES
+   ===================== */
+.alert {
+    border-radius: 8px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.alert-success {
+    background-color: #DCFCE7;
+    color: #166534;
+    border: 1px solid #BBF7D0;
+}
+
+.alert-danger {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+}
+
+.alert-info,
+.alert-primary {
+    background-color: #EFF6FF;
+    color: #1E3A8A;
+    border: 1px solid #BFDBFE;
+}
+
+/* Beautiful Modern Minimalist Cards */
+.summary-card {
+    background-color: #ffffff !important;
+    border: 1px solid rgba(226, 232, 240, 0.6) !important;
+    border-radius: 16px !important; /* Softer, modern edges */
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.01) !important; /* Deep, soft diffused shadow */
+    overflow: hidden !important; /* Ensures border-left accents curve with the border-radius */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; /* Smooth, natural animation */
+    position: relative;
+}
+
+/* User-friendly hover lifting effect */
+.summary-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03) !important;
+    border-color: rgba(226, 232, 240, 1) !important;
+}
+
+/* Force Dark Text for readability */
+.summary-card, .summary-card h1, .summary-card h2, .summary-card h3, .summary-card h4, .summary-card h5, .summary-card p, .summary-card span, .summary-card div {
+    color: #1e293b !important;
+}
+
+/* Keep Status Accents */
+.border-blue { border-left: 5px solid #3b82f6 !important; }
+.border-red { border-left: 5px solid #ef4444 !important; }
+.border-yellow { border-left: 5px solid #f59e0b !important; }
+.border-green { border-left: 5px solid #10b981 !important; }

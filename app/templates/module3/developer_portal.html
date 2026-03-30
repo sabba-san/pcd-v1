@@ -4,22 +4,27 @@
 <div class="container-fluid px-0">
     <div class="row g-0" style="min-height: calc(100vh - 70px);">
 
-        <div class="col-md-3 col-xl-2 bg-dark border-end border-secondary p-0 d-print-none">
-            <div class="p-3 border-bottom border-secondary bg-opacity-10 bg-white">
-                <small class="text-uppercase text-white-50 fw-bold" style="font-size: 0.7rem;">Project Portfolio</small>
-                <h6 class="text-white fw-bold mb-0 mt-1">Select Development</h6>
+        <div class="col-md-3 col-xl-2 p-0 d-print-none"
+            style="background-color:var(--bg-card); border-right:1px solid var(--border-color);">
+            <div class="p-3" style="border-bottom:1px solid var(--border-color);">
+                <small class="text-uppercase fw-bold"
+                    style="font-size:0.7rem; color:var(--text-secondary); letter-spacing:0.08em;">Project
+                    Portfolio</small>
+                <h6 class="fw-bold mb-0 mt-1" style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">
+                    Select Development</h6>
             </div>
 
             <div class="list-group list-group-flush">
                 {% for p in projects %}
-                <a href="{{ url_for('module3.developer_portal', project_name=p.project_name) }}"
-                    class="list-group-item list-group-item-action border-0 py-3 px-3 d-flex justify-content-between align-items-center
-                          {% if p.project_name == stats.current_project %}active-project{% else %}bg-transparent text-white-50{% endif %}" style="transition: all 0.2s;">
+                <a href="{{ url_for('module3.developer_portal', project_name=p.project_name) }}" class="list-group-item list-group-item-action border-0 py-3 px-3 d-flex justify-content-between align-items-center
+                          {% if p.project_name == stats.current_project %}active-project{% endif %}"
+                    style="transition:all 0.2s;">
                     <div>
-                        <div class="fw-bold {% if p.project_name == stats.current_project %}text-white{% endif %}">
-                            <i class="bi bi-building me-2"></i>{{ p.project_name }}
+                        <div class="fw-bold" style="color:var(--text-primary);">
+                            <i class="bi bi-building me-2" style="color:var(--primary-blue);"></i>{{ p.project_name }}
                         </div>
-                        <small style="font-size: 0.75rem;">{{ p.active_count }} Active Issues</small>
+                        <small style="font-size:0.75rem; color:var(--text-secondary);">{{ p.active_count }} Active
+                            Issues</small>
                     </div>
                     {% if p.active_count > 0 %}
                     <span class="badge bg-danger rounded-pill">{{ p.active_count }}</span>
@@ -28,42 +33,45 @@
                     {% endif %}
                 </a>
                 {% else %}
-                <div class="p-4 text-center text-white-50">
+                <div class="p-4 text-center" style="color:var(--text-secondary);">
                     <small>No projects found.</small>
                 </div>
                 {% endfor %}
             </div>
         </div>
 
-        <div class="col-md-9 col-xl-10 p-4 print-container" style="background-color: #0f172a;">
+        <div class="col-md-9 col-xl-10 p-4 print-container" style="background-color:var(--bg-main);">
 
             <div class="d-flex justify-content-between align-items-end mb-4">
                 <div>
-                    <h2 class="fw-bold text-white mb-0 print-text-black">{{ stats.current_project }}</h2>
-                    <p class="text-info small mb-0 print-text-black"><i class="bi bi-tools me-1"></i> Contractor
-                        Rectification Job Sheet</p>
+                    <h2 class="fw-bold mb-0 print-text-black"
+                        style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">{{ stats.current_project
+                        }}</h2>
+                    <p class="small mb-0 print-text-black" style="color:var(--primary-blue);"><i
+                            class="bi bi-tools me-1"></i> Contractor Rectification Job Sheet</p>
                 </div>
                 <div class="d-flex gap-2 d-print-none">
-                    <div class="px-3 py-2 bg-secondary bg-opacity-25 rounded border border-secondary text-center">
-                        <span class="d-block text-white fw-bold h5 m-0">{{ stats.new }}</span>
-                        <small class="text-white-50" style="font-size: 10px;">PENDING</small>
+                    <div class="px-3 py-2 summary-card border-blue text-center" style="min-width: 100px;">
+                        <span class="d-block fw-bold h5 m-0" style="color:var(--text-primary);">{{ stats.new }}</span>
+                        <small class="text-uppercase"
+                            style="font-size:10px; color:var(--text-secondary);">PENDING</small>
                     </div>
-                    <div class="px-3 py-2 bg-warning bg-opacity-10 rounded border border-warning text-center">
-                        <span class="d-block text-warning fw-bold h5 m-0">{{ stats.in_progress }}</span>
-                        <small class="text-warning" style="font-size: 10px;">WIP</small>
+                    <div class="px-3 py-2 summary-card border-yellow text-center" style="min-width: 100px;">
+                        <span class="d-block fw-bold h5 m-0" style="color:#D97706;">{{ stats.in_progress }}</span>
+                        <small class="text-uppercase" style="font-size:10px; color:#D97706;">WIP</small>
                     </div>
-                    <div class="px-3 py-2 bg-success bg-opacity-10 rounded border border-success text-center">
-                        <span class="d-block text-success fw-bold h5 m-0">{{ stats.completed }}</span>
-                        <small class="text-success" style="font-size: 10px;">DONE</small>
+                    <div class="px-3 py-2 summary-card border-green text-center" style="min-width: 100px;">
+                        <span class="d-block fw-bold h5 m-0" style="color:#16A34A;">{{ stats.completed }}</span>
+                        <small class="text-uppercase" style="font-size:10px; color:#16A34A;">DONE</small>
                     </div>
                 </div>
             </div>
 
-            <div class="card shadow-lg border-0 overflow-hidden print-no-shadow" style="background-color: #1e293b;">
+            <div class="card shadow-sm overflow-hidden print-no-shadow">
 
-                <div
-                    class="card-header bg-transparent border-secondary p-3 d-flex justify-content-between align-items-center d-print-none">
-                    <h6 class="text-white m-0 fw-bold"><i class="bi bi-list-task me-2"></i>Prioritized Task List</h6>
+                <div class="card-header d-flex justify-content-between align-items-center d-print-none">
+                    <h6 class="m-0 fw-bold" style="font-family:'Montserrat',sans-serif; color:var(--text-primary);"><i
+                            class="bi bi-list-task me-2"></i>Prioritized Task List</h6>
                     <div>
                         {% set target_pid = defects[0].scan_id if defects else 0 %}
                         <a href="http://localhost:5003/dashboard/{{ target_pid }}" class="btn btn-sm btn-primary me-2">
@@ -77,36 +85,37 @@
                         stats.in_progress + stats.completed }}</h6>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover mb-0 align-middle print-table-white">
-                        <thead class="bg-dark border-bottom border-secondary">
+                    <table class="table table-hover mb-0 align-middle print-table-white">
+                        <thead>
                             <tr>
-                                <th class="py-3 ps-4 text-white-50 small text-uppercase print-text-black">Ref ID</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black">Owner</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black"
-                                    style="width: 40%;">Defect Detail</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black">Severity</th>
-                                <th class="py-3 text-white-50 small text-uppercase print-text-black"
-                                    style="width: 15%;">Current Status</th>
-                                <th class="py-3 text-white-50 small text-uppercase d-print-none">Verification</th>
-                                <th class="py-3 text-end pe-4 text-white-50 small text-uppercase d-print-none">Action
-                                </th>
+                                <th class="py-3 ps-4">Ref ID</th>
+                                <th class="py-3">Owner</th>
+                                <th class="py-3" style="width:40%;">Defect Detail</th>
+                                <th class="py-3">Severity</th>
+                                <th class="py-3" style="width:15%;">Current Status</th>
+                                <th class="py-3 d-print-none">Verification</th>
+                                <th class="py-3 text-end pe-4 d-print-none">Action</th>
                                 <th class="d-none d-print-table-cell text-end pe-4">Signature</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for defect in defects %}
                             <tr>
-                                <td class="ps-4 text-white-50 font-monospace small print-text-black">#{{ defect.id }}
-                                </td>
+                                <td class="ps-4 font-monospace small print-text-black"
+                                    style="color:var(--text-secondary);">#{{ defect.id }}</td>
 
-                                <td class="text-white fw-bold print-text-black">
-                                    <i class="bi bi-person-circle me-2 text-secondary"></i>{{ defect.full_name }}
+                                <td class="fw-semibold print-text-black" style="color:var(--text-primary);">
+                                    <i class="bi bi-person-circle me-2" style="color:var(--text-secondary);"></i>{{
+                                    defect.full_name }}
                                 </td>
 
                                 <td>
-                                    <div class="fw-bold text-white print-text-black">{{ defect.unit_no }}</div>
-                                    <div class="text-white-50 small print-text-black">{{ defect.description }}</div>
-                                    <div class="text-info small fst-italic mt-1" style="font-size: 0.7rem;">
+                                    <div class="fw-semibold print-text-black" style="color:var(--text-primary);">{{
+                                        defect.unit_no }}</div>
+                                    <div class="small print-text-black" style="color:var(--text-secondary);">{{
+                                        defect.description }}</div>
+                                    <div class="small fst-italic mt-1"
+                                        style="font-size:0.7rem; color:var(--primary-blue);">
                                         <i class="bi bi-paperclip"></i> {{ defect.filename }}
                                     </div>
                                 </td>
@@ -125,15 +134,14 @@
 
                                 <td>
                                     {% if defect.status == 'draft' %}
-                                    <span class="badge bg-info text-dark border border-info">New / Draft</span>
+                                    <span class="badge" style="background:#DBEAFE; color:#1E40AF;">New / Draft</span>
                                     {% elif defect.status == 'locked' %}
-                                    <span
-                                        class="badge bg-secondary text-white border border-secondary">Processing</span>
+                                    <span class="badge" style="background:#F1F5F9; color:#475569;">Processing</span>
                                     {% elif defect.status == 'in_progress' %}
-                                    <span class="badge bg-primary text-white border border-primary">Repair in
+                                    <span class="badge" style="background:#DBEAFE; color:#1E3A8A;">Repair in
                                         Progress</span>
                                     {% elif defect.status == 'completed' %}
-                                    <span class="badge bg-success text-white">Resolved</span>
+                                    <span class="badge" style="background:#DCFCE7; color:#166534;">Resolved</span>
                                     {% endif %}
                                 </td>
 
@@ -174,11 +182,10 @@
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="8" class="text-center py-5">
-                                    <div class="text-white-50 opacity-50 mb-2"><i
-                                            class="bi bi-clipboard-check fs-1"></i></div>
-                                    <p class="text-white-50 mb-0">No active work orders for {{ stats.current_project }}
-                                    </p>
+                                <td colspan="8" class="text-center py-5" style="color:var(--text-secondary);">
+                                    <div class="mb-2" style="font-size:2rem;"><i class="bi bi-clipboard-check"></i>
+                                    </div>
+                                    <p class="mb-0">No active work orders for {{ stats.current_project }}</p>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -193,13 +200,14 @@
 
 <style>
     .active-project {
-        background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0) 100%);
-        border-left: 3px solid #3b82f6 !important;
-        color: white !important;
+        background: linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0) 100%);
+        border-left: 3px solid var(--primary-blue) !important;
+        color: var(--primary-blue) !important;
     }
 
     .list-group-item:hover {
-        background-color: #1e293b !important;
+        background-color: var(--bg-main) !important;
+        color: var(--primary-blue) !important;
     }
 
     @media print {
