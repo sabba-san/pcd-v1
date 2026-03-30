@@ -1,283 +1,247 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- SweetAlert2 CSS success send db -->
-
-<!-- SweetAlert2 CSS success send db -->
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-<div class="row justify-content-center">
-    <div class="col-lg-10">
+<div class="container-fluid px-3 px-md-4 py-4">
 
-        <h2 class="fw-bold mb-1" style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">Dashboard</h2>
-        <div class="d-flex justify-content-between align-items-center mb-5">
-            <div>
-                <p class="mb-0" style="color:var(--text-secondary);">Welcome back, {{ current_user.full_name if
-                    current_user.full_name else
-                    current_user.username }}.</p>
-            </div>
-            <div class="d-flex gap-2">
-                <a href="http://localhost:5003/dashboard?role=Homeowner&user_id={{ current_user.id }}"
-                    class="btn btn-info rounded-pill px-4 shadow-sm text-dark fw-bold">
-                    <i class="bi bi-graph-up-arrow me-2"></i> Go to Reporting Dashboard
-                </a>
-            </div>
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">Dashboard</h2>
+            <p class="text-muted mb-0 mt-1" style="font-size:0.875rem;">
+                Welcome back, {{ current_user.full_name if current_user.full_name else current_user.username }}.
+            </p>
         </div>
+        <a href="http://localhost:5003/dashboard?role=Homeowner&user_id={{ current_user.id }}"
+            class="btn btn-primary rounded-pill px-4 fw-semibold" style="white-space:nowrap;">
+            <i class="bi bi-graph-up-arrow me-2"></i>Reporting Dashboard
+        </a>
+    </div>
 
-        <div class="row g-4">
+    <!-- Feature Cards -->
+    <div class="row g-3 mb-4">
 
-            <div class="col-md-6">
-                <a href="http://localhost:5002/?project_name={{ project_name }}&defect_count={{ defect_count }}&user_id={{ current_user.id }}"
-                    class="text-decoration-none">
-                    <div class="card h-100 p-4 hover-effect">
-                        <div class="card-body">
-                            <div class="mb-4 d-flex justify-content-between align-items-center">
-                                <div class="p-3 rounded-3" style="background:rgba(37,99,235,0.08);">
-                                    <i class="bi bi-chat-text-fill fs-3" style="color:var(--primary-blue);"></i>
-                                </div>
-                                <i class="bi bi-chevron-right" style="color:var(--text-secondary);"></i>
-                            </div>
-                            <h4 class="fw-bold mb-2"
-                                style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">Legal AI
-                                Consultation</h4>
-                            <p class="small mb-0" style="color:var(--text-secondary);">Instant HDA analysis for your
-                                defects.</p>
+        <div class="col-6 col-lg-3">
+            <a href="http://localhost:5002/?project_name={{ project_name }}&defect_count={{ defect_count }}&user_id={{ current_user.id }}"
+                class="text-decoration-none">
+                <div class="card h-100 p-3 p-md-4 hover-effect">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <div class="p-2 rounded-3" style="background:rgba(37,99,235,0.08);">
+                            <i class="bi bi-chat-text-fill fs-4 text-primary"></i>
                         </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
                     </div>
-                </a>
-            </div>
-
-            <div class="col-md-6">
-                <a href="{{ url_for('module3.list_projects') }}" class="text-decoration-none">
-                    <div class="card h-100 p-4 hover-effect">
-                        <div class="card-body">
-                            <div class="mb-4 d-flex justify-content-between align-items-center">
-                                <div class="p-3 rounded-3" style="background:rgba(6,182,212,0.08);">
-                                    <i class="bi bi-grid-fill fs-3" style="color:#0891B2;"></i>
-                                </div>
-                                <i class="bi bi-chevron-right" style="color:var(--text-secondary);"></i>
-                            </div>
-                            <h4 class="fw-bold mb-2"
-                                style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">My Projects</h4>
-                            <p class="small mb-0" style="color:var(--text-secondary);">View all properties and defect
-                                status.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-6">
-                <a href="{{ url_for('module2.insert_defect') }}" class="text-decoration-none">
-                    <div class="card h-100 p-4 hover-effect">
-                        <div class="card-body">
-                            <div class="mb-4 d-flex justify-content-between align-items-center">
-                                <div class="p-3 rounded-3" style="background:rgba(22,163,74,0.08);">
-                                    <i class="bi bi-cloud-arrow-up-fill fs-3" style="color:#16A34A;"></i>
-                                </div>
-                                <i class="bi bi-chevron-right" style="color:var(--text-secondary);"></i>
-                            </div>
-                            <h4 class="fw-bold mb-2"
-                                style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">Add New Defect
-                            </h4>
-                            <p class="small mb-0" style="color:var(--text-secondary);">Upload 3D model and PDF data.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-6">
-                {% if latest_scan_id %}
-                <a href="{{ url_for('module3.visualize_defect', defect_id=latest_scan_id) }}"
-                    class="text-decoration-none">
-                    {% else %}
-                    <a href="javascript:void(0);" onclick="showNoProjectAlert()" class="text-decoration-none">
-                        {% endif %}
-                        <div class="card h-100 p-4 hover-effect">
-                            <div class="card-body">
-                                <div class="mb-4 d-flex justify-content-between align-items-center">
-                                    <div class="p-3 rounded-3" style="background:rgba(217,119,6,0.08);">
-                                        <i class="bi bi-box-fill fs-3" style="color:#D97706;"></i>
-                                    </div>
-                                    <i class="bi bi-chevron-right" style="color:var(--text-secondary);"></i>
-                                </div>
-                                <h4 class="fw-bold mb-2"
-                                    style="font-family:'Montserrat',sans-serif; color:var(--text-primary);">3D
-                                    Visualizer</h4>
-                                <p class="small mb-0" style="color:var(--text-secondary);">Select a project to view in
-                                    3D space.</p>
-                            </div>
-                        </div>
-                    </a>
-            </div>
-
-        </div>
-
-        <div class="mt-5">
-            <h6 class="fw-bold text-muted text-uppercase small mb-3">Recent Activity</h6>
-            <div class="card p-0 overflow-hidden">
-                <div class="table-responsive">
-                    <table class="table mb-0 align-middle">
-                        <thead>
-                            <tr>
-                                <th class="ps-4 py-3">House No</th>
-                                <th class="py-3">Defect Detail</th>
-                                <th class="py-3">Status</th>
-                                <th class="py-3">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for group in grouped_activity[:5] %}
-                            {% set d = group.scan %}
-                            {% set has_children = group.children|length > 0 %}
-
-                            <!-- Parent Row -->
-                            <tr {% if has_children %} data-bs-toggle="collapse" data-bs-target="#children-{{ d.id }}"
-                                style="cursor: pointer;" class="accordion-toggle" {% endif %}>
-                                <td class="ps-4 fw-semibold align-middle" style="color:var(--text-primary);">
-                                    {% if has_children %}
-                                    <i class="bi bi-chevron-down me-2"
-                                        style="font-size:0.8rem; transition:transform 0.2s; color:var(--text-secondary);"
-                                        id="icon-{{ d.id }}"></i>
-                                    {% endif %}
-                                    {{ d.location if d.location else project_name }}
-                                </td>
-                                <td class="small align-middle" style="color:var(--text-secondary);">
-                                    <div class="d-flex align-items-center">
-                                        {% if d.scan_path %}
-                                        <i class="bi bi-box-fill me-2 fs-5" style="color:#D97706;"></i>
-                                        <div>
-                                            <div class="fw-semibold text-truncate"
-                                                style="max-width:200px; color:var(--text-primary);"
-                                                title="{{ d.scan_path.split('/')[-1] }}">
-                                                {{ d.scan_path.split('/')[-1] }}
-                                            </div>
-                                            <small style="color:var(--text-secondary);">3D Lidar Scan</small>
-                                        </div>
-                                        {% else %}
-                                        <i class="bi bi-geo-alt-fill text-danger me-2 fs-5"></i>
-                                        <div>
-                                            <div class="fw-semibold text-truncate"
-                                                style="max-width:200px; color:var(--text-primary);">
-                                                {{ d.element if d.element else d.location }} - {{ d.defect_type }}
-                                            </div>
-                                            <small style="color:var(--text-secondary);">Defect Pin</small>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td class="align-middle">
-                                    {% if d.status == 'New' %}
-                                    <span class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill px-3">No
-                                        Defects</span>
-                                    {% elif d.status in ['Processing', 'in_progress', 'locked'] %}
-                                    <span
-                                        class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3">Processing...</span>
-                                    {% elif d.status in ['Action Required', 'rejected'] %}
-                                    <span class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-3">Action
-                                        Required</span>
-                                    {% elif d.status in ['Completed', 'completed'] %}
-                                    <span
-                                        class="badge bg-success bg-opacity-25 text-success rounded-pill px-3">Resolved</span>
-                                    {% else %}
-                                    <span class="badge bg-info bg-opacity-25 text-info rounded-pill px-3">Pending
-                                        Defects</span>
-                                    {% endif %}
-                                </td>
-                                <td class="align-middle">
-                                    {% if d.scan_path %}
-                                    <a href="{{ url_for('module3.visualize_defect', defect_id=d.id) }}"
-                                        class="btn btn-sm btn-outline-primary border-0" title="View in 3D">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    {% endif %}
-                                    <div class="d-inline" onclick="event.stopPropagation();">
-                                        <form action="{{ url_for('module3.delete_defect', defect_id=d.id) }}"
-                                            method="POST" onsubmit="return confirm('Delete this defect permanently?');"
-                                            class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger border-0"
-                                                title="Delete Defect">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Children Row -->
-                            {% if has_children %}
-                            <tr id="children-{{ d.id }}" class="collapse">
-                                <td colspan="4" class="p-0 border-0">
-                                    <div
-                                        style="background-color:#F8F9FA; padding:10px 20px 10px 40px; border-top:1px solid var(--border-color);">
-                                        <h6 class="small mb-2" style="color:var(--text-secondary);"><i
-                                                class="bi bi-journal-text me-1"></i>Nested Defects</h6>
-                                        <table class="table table-sm table-borderless mb-0 align-middle">
-                                            <tbody>
-                                                {% for child in group.children %}
-                                                <tr>
-                                                    <td class="align-middle"
-                                                        style="width:25%; color:var(--text-primary); font-weight:500;">
-                                                        <i class="bi bi-geo-alt-fill text-danger me-2 small"></i>
-                                                        {{ child.location }}
-                                                    </td>
-                                                    <td class="small align-middle"
-                                                        style="width:40%; color:var(--text-secondary);">
-                                                        {{ child.description | truncate(40) if child.description else
-                                                        child.defect_type }}
-                                                    </td>
-                                                    <td class="align-middle" style="width:20%;">
-                                                        {% if child.status in ['Completed', 'Fixed'] %}
-                                                        <span
-                                                            class="badge bg-success bg-opacity-25 text-success rounded-pill"
-                                                            style="font-size:0.7rem;">Resolved</span>
-                                                        {% elif child.status in ['Under Review', 'Processing'] %}
-                                                        <span
-                                                            class="badge bg-warning bg-opacity-25 text-warning rounded-pill"
-                                                            style="font-size:0.7rem;">Under Review</span>
-                                                        {% else %}
-                                                        <span class="badge bg-info bg-opacity-25 text-info rounded-pill"
-                                                            style="font-size:0.7rem;">Reported</span>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td class="text-end align-middle"
-                                                        style="width: 15%; background-color: transparent;">
-                                                        <form
-                                                            action="{{ url_for('module3.delete_defect', defect_id=child.id) }}"
-                                                            method="POST"
-                                                            onsubmit="return confirm('Delete this defect permanently?');"
-                                                            class="d-inline">
-                                                            <button type="submit"
-                                                                class="btn btn-sm text-danger border-0 p-1"
-                                                                title="Delete Defect">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </form>
-                                                    </td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endif %}
-
-                            {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center py-4" style="color:var(--text-secondary);">
-                                    <i class="bi bi-inbox fs-4 d-block mb-2"></i>
-                                    No recent activity found. You have not uploaded any project scans.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <h6 class="fw-bold mb-1">Legal AI Consultation</h6>
+                    <p class="small text-muted mb-0">Instant HDA analysis for your defects.</p>
                 </div>
-            </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <a href="{{ url_for('module3.list_projects') }}" class="text-decoration-none">
+                <div class="card h-100 p-3 p-md-4 hover-effect">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <div class="p-2 rounded-3" style="background:rgba(6,182,212,0.08);">
+                            <i class="bi bi-grid-fill fs-4" style="color:#0891B2;"></i>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1">My Projects</h6>
+                    <p class="small text-muted mb-0">View all properties and defect status.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <a href="{{ url_for('module2.insert_defect') }}" class="text-decoration-none">
+                <div class="card h-100 p-3 p-md-4 hover-effect">
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <div class="p-2 rounded-3" style="background:rgba(22,163,74,0.08);">
+                            <i class="bi bi-cloud-arrow-up-fill fs-4" style="color:#16A34A;"></i>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1">Add New Defect</h6>
+                    <p class="small text-muted mb-0">Upload 3D model and PDF data.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            {% if latest_scan_id %}
+            <a href="{{ url_for('module3.visualize_defect', defect_id=latest_scan_id) }}" class="text-decoration-none">
+                {% else %}
+                <a href="javascript:void(0);" onclick="showNoProjectAlert()" class="text-decoration-none">
+                    {% endif %}
+                    <div class="card h-100 p-3 p-md-4 hover-effect">
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <div class="p-2 rounded-3" style="background:rgba(217,119,6,0.08);">
+                                <i class="bi bi-box-fill fs-4" style="color:#D97706;"></i>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">3D Visualizer</h6>
+                        <p class="small text-muted mb-0">Select a project to view in 3D space.</p>
+                    </div>
+                </a>
         </div>
 
     </div>
+
+    <!-- Recent Activity -->
+    <div>
+        <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size:0.72rem;letter-spacing:.08em;">Recent
+            Activity</h6>
+        <div class="card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">House No</th>
+                            <th class="d-none d-md-table-cell">Defect Detail</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for group in grouped_activity[:5] %}
+                        {% set d = group.scan %}
+                        {% set has_children = group.children|length > 0 %}
+
+                        <!-- Parent Row -->
+                        <tr {% if has_children %} data-bs-toggle="collapse" data-bs-target="#children-{{ d.id }}"
+                            style="cursor:pointer;" class="accordion-toggle" {% endif %}>
+                            <td class="ps-4 fw-semibold" style="color:var(--text-primary);">
+                                {% if has_children %}
+                                <i class="bi bi-chevron-down me-2 small text-muted" id="icon-{{ d.id }}"
+                                    style="transition:transform 0.2s;"></i>
+                                {% endif %}
+                                {{ d.location if d.location else project_name }}
+                            </td>
+                            <td class="small text-muted d-none d-md-table-cell">
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if d.scan_path %}
+                                    <i class="bi bi-box-fill fs-5" style="color:#D97706;"></i>
+                                    <div>
+                                        <div class="fw-semibold text-truncate"
+                                            style="max-width:200px;color:var(--text-primary);"
+                                            title="{{ d.scan_path.split('/')[-1] }}">
+                                            {{ d.scan_path.split('/')[-1] }}
+                                        </div>
+                                        <small class="text-muted">3D Lidar Scan</small>
+                                    </div>
+                                    {% else %}
+                                    <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+                                    <div>
+                                        <div class="fw-semibold text-truncate"
+                                            style="max-width:200px;color:var(--text-primary);">
+                                            {{ d.element if d.element else d.location }} - {{ d.defect_type }}
+                                        </div>
+                                        <small class="text-muted">Defect Pin</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if d.status == 'New' %}
+                                <span class="badge bg-secondary rounded-pill">No Defects</span>
+                                {% elif d.status in ['Processing','in_progress','locked'] %}
+                                <span class="badge bg-warning rounded-pill">Processing</span>
+                                {% elif d.status in ['Action Required','rejected'] %}
+                                <span class="badge bg-danger rounded-pill">Action Required</span>
+                                {% elif d.status in ['Completed','completed'] %}
+                                <span class="badge bg-success rounded-pill">Resolved</span>
+                                {% else %}
+                                <span class="badge bg-info rounded-pill">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if d.scan_path %}
+                                <a href="{{ url_for('module3.visualize_defect', defect_id=d.id) }}"
+                                    class="btn btn-sm btn-outline-primary border-0" title="View in 3D">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% endif %}
+                                <div class="d-inline" onclick="event.stopPropagation();">
+                                    <form action="{{ url_for('module3.delete_defect', defect_id=d.id) }}" method="POST"
+                                        onsubmit="return confirm('Delete this defect permanently?');" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0"
+                                            title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Children Row -->
+                        {% if has_children %}
+                        <tr id="children-{{ d.id }}" class="collapse">
+                            <td colspan="4" class="p-0 border-0">
+                                <div class="bg-light px-4 py-3 border-top">
+                                    <h6 class="small text-muted mb-2">
+                                        <i class="bi bi-journal-text me-1"></i>Nested Defects
+                                    </h6>
+                                    <table class="table table-sm table-borderless mb-0 align-middle">
+                                        <tbody>
+                                            {% for child in group.children %}
+                                            <tr>
+                                                <td style="width:30%;" class="fw-medium"
+                                                    style="color:var(--text-primary);">
+                                                    <i class="bi bi-geo-alt-fill text-danger me-1 small"></i>{{
+                                                    child.location }}
+                                                </td>
+                                                <td class="small text-muted" style="width:40%;">
+                                                    {{ child.description | truncate(40) if child.description else
+                                                    child.defect_type }}
+                                                </td>
+                                                <td style="width:20%;">
+                                                    {% if child.status in ['Completed','Fixed'] %}
+                                                    <span class="badge bg-success"
+                                                        style="font-size:0.65rem;">Resolved</span>
+                                                    {% elif child.status in ['Under Review','Processing'] %}
+                                                    <span class="badge bg-warning" style="font-size:0.65rem;">Under
+                                                        Review</span>
+                                                    {% else %}
+                                                    <span class="badge bg-info"
+                                                        style="font-size:0.65rem;">Reported</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end" style="width:10%;">
+                                                    <form
+                                                        action="{{ url_for('module3.delete_defect', defect_id=child.id) }}"
+                                                        method="POST" onsubmit="return confirm('Delete?');"
+                                                        class="d-inline">
+                                                        <button type="submit"
+                                                            class="btn btn-sm text-danger border-0 p-1">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                                No recent activity. You have not uploaded any project scans.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -286,7 +250,7 @@
         Swal.fire({
             icon: 'info',
             title: 'No Project Found',
-            text: 'You haven\'t uploaded any defect scans yet. Please submit a new defect to use the 3D Visualizer.',
+            text: "You haven't uploaded any defect scans yet. Please submit a new defect to use the 3D Visualizer.",
             confirmButtonColor: '#2563EB',
             confirmButtonText: 'Add a Defect',
             showCancelButton: true,
@@ -297,11 +261,8 @@
             }
         });
     }
-</script>
 
-<script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Handle accordion chevron rotation
         const collapses = document.querySelectorAll('.collapse');
         collapses.forEach(collapse => {
             collapse.addEventListener('show.bs.collapse', function () {
@@ -317,17 +278,4 @@
         });
     });
 </script>
-
-<style>
-    .hover-effect {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        cursor: pointer;
-    }
-
-    .hover-effect:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08) !important;
-        border-color: #BFDBFE !important;
-    }
-</style>
 {% endblock %}

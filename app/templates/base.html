@@ -5,115 +5,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DLP Advisor</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <!-- Google Fonts: DM Sans + Inter -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- App CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
 
-    <nav class="navbar navbar-expand-lg fixed-top navbar-dark">
-        <div class="container">
+    <nav class="navbar navbar-expand-md fixed-top">
+        <div class="container-fluid px-3 px-md-4">
 
+            <!-- Brand -->
             <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('module3.dashboard') }}">
-                <i class="bi bi-building-check text-primary"></i>
+                <div class="d-flex align-items-center justify-content-center rounded-2"
+                    style="width:32px;height:32px;background:var(--primary-blue);">
+                    <i class="bi bi-building-check text-white" style="font-size:1rem;"></i>
+                </div>
                 DLP Advisor
             </a>
 
-            {% if current_user.is_authenticated and request.endpoint != 'auth.login' %}
-            <div class="dropdown">
-                <a href="#" class="d-flex align-items-center gap-3 text-decoration-none dropdown-toggle text-white"
-                    data-bs-toggle="dropdown" aria-expanded="false">
+            <!-- Mobile toggler -->
+            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                    <div class="d-none d-md-block text-end">
-                        <div class="small fw-bold">
-                            {% if current_user.role == 'developer' and current_user.company_name %}
-                            {{ current_user.company_name }}
-                            {% elif current_user.role == 'lawyer' and current_user.firm_name %}
-                            {{ current_user.firm_name }}
+            <!-- Nav items -->
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto align-items-md-center gap-md-1">
+
+                    {% if current_user.is_authenticated and request.endpoint != 'auth.login' %}
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle d-flex align-items-center gap-2 py-2"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+
+                            <!-- Role avatar -->
+                            {% if session.get('username') == 'admin' %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                style="width:34px;height:34px;background:#EF4444;">
+                                <i class="bi bi-shield-lock-fill text-white" style="font-size:0.85rem;"></i>
+                            </div>
+                            {% elif session.get('user_role') == 'developer' %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                style="width:34px;height:34px;background:#F59E0B;">
+                                <i class="bi bi-cone-striped text-white" style="font-size:0.85rem;"></i>
+                            </div>
+                            {% elif session.get('user_role') == 'lawyer' %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                style="width:34px;height:34px;background:#2563EB;">
+                                <i class="bi bi-briefcase-fill text-white" style="font-size:0.85rem;"></i>
+                            </div>
                             {% else %}
-                            {{ current_user.full_name if current_user.full_name else current_user.username }}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold"
+                                style="width:34px;height:34px;background:var(--primary-blue);color:#fff;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                                {{ (current_user.full_name[0] if current_user.full_name else
+                                current_user.username[0]).upper() }}
+                            </div>
                             {% endif %}
-                        </div>
-                        {% if current_user.role not in ['developer', 'lawyer'] %}
-                        <div class="small text-muted" style="font-size: 0.75rem;">
-                            {{ current_user.project_name or 'User' }}
-                        </div>
-                        {% endif %}
-                    </div>
 
-                    {% if session.get('username') == 'admin' %}
-                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center"
-                        style="width: 38px; height: 38px;">
-                        <i class="bi bi-shield-lock-fill"></i>
-                    </div>
-                    {% elif session.get('user_role') == 'developer' %}
-                    <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center"
-                        style="width: 38px; height: 38px;">
-                        <i class="bi bi-cone-striped"></i>
-                    </div>
-                    {% elif session.get('user_role') == 'lawyer' %}
-                    <div class="bg-info text-dark rounded-circle d-flex align-items-center justify-content-center"
-                        style="width: 38px; height: 38px;">
-                        <i class="bi bi-briefcase-fill"></i>
-                    </div>
-                    {% else %}
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                        style="width: 38px; height: 38px;">
-                        {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0]).upper()
-                        }}
-                        </span>
-                    </div>
+                            <!-- Name (hidden on xs) -->
+                            <div class="d-none d-sm-block text-start">
+                                <div class="fw-semibold lh-1" style="font-size:0.85rem;color:var(--text-primary);">
+                                    {% if current_user.role == 'developer' and current_user.company_name %}
+                                    {{ current_user.company_name }}
+                                    {% elif current_user.role == 'lawyer' and current_user.firm_name %}
+                                    {{ current_user.firm_name }}
+                                    {% else %}
+                                    {{ current_user.full_name if current_user.full_name else current_user.username }}
+                                    {% endif %}
+                                </div>
+                                <div style="font-size:0.72rem;color:var(--text-secondary);">
+                                    {{ current_user.role | capitalize if current_user.role else 'User' }}
+                                </div>
+                            </div>
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end mt-2 shadow">
+                            <li>
+                                <h6 class="dropdown-header text-muted" style="font-size:0.7rem;letter-spacing:.06em;">MY
+                                    ACCOUNT</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('module3.profile') }}">
+                                    <i class="bi bi-person me-2 text-primary"></i> My Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('module3.settings') }}">
+                                    <i class="bi bi-gear me-2 text-primary"></i> Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger fw-semibold" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     {% endif %}
-                </a>
 
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark mt-3 shadow-lg">
-                    <li>
-                        <h6 class="dropdown-header text-muted">Account</h6>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item" href="{{ url_for('module3.profile') }}">
-                            <i class="bi bi-person me-2"></i> My Profile
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{{ url_for('module3.settings') }}">
-                            <i class="bi bi-gear me-2"></i> Settings
-                        </a>
-                    </li>
-
-                    <li>
-                        <hr class="dropdown-divider border-secondary">
-                    </li>
-                    <li>
-                        <a class="dropdown-item text-danger fw-bold" href="{{ url_for('auth.logout') }}">
-                            <i class="bi bi-box-arrow-right me-2"></i> Logout
-                        </a>
-                    </li>
                 </ul>
             </div>
-            {% endif %}
 
         </div>
     </nav>
 
-    <div style="margin-top: 100px;"></div>
-
-    <div class="container pb-5">
+    <!-- Page body offset for fixed navbar -->
+    <div style="padding-top: 64px;">
         {% block content %}{% endblock %}
     </div>
 
     <!-- Toast Container -->
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1090;">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         {% for category, message in messages %}
-        <div class="toast align-items-center text-white bg-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'primary' }} border-0 shadow-lg mb-2"
+        <div class="toast align-items-center text-white border-0 shadow-lg mb-2
+            bg-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'primary' }}"
             role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
-                <div class="toast-body fw-bold">
+                <div class="toast-body fw-semibold">
                     <i
                         class="bi {{ 'bi-check-circle-fill' if category == 'success' else 'bi-exclamation-triangle-fill' }} me-2"></i>
                     {{ message }}
@@ -127,16 +148,18 @@
         {% endwith %}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap 5.3.3 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
             var toastList = toastElList.map(function (toastEl) {
                 return new bootstrap.Toast(toastEl, { delay: 5000 });
             });
             toastList.forEach(toast => toast.show());
         });
     </script>
+    {% block scripts %}{% endblock %}
 </body>
 
 </html>
