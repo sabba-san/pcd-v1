@@ -2,120 +2,309 @@
 
 {% block content %}
 <style>
-    /* UX Feature: Smart Drag & Drop Zones */
+    /* ─── Scoped form variables ─────────────────────────── */
+    .defect-form-card {
+        background: #1e293b;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    /* ─── Section headers ───────────────────────────────── */
+    .form-section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+        margin-bottom: 1.2rem;
+    }
+
+    .form-section-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: rgba(59, 130, 246, 0.18);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        flex-shrink: 0;
+    }
+
+    /* ─── All form inputs & textareas ───────────────────── */
+    .defect-form-card .form-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #374151 !important;
+        margin-bottom: 6px;
+    }
+
+    .defect-form-card .form-control,
+    .defect-form-card textarea.form-control {
+        background-color: #ffffff !important;
+        color: #1a1a1a !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+        font-size: 0.875rem !important;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        caret-color: #2563eb;
+    }
+
+    .defect-form-card .form-control::placeholder,
+    .defect-form-card textarea.form-control::placeholder {
+        color: #9ca3af !important;
+        font-style: normal;
+    }
+
+    .defect-form-card .form-control:focus,
+    .defect-form-card textarea.form-control:focus {
+        background-color: #ffffff !important;
+        color: #1a1a1a !important;
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+        outline: none !important;
+    }
+
+    /* Read-only fields */
+    .defect-form-card .form-control[readonly] {
+        background-color: #f3f4f6 !important;
+        color: #6b7280 !important;
+        cursor: not-allowed;
+    }
+
+    /* ─── Textarea specifics ────────────────────────────── */
+    .defect-form-card textarea.form-control {
+        resize: vertical;
+        min-height: 130px;
+        line-height: 1.6;
+    }
+
+    /* ─── Upload zone ───────────────────────────────────── */
     .upload-zone {
-        border: 2px dashed #475569;
+        border: 2px dashed #d1d5db;
         border-radius: 12px;
-        padding: 30px;
+        padding: 32px 20px;
         text-align: center;
-        background: rgba(51, 65, 85, 0.3);
-        transition: 0.2s;
+        background: #f9fafb;
+        transition: border-color 0.2s, background 0.2s;
         cursor: pointer;
         position: relative;
     }
 
     .upload-zone:hover {
-        border-color: var(--accent);
-        background: rgba(59, 130, 246, 0.05);
-    }
-
-    .upload-icon {
-        font-size: 2rem;
-        color: #64748b;
-        margin-bottom: 10px;
+        border-color: #2563eb;
+        background: rgba(37, 99, 235, 0.04);
     }
 
     .upload-zone:hover .upload-icon {
-        color: var(--accent);
+        color: #2563eb;
+    }
+
+    .upload-icon {
+        font-size: 2.2rem;
+        color: #9ca3af;
+        margin-bottom: 10px;
+        transition: color 0.2s;
+    }
+
+    .upload-zone .upload-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 4px;
+    }
+
+    .upload-zone .upload-hint {
+        font-size: 0.75rem;
+        color: #6b7280;
     }
 
     .file-input-hidden {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        inset: 0;
         opacity: 0;
         cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* ─── File selected state ───────────────────────────── */
+    .upload-zone.file-selected {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.06);
+    }
+
+    .upload-zone.file-selected .upload-icon {
+        color: #22c55e;
+    }
+
+    .upload-zone.file-selected .upload-label {
+        color: #86efac;
+    }
+
+    /* ─── Action buttons ────────────────────────────────── */
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid #334155;
+        color: #64748b;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+        border-color: #64748b;
+        color: #94a3b8;
+        background: rgba(100, 116, 139, 0.08);
+    }
+
+    .btn-preview {
+        background: rgba(6, 182, 212, 0.12);
+        border: 1px solid rgba(6, 182, 212, 0.35);
+        color: #67e8f9;
+        border-radius: 10px;
+        padding: 10px 22px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+
+    .btn-preview:hover {
+        background: rgba(6, 182, 212, 0.22);
+        border-color: #06b6d4;
+        color: #a5f3fc;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        border: none;
+        color: #fff;
+        border-radius: 10px;
+        padding: 10px 32px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
+        transform: translateY(-1px);
+        color: #fff;
     }
 </style>
 
-<div class="row justify-content-center">
-    <div class="col-lg-9">
+<div class="row justify-content-center pt-4 pb-3">
+    <div class="col-xl-8 col-lg-10">
 
+        {# Page header #}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h3 class="fw-bold text-white mb-1">New Defect Submission</h3>
-                <p class="text-muted small">One-step form: Upload scan and provide details.</p>
+                <h4 class="fw-bold text-white mb-1">
+                    <i class="bi bi-clipboard2-pulse me-2 text-primary"></i>New Defect Submission
+                </h4>
+                <p class="text-secondary small mb-0">Fill in all fields and upload the 3D scan to submit your claim.</p>
             </div>
-            <div
-                class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill border border-primary border-opacity-25">
-                <i class="bi bi-check-circle-fill me-2"></i> All-in-One Form
-            </div>
+            <span class="badge rounded-pill px-3 py-2"
+                style="background:rgba(59,130,246,0.12);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);font-size:0.75rem;">
+                <i class="bi bi-check-circle-fill me-1"></i>All-in-One Form
+            </span>
         </div>
 
-        <div class="card shadow-lg p-4 border-0" style="background-color: #334155;">
-            <form action="{{ url_for('module3.submit_defect') }}" method="POST" enctype="multipart/form-data">
+        <div class="defect-form-card p-4">
+            <form action="{{ url_for('module3.submit_defect') }}" method="POST" enctype="multipart/form-data"
+                novalidate>
 
-                <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">1.
-                    Ownership Details</h6>
+                {# ── Section 1: Ownership ──────────────────────── #}
+                <div class="form-section-title">
+                    <span class="form-section-badge">1</span>
+                    Ownership Details
+                </div>
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label text-white">Owner Name</label>
+                        <label class="form-label">Owner Name</label>
                         <input type="text" class="form-control" value="{{ session.get('username', '') }}" readonly
-                            style="background-color: #1e293b; color: #94a3b8;">
+                            title="Auto-filled from your account">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label text-white">Unit No. <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="unit_no" placeholder="e.g. A-85" required>
-                        <div class="form-text text-white-50 small fst-italic">
-                            <i class="bi bi-link-45deg"></i> Linked to Grant No. in backend
+                        <label class="form-label">
+                            Unit No. <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" name="unit_no" placeholder="e.g. A-85" required
+                            autocomplete="off">
+                        <div class="mt-1" style="font-size:0.72rem;color:#475569;">
+                            <i class="bi bi-link-45deg"></i> Linked to your Grant No. in the system
                         </div>
                     </div>
                 </div>
 
-                <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">2.
-                    Defect Description</h6>
+                {# ── Section 2: Defect Description ───────────────── #}
+                <div class="form-section-title">
+                    <span class="form-section-badge">2</span>
+                    Defect Description
+                </div>
                 <div class="row g-3 mb-4">
-                    <div class="col-md-12">
-                        <label class="form-label text-white">Project Name / Title</label>
+                    <div class="col-12">
+                        <label class="form-label">Project Name / Title</label>
                         <input type="text" class="form-control" name="project_name"
-                            value="{{ session.get('user_project', 'Not Assigned') }}" readonly
-                            style="background-color: #1e293b; color: #94a3b8;">
+                            value="{{ session.get('user_project', 'Not Assigned') }}" readonly>
                     </div>
-                    <div class="col-md-12">
-                        <label class="form-label text-white">Detailed Description</label>
-                        <textarea class="form-control" name="description" rows="3"
-                            placeholder="Describe the defect location (e.g., Master Bedroom Ceiling)..."
+                    <div class="col-12">
+                        <label class="form-label">
+                            Detailed Description <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" name="description" rows="5"
+                            placeholder="Describe the defect in detail — include the room, surface, and nature of the issue (e.g. 'Master Bedroom ceiling has a 30cm hairline crack near the AC duct')."
                             required></textarea>
-                    </div>
-                </div>
-
-                <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">3.
-                    Evidence Upload</h6>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-12">
-                        <label class="form-label text-white">3D Lidar Scan (.glb)</label>
-                        <div class="upload-zone">
-                            <i class="bi bi-box-seam upload-icon"></i>
-                            <h6 class="text-white small">Drag Lidar Scan Here</h6>
-                            <p class="text-muted small mb-0">Max 50MB</p>
-                            <input type="file" name="lidar_file" class="file-input-hidden" accept=".glb">
+                        <div class="mt-1" style="font-size:0.72rem;color:#475569;">
+                            <i class="bi bi-info-circle"></i> Be as specific as possible to help the inspector.
                         </div>
                     </div>
                 </div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                    <a href="{{ url_for('module3.dashboard') }}"
-                        class="btn btn-outline-secondary border-0 text-white-50 fw-bold px-4">
+                {# ── Section 3: Evidence Upload ───────────────────── #}
+                <div class="form-section-title">
+                    <span class="form-section-badge">3</span>
+                    Evidence Upload
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <label class="form-label">3D Lidar Scan <span
+                                class="text-secondary small fw-normal">(.glb)</span></label>
+                        <div class="upload-zone" id="uploadZone">
+                            <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                            <p class="upload-label mb-1" id="uploadLabel">Drag & drop your .glb file here</p>
+                            <p class="upload-hint mb-0">or <span style="color:#60a5fa;">click to browse</span> — Max
+                                50MB</p>
+                            <input type="file" name="lidar_file" class="file-input-hidden" accept=".glb"
+                                id="lidarInput">
+                        </div>
+                    </div>
+                </div>
+
+                {# ── Actions ──────────────────────────────────────── #}
+                <div class="d-flex justify-content-end align-items-center gap-2 mt-2 pt-3"
+                    style="border-top:1px solid rgba(148,163,184,0.1);">
+                    <a href="{{ url_for('module3.dashboard') }}" class="btn-cancel">
                         Cancel
                     </a>
-
-                    <button type="submit" name="action" value="visualize" class="btn btn-info text-white fw-bold px-4">
+                    <button type="submit" name="action" value="visualize" class="btn-preview">
                         <i class="bi bi-box-seam me-2"></i>Preview 3D
                     </button>
-
-                    <button type="submit" name="action" value="submit" class="btn btn-primary fw-bold px-5">
+                    <button type="submit" name="action" value="submit" class="btn-submit">
                         Submit Claim <i class="bi bi-send-fill ms-2"></i>
                     </button>
                 </div>
@@ -127,15 +316,38 @@
 </div>
 
 <script>
-    document.querySelectorAll('.file-input-hidden').forEach(input => {
-        input.addEventListener('change', function () {
-            const fileName = this.files[0]?.name;
-            if (fileName) {
-                this.parentElement.querySelector('h6').textContent = fileName;
-                this.parentElement.querySelector('h6').classList.add('text-info');
-                this.parentElement.querySelector('.upload-icon').classList.replace('text-muted', 'text-info');
-            }
-        });
+    const lidarInput = document.getElementById('lidarInput');
+    const uploadZone = document.getElementById('uploadZone');
+    const uploadLabel = document.getElementById('uploadLabel');
+
+    lidarInput?.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            uploadLabel.textContent = file.name;
+            uploadZone.classList.add('file-selected');
+        } else {
+            uploadLabel.textContent = 'Drag & drop your .glb file here';
+            uploadZone.classList.remove('file-selected');
+        }
+    });
+
+    // Drag-and-drop visual feedback
+    uploadZone?.addEventListener('dragover', e => {
+        e.preventDefault();
+        uploadZone.style.borderColor = '#3b82f6';
+    });
+    uploadZone?.addEventListener('dragleave', () => {
+        uploadZone.style.borderColor = '';
+    });
+    uploadZone?.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadZone.style.borderColor = '';
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            lidarInput.files = e.dataTransfer.files;
+            uploadLabel.textContent = file.name;
+            uploadZone.classList.add('file-selected');
+        }
     });
 </script>
 {% endblock %}
