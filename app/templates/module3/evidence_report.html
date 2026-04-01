@@ -1,155 +1,231 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-fluid px-4">
+<style>
+    .evidence-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: box-shadow 0.2s, transform 0.2s;
+        height: 100%;
+    }
 
-    <div class="d-flex justify-content-between align-items-end mb-5 mt-4">
+    .evidence-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .evidence-img-wrap {
+        height: 210px;
+        background: #f1f5f9;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .evidence-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .evidence-no-img {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #94a3b8;
+    }
+
+    .desc-block {
+        background: #f8fafc;
+        border-left: 3px solid #3b82f6;
+        border-radius: 0 8px 8px 0;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        color: #475569;
+        font-size: 0.875rem;
+        font-style: italic;
+    }
+
+    .stat-pill {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 10px 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .stat-pill h3 {
+        color: #0f172a;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .stat-pill small {
+        color: #64748b;
+        font-size: 0.65rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .progress-track {
+        height: 6px;
+        width: 60px;
+        background: #e2e8f0;
+        border-radius: 99px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+</style>
+
+<div class="container-fluid px-4 pt-4 pb-5">
+
+    {# Page header #}
+    <div class="d-flex justify-content-between align-items-start mb-5 flex-wrap gap-3">
         <div>
-            <h6 class="text-uppercase text-info fw-bold mb-1" style="letter-spacing: 2px; font-size: 0.8rem;">
-                <a href="{{ url_for('module3.lawyer_dashboard') }}" class="text-info text-decoration-none">
+            <h6 class="text-uppercase fw-bold mb-1" style="letter-spacing:2px;font-size:0.75rem;color:#2563eb;">
+                <a href="{{ url_for('module3.lawyer_dashboard') }}" class="text-decoration-none" style="color:#2563eb;">
                     <i class="bi bi-arrow-left me-1"></i> Legal Console
                 </a>
             </h6>
-            <h2 class="fw-bold text-white display-6">Evidence Review Console</h2>
-            <p class="text-white-50 mb-0">AI-analyzed defect reports and photographic evidence.</p>
+            <h2 class="fw-bold mb-1" style="color:#0f172a;">Evidence Review Console</h2>
+            <p class="mb-0" style="color:#64748b;">AI-analyzed defect reports and photographic evidence.</p>
         </div>
-        <div>
-            <div class="bg-dark rounded-3 px-4 py-2 border border-secondary d-flex align-items-center mb-3">
-                <div class="me-3 text-end">
-                    <h3 class="fw-bold text-white mb-0">{{ cases|length }}</h3>
-                    <small class="text-white-50" style="font-size: 0.7rem;">TOTAL REPORTS</small>
-                </div>
-                <i class="bi bi-images text-white-50 fs-4"></i>
-            </div>
 
-            <div class="d-flex flex-column gap-2">
-                <a href="http://localhost:5003/module3/api/generate_report/legal?language=en"
-                    class="btn btn-outline-info btn-sm rounded-pill fw-bold action-btn w-100" target="_blank">
-                    <i class="bi bi-printer me-1"></i> Print Summary (English)
-                </a>
-                <a href="http://localhost:5003/module3/api/generate_report/legal?language=ms"
-                    class="btn btn-outline-info btn-sm rounded-pill fw-bold action-btn w-100" target="_blank">
-                    <i class="bi bi-printer me-1"></i> Print Summary (Malay)
-                </a>
+        <div class="d-flex flex-column align-items-end gap-2">
+            {# Total reports pill #}
+            <div class="stat-pill mb-1">
+                <div class="text-end">
+                    <h3>{{ cases|length }}</h3>
+                    <small>Total Reports</small>
+                </div>
+                <i class="bi bi-images fs-4" style="color:#2563eb;"></i>
             </div>
+            {# Print buttons #}
+            <a href="http://localhost:5003/module3/api/generate_report/legal?language=en"
+                class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3" target="_blank">
+                <i class="bi bi-printer me-1"></i> Print Summary (English)
+            </a>
+            <a href="http://localhost:5003/module3/api/generate_report/legal?language=ms"
+                class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3" target="_blank">
+                <i class="bi bi-printer me-1"></i> Print Summary (Malay)
+            </a>
         </div>
     </div>
 
-    <!-- Defect Reports Grid -->
+    {# Defect Reports Grid #}
     <div class="row g-4">
         {% for case in cases %}
         <div class="col-xl-4 col-md-6">
-            <div class="card h-100 border-0 shadow-sm"
-                style="background-color: #1e293b; border-radius: 12px; overflow: hidden;">
-                <!-- Image Section -->
-                <div class="position-relative" style="height: 220px; background-color: #0f172a;">
+            <div class="evidence-card">
+
+                {# Image section #}
+                <div class="evidence-img-wrap">
                     {% if case.image_url %}
-                    <img src="{{ case.image_url }}" class="w-100 h-100 object-fit-cover" alt="Defect Evidence">
+                    <img src="{{ case.image_url }}" alt="Defect Evidence">
                     {% else %}
-                    <div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted">
-                        <i class="bi bi-camera-video-off fs-1 opacity-50 mb-2"></i>
-                        <span class="small fw-bold">No Evidence Attached</span>
+                    <div class="evidence-no-img">
+                        <i class="bi bi-camera-video-off fs-1 mb-2 opacity-50"></i>
+                        <span class="small fw-semibold">No Evidence Attached</span>
                     </div>
                     {% endif %}
 
-                    <!-- Top Badges -->
+                    {# Badges #}
                     <div class="position-absolute top-0 w-100 p-3 d-flex justify-content-between">
-                        <span
-                            class="badge bg-dark bg-opacity-75 text-white px-3 py-2 rounded-pill shadow-sm border border-secondary">
-                            <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ case.unit_no }}
+                        <span class="badge rounded-pill px-3 py-2 shadow-sm"
+                            style="background:rgba(255,255,255,0.88);color:#0f172a;border:1px solid #e2e8f0;">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ case.unit_no }}
                         </span>
                         {% if case.status == 'locked' %}
-                        <span class="badge bg-secondary px-3 py-2 rounded-pill shadow-sm">LOCKED</span>
+                        <span class="badge rounded-pill px-3 py-2 bg-secondary shadow-sm">LOCKED</span>
                         {% else %}
-                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">DRAFT</span>
+                        <span class="badge rounded-pill px-3 py-2 shadow-sm"
+                            style="background:#fef9c3;color:#854d0e;border:1px solid #fde68a;">DRAFT</span>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Content Section -->
+                {# Content #}
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h5 class="fw-bold text-white mb-1">{{ case.element }}</h5>
-                            <small class="text-white-50">{{ case.project_name }}</small>
+                            <h5 class="fw-bold mb-1" style="color:#0f172a;">{{ case.element }}</h5>
+                            <small style="color:#64748b;">{{ case.project_name }}</small>
                         </div>
-                        <div class="text-end">
+                        <div>
                             {% if case.severity == 'High' %}
-                            <span
-                                class="badge bg-danger bg-opacity-25 text-danger px-2 border border-danger border-opacity-50">High
-                                Risk</span>
+                            <span class="badge rounded-pill px-3 py-1"
+                                style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;">High Risk</span>
                             {% elif case.severity == 'Medium' %}
-                            <span
-                                class="badge bg-warning bg-opacity-25 text-warning px-2 border border-warning border-opacity-50">Medium
-                                Risk</span>
+                            <span class="badge rounded-pill px-3 py-1"
+                                style="background:#fef9c3;color:#854d0e;border:1px solid #fde68a;">Medium Risk</span>
                             {% else %}
-                            <span
-                                class="badge bg-info bg-opacity-25 text-info px-2 border border-info border-opacity-50">Low
-                                Risk</span>
+                            <span class="badge rounded-pill px-3 py-1"
+                                style="background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;">Low Risk</span>
                             {% endif %}
                         </div>
                     </div>
 
-                    <div class="p-3 mb-4 rounded-3" style="background-color: #0f172a; border-left: 3px solid #3b82f6;">
-                        <p class="text-white-50 small mb-0 fst-italic">"{{ case.description or 'No description
-                            provided.' }}"</p>
+                    {# Description #}
+                    <div class="desc-block">
+                        "{{ case.description or 'No description provided.' }}"
                     </div>
 
-                    <div
-                        class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top border-secondary border-opacity-50">
+                    {# Footer — AI score + 3D button #}
+                    <div class="mt-auto d-flex justify-content-between align-items-center pt-3"
+                        style="border-top:1px solid #f1f5f9;">
                         <div>
-                            <small class="text-white-50 d-block mb-1"
-                                style="font-size: 0.65rem; letter-spacing: 1px;">AI CONFIDENCE SCORE</small>
+                            <small class="d-block mb-1"
+                                style="font-size:0.65rem;letter-spacing:.08em;color:#94a3b8;text-transform:uppercase;">AI
+                                Confidence Score</small>
                             <div class="d-flex align-items-center gap-2">
-                                <div class="progress flex-grow-1"
-                                    style="height: 6px; width: 60px; background-color: #334155;">
-                                    <div class="progress-bar {% if case.confidence >= 90 %}bg-success{% elif case.confidence >= 75 %}bg-warning{% else %}bg-danger{% endif %}"
+                                <div class="progress-track">
+                                    <div class="h-100 rounded
+                                        {% if case.confidence >= 90 %}bg-success{% elif case.confidence >= 75 %}bg-warning{% else %}bg-danger{% endif %}"
                                         role="progressbar" data-width="{{ case.confidence }}%"
                                         aria-valuenow="{{ case.confidence }}" aria-valuemin="0" aria-valuemax="100">
                                     </div>
                                 </div>
-                                <span class="fw-bold text-white small">{{ case.confidence }}%</span>
+                                <span class="fw-bold small" style="color:#0f172a;">{{ case.confidence }}%</span>
                             </div>
                         </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ url_for('module3.visualize', project_id=case.scan_id) }}"
-                                class="btn btn-sm btn-outline-info rounded-pill px-3">
-                                <i class="bi bi-box-arrow-up-right me-1"></i> 3D Context
-                            </a>
-                        </div>
+                        <a href="{{ url_for('module3.visualize', project_id=case.scan_id) }}"
+                            class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> 3D Context
+                        </a>
                     </div>
                 </div>
+
             </div>
         </div>
         {% else %}
         <div class="col-12 py-5 text-center">
-            <div class="mb-4">
-                <i class="bi bi-clipboard2-x text-muted opacity-25" style="font-size: 6rem;"></i>
-            </div>
-            <h4 class="text-white fw-bold mb-2">No Evidence Reports Available</h4>
-            <p class="text-white-50 mx-auto mb-4" style="max-width: 500px;">
+            <i class="bi bi-clipboard2-x opacity-25 d-block mb-4" style="font-size:5rem;color:#94a3b8;"></i>
+            <h4 class="fw-bold mb-2" style="color:#0f172a;">No Evidence Reports Available</h4>
+            <p class="mx-auto mb-4" style="max-width:480px;color:#64748b;">
                 There are currently no defect pin items logged in the system. Homeowners must submit defect reports with
                 images for AI analysis to appear here.
             </p>
-            <a href="{{ url_for('module3.lawyer_dashboard') }}" class="btn btn-outline-light rounded-pill px-4">
+            <a href="{{ url_for('module3.lawyer_dashboard') }}" class="btn btn-outline-primary rounded-pill px-4">
                 <i class="bi bi-arrow-left me-2"></i>Return to Console
             </a>
         </div>
         {% endfor %}
     </div>
+
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Apply progress bar widths dynamically to avoid IDE CSS linting errors
-        document.querySelectorAll('.progress-bar[data-width]').forEach(function (bar) {
+        document.querySelectorAll('.progress-bar[data-width], [data-width]').forEach(function (bar) {
             bar.style.width = bar.getAttribute('data-width');
         });
     });
 </script>
-<style>
-    .object-fit-cover {
-        object-fit: cover;
-    }
-</style>
 {% endblock %}
