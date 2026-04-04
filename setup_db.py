@@ -44,8 +44,7 @@ def setup_database():
             username="zulaikha_law", 
             email="lawyer@firm.com", 
             role="lawyer",
-            firm_name="Zulaikha & Partners",
-            bar_council_id="BC/Z/999"
+            firm_name="Zulaikha & Partners"
         )
         law.set_password("law123")
         

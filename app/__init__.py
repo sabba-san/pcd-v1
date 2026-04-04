@@ -13,8 +13,9 @@ def create_app():
     
     # Database init (SQLAlchemy)
     from app.module3.extensions import db
+    import os
     # Configure DB Connection for SQLAlchemy
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://user:password@flask_db:5432/flaskdb"
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', "postgresql://user:password@flask_db:5432/flaskdb")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     
