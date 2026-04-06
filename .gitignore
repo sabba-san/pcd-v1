@@ -67,6 +67,18 @@ dist/
 *.db
 *.sqlite
 
+# Ignore local module virtualenvs and generated cache
+app/module3/myenv/
+app/module3/cache/
+
+# Ignore generated or user data files
+app/static/uploads/
+app/data/
+
+# Ignore Windows alternate data streams from copied files
+*Zone.Identifier
+**/.Zone.Identifier
+
 # Ignore coverage reports or pytest cache
 .coverage
 *.cover
