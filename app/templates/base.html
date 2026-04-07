@@ -24,9 +24,8 @@
 
             <!-- Brand -->
             <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('module3.dashboard') }}">
-                <div class="d-flex align-items-center justify-content-center rounded-2"
-                    style="width:32px;height:32px;background:var(--primary-blue);">
-                    <i class="bi bi-building-check text-white" style="font-size:1rem;"></i>
+                <div class="brand-icon d-flex align-items-center justify-content-center rounded-2">
+                    <i class="bi bi-building-check text-white"></i>
                 </div>
                 DLP Advisor
             </a>
@@ -121,9 +120,9 @@
     </nav>
 
     <!-- Page body offset for fixed navbar -->
-    <div style="padding-top: 64px;">
+    <main class="content-wrapper">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
     <!-- Toast Container -->
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1090;">

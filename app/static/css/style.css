@@ -10,22 +10,25 @@
 
 /* --- DESIGN TOKENS --- */
 :root {
-    --bg-main: #F1F4F9;
+    --bg-main: #F7F8FB;
     --bg-card: #FFFFFF;
-    --text-primary: #0F172A;
+    --bg-surface: #F8FAFC;
+    --bg-muted: #E2E7EE;
+    --text-primary: #111827;
     --text-secondary: #475569;
-    --border-color: #E2E8F0;
+    --text-muted: #6B7280;
+    --border-color: #E5E7EB;
     --primary-blue: #2563EB;
     --primary-blue-hover: #1D4ED8;
-    --accent: #2563EB;
-    --bg-body: #F1F4F9;
+    --accent: #22C55E;
+    --bg-body: #F7F8FB;
     --bg-input: #FFFFFF;
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.08);
+    --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
 /* =====================
@@ -43,10 +46,43 @@ html {
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-main);
-    color: var(--text-secondary);
+    background-color: var(--bg-body);
+    color: var(--text-primary);
     line-height: 1.65;
-    font-size: 0.925rem;
+    font-size: 0.95rem;
+}
+
+.content-wrapper {
+    padding: 1.5rem 1.25rem 2rem;
+    min-height: calc(100vh - 72px);
+}
+
+.brand-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--primary-blue);
+}
+
+.page-title {
+    font-size: clamp(1.75rem, 2.2vw, 2.5rem);
+    letter-spacing: -0.03em;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    margin-bottom: 0;
+}
+
+.section-description {
+    color: var(--text-muted);
+    font-size: 0.95rem;
 }
 
 /* =====================
@@ -79,15 +115,15 @@ p {
 
 /* Bootstrap text helpers override */
 .text-white {
-    color: var(--text-primary) !important;
+    color: #ffffff !important;
 }
 
 .text-white-50 {
-    color: var(--text-secondary) !important;
+    color: rgba(255,255,255,0.75) !important;
 }
 
 .text-muted {
-    color: var(--text-secondary) !important;
+    color: var(--text-muted) !important;
 }
 
 .text-info {
@@ -103,10 +139,40 @@ p {
    ===================== */
 .navbar {
     background-color: var(--bg-card) !important;
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.65);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
+}
+
+.navbar-brand {
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary) !important;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+}
+
+.navbar-brand .brand-icon {
+    width: 36px;
+    height: 36px;
+    background-color: var(--primary-blue);
+    color: #fff;
+}
+
+.navbar-brand .brand-icon i {
+    font-size: 1rem;
+}
+
+.navbar-nav .nav-link {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: var(--primary-blue) !important;
 }
 
 .navbar-brand {
@@ -185,8 +251,22 @@ p {
     transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.card:hover {
+.card:hover,
+.hover-effect:hover {
     box-shadow: var(--shadow-md) !important;
+    transform: translateY(-1px);
+}
+
+.auth-card {
+    max-width: 420px;
+    margin: 0 auto;
+    border: none;
+    padding: 2rem;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08) !important;
+}
+
+.auth-card .card-body {
+    padding: 0;
 }
 
 .card-body,
