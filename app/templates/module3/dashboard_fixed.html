@@ -3,67 +3,80 @@
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-<div class="container-fluid px-3 px-md-4 py-4">
+<div class="content-wrapper">
 
     <!-- Page Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <h2 class="fw-bold mb-0">Dashboard</h2>
-            <p class="text-muted mb-0 mt-1" style="font-size:0.875rem;">
-                Welcome back, {{ current_user.full_name if current_user.full_name else current_user.username }}.
-            </p>
+    <div class="section-header">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h1 class="section-title mb-1">Dashboard</h1>
+                <p class="section-subtitle mb-0">
+                    Welcome back, {{ current_user.full_name if current_user.full_name else current_user.username }}.
+                </p>
+            </div>
+            <a href="http://localhost:5003/dashboard?role=Homeowner&user_id={{ current_user.id }}"
+                class="btn btn-primary btn-lg rounded-pill px-4 fw-semibold">
+                <i class="bi bi-graph-up-arrow me-2"></i>Reporting Dashboard
+            </a>
         </div>
-        <a href="http://localhost:5003/dashboard?role=Homeowner&user_id={{ current_user.id }}"
-            class="btn btn-primary rounded-pill px-4 fw-semibold" style="white-space:nowrap;">
-            <i class="bi bi-graph-up-arrow me-2"></i>Reporting Dashboard
-        </a>
     </div>
 
     <!-- Feature Cards -->
-    <div class="row g-3 mb-4">
+    <div class="section-header">
+        <h2 class="section-title">Quick Actions</h2>
+        <p class="section-subtitle">Access your most frequently used features</p>
+    </div>
+
+    <div class="row g-4 mb-5">
 
         <div class="col-6 col-lg-3">
             <a href="http://localhost:5002/?project_name={{ project_name }}&defect_count={{ defect_count }}&user_id={{ current_user.id }}"
                 class="text-decoration-none">
-                <div class="card h-100 p-3 p-md-4 hover-effect">
-                    <div class="mb-3 d-flex justify-content-between align-items-center">
-                        <div class="p-2 rounded-3" style="background:rgba(37,99,235,0.08);">
-                            <i class="bi bi-chat-text-fill fs-4 text-primary"></i>
+                <div class="card feature-card h-100">
+                    <div class="card-body p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-chat-text-fill"></i>
                         </div>
-                        <i class="bi bi-chevron-right text-muted"></i>
+                        <h6 class="card-title fw-bold mb-2">Legal AI Consultation</h6>
+                        <p class="card-text text-muted small mb-0">Instant HDA analysis for your defects.</p>
+                        <div class="feature-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
                     </div>
-                    <h6 class="fw-bold mb-1">Legal AI Consultation</h6>
-                    <p class="small text-muted mb-0">Instant HDA analysis for your defects.</p>
                 </div>
             </a>
         </div>
 
         <div class="col-6 col-lg-3">
             <a href="{{ url_for('module3.list_projects') }}" class="text-decoration-none">
-                <div class="card h-100 p-3 p-md-4 hover-effect">
-                    <div class="mb-3 d-flex justify-content-between align-items-center">
-                        <div class="p-2 rounded-3" style="background:rgba(6,182,212,0.08);">
-                            <i class="bi bi-grid-fill fs-4" style="color:#0891B2;"></i>
+                <div class="card feature-card h-100">
+                    <div class="card-body p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-grid-fill"></i>
                         </div>
-                        <i class="bi bi-chevron-right text-muted"></i>
+                        <h6 class="card-title fw-bold mb-2">My Projects</h6>
+                        <p class="card-text text-muted small mb-0">View all properties and defect status.</p>
+                        <div class="feature-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
                     </div>
-                    <h6 class="fw-bold mb-1">My Projects</h6>
-                    <p class="small text-muted mb-0">View all properties and defect status.</p>
                 </div>
             </a>
         </div>
 
         <div class="col-6 col-lg-3">
             <a href="{{ url_for('module2.insert_defect') }}" class="text-decoration-none">
-                <div class="card h-100 p-3 p-md-4 hover-effect">
-                    <div class="mb-3 d-flex justify-content-between align-items-center">
-                        <div class="p-2 rounded-3" style="background:rgba(22,163,74,0.08);">
-                            <i class="bi bi-cloud-arrow-up-fill fs-4" style="color:#16A34A;"></i>
+                <div class="card feature-card h-100">
+                    <div class="card-body p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-cloud-arrow-up-fill"></i>
                         </div>
-                        <i class="bi bi-chevron-right text-muted"></i>
+                        <h6 class="card-title fw-bold mb-2">Add New Defect</h6>
+                        <p class="card-text text-muted small mb-0">Upload 3D model and PDF data.</p>
+                        <div class="feature-arrow">
+                            <i class="bi bi-arrow-right"></i>
+                        </div>
                     </div>
-                    <h6 class="fw-bold mb-1">Add New Defect</h6>
-                    <p class="small text-muted mb-0">Upload 3D model and PDF data.</p>
                 </div>
             </a>
         </div>
@@ -74,15 +87,17 @@
                 {% else %}
                 <a href="javascript:void(0);" onclick="showNoProjectAlert()" class="text-decoration-none">
                     {% endif %}
-                    <div class="card h-100 p-3 p-md-4 hover-effect">
-                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                            <div class="p-2 rounded-3" style="background:rgba(217,119,6,0.08);">
-                                <i class="bi bi-box-fill fs-4" style="color:#D97706;"></i>
+                    <div class="card feature-card h-100">
+                        <div class="card-body p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="bi bi-box-fill"></i>
                             </div>
-                            <i class="bi bi-chevron-right text-muted"></i>
+                            <h6 class="card-title fw-bold mb-2">3D Visualizer</h6>
+                            <p class="card-text text-muted small mb-0">Select a project to view in 3D space.</p>
+                            <div class="feature-arrow">
+                                <i class="bi bi-arrow-right"></i>
+                            </div>
                         </div>
-                        <h6 class="fw-bold mb-1">3D Visualizer</h6>
-                        <p class="small text-muted mb-0">Select a project to view in 3D space.</p>
                     </div>
                 </a>
         </div>
@@ -90,18 +105,21 @@
     </div>
 
     <!-- Recent Activity -->
-    <div>
-        <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size:0.72rem;letter-spacing:.08em;">Recent
-            Activity</h6>
-        <div class="card p-0 overflow-hidden">
+    <div class="section-header">
+        <h2 class="section-title">Recent Activity</h2>
+        <p class="section-subtitle">Your latest defect reports and project updates</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table mb-0 align-middle">
-                    <thead>
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <th class="ps-4">House No</th>
-                            <th class="d-none d-md-table-cell">Defect Detail</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th class="border-0 ps-4 py-3 fw-semibold text-muted">House No</th>
+                            <th class="border-0 d-none d-md-table-cell py-3 fw-semibold text-muted">Defect Detail</th>
+                            <th class="border-0 py-3 fw-semibold text-muted">Status</th>
+                            <th class="border-0 py-3 fw-semibold text-muted">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -112,20 +130,20 @@
                         <!-- Parent Row -->
                         <tr {% if has_children %} data-bs-toggle="collapse" data-bs-target="#children-{{ d.id }}"
                             style="cursor:pointer;" class="accordion-toggle" {% endif %}>
-                            <td class="ps-4 fw-semibold" style="color:var(--text-primary);">
+                            <td class="ps-4 py-3 fw-semibold">
                                 {% if has_children %}
                                 <i class="bi bi-chevron-down me-2 small text-muted" id="icon-{{ d.id }}"
                                     style="transition:transform 0.2s;"></i>
                                 {% endif %}
                                 {{ d.location if d.location else project_name }}
                             </td>
-                            <td class="small text-muted d-none d-md-table-cell">
+                            <td class="py-3 small text-muted d-none d-md-table-cell">
                                 <div class="d-flex align-items-center gap-2">
                                     {% if d.scan_path %}
-                                    <i class="bi bi-box-fill fs-5" style="color:#D97706;"></i>
+                                    <i class="bi bi-box-fill fs-5 text-warning"></i>
                                     <div>
                                         <div class="fw-semibold text-truncate"
-                                            style="max-width:200px;color:var(--text-primary);"
+                                            style="max-width:200px;"
                                             title="{{ d.scan_path.split('/')[-1] }}">
                                             {{ d.scan_path.split('/')[-1] }}
                                         </div>
@@ -135,7 +153,7 @@
                                     <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
                                     <div>
                                         <div class="fw-semibold text-truncate"
-                                            style="max-width:200px;color:var(--text-primary);">
+                                            style="max-width:200px;">
                                             {{ d.element if d.element else d.location }} - {{ d.defect_type }}
                                         </div>
                                         <small class="text-muted">Defect Pin</small>
@@ -143,23 +161,23 @@
                                     {% endif %}
                                 </div>
                             </td>
-                            <td>
+                            <td class="py-3">
                                 {% if d.status == 'New' %}
-                                <span class="badge bg-secondary rounded-pill">No Defects</span>
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1">No Defects</span>
                                 {% elif d.status in ['Processing','in_progress','locked'] %}
-                                <span class="badge bg-warning rounded-pill">Processing</span>
+                                <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-1">Processing</span>
                                 {% elif d.status in ['Action Required','rejected'] %}
-                                <span class="badge bg-danger rounded-pill">Action Required</span>
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-1">Action Required</span>
                                 {% elif d.status in ['Completed','completed'] %}
-                                <span class="badge bg-success rounded-pill">Resolved</span>
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">Resolved</span>
                                 {% else %}
-                                <span class="badge bg-info rounded-pill">Pending</span>
+                                <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">Pending</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td class="py-3">
                                 {% if d.scan_path %}
                                 <a href="{{ url_for('module3.visualize_defect', defect_id=d.id) }}"
-                                    class="btn btn-sm btn-outline-primary border-0" title="View in 3D">
+                                    class="btn btn-sm btn-outline-primary border-0 me-2" title="View in 3D">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 {% endif %}
@@ -230,9 +248,12 @@
 
                         {% else %}
                         <tr>
-                            <td colspan="4" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-4 d-block mb-2"></i>
-                                No recent activity. You have not uploaded any project scans.
+                            <td colspan="4" class="text-center py-5">
+                                <div class="empty-state">
+                                    <i class="bi bi-inbox display-4 text-muted mb-3"></i>
+                                    <h5 class="fw-bold text-muted mb-2">No Recent Activity</h5>
+                                    <p class="text-muted mb-0">You haven't uploaded any project scans yet.</p>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

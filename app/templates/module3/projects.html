@@ -1,22 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-fluid px-3 px-md-4 py-4">
+<div class="content-wrapper">
 
     <!-- Header -->
-    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-        <div>
-            <h2 class="fw-bold mb-0"><i class="bi bi-folder-fill me-2 text-primary"></i>My Projects</h2>
-            <p class="text-muted small mb-0 mt-1">Select a project to view defects in the 3D visualization viewer.</p>
+    <div class="section-header">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+            <div>
+                <h1 class="section-title mb-1">
+                    <i class="bi bi-folder-fill me-2 text-primary"></i>My Projects
+                </h1>
+                <p class="section-subtitle mb-0">Select a project to view defects in the 3D visualization viewer.</p>
+            </div>
+            <a href="{{ url_for('module2.insert_defect') }}" class="btn btn-primary btn-lg rounded-pill px-4 fw-semibold">
+                <i class="bi bi-plus-lg me-1"></i> New Project
+            </a>
         </div>
-        <a href="{{ url_for('module2.insert_defect') }}" class="btn btn-primary rounded-pill px-4 fw-semibold">
-            <i class="bi bi-plus-lg me-1"></i> New Project
-        </a>
     </div>
 
     <!-- Search -->
-    <div class="card mb-4 p-0">
-        <div class="card-body p-2">
+    <div class="card mb-4">
+        <div class="card-body p-3">
             <div class="input-group">
                 <span class="input-group-text bg-transparent border-0 text-muted">
                     <i class="bi bi-search"></i>
@@ -28,76 +32,85 @@
     </div>
 
     <!-- Project Grid -->
-    <div class="row g-3">
+    <div class="section-header">
+        <h2 class="section-title">All Projects</h2>
+        <p class="section-subtitle">Browse and manage your housing development projects</p>
+    </div>
+
+    <div class="row g-4">
         {% for p in projects %}
         <div class="col-12 col-sm-6 col-lg-4">
-            <div class="card h-100 project-card-item">
-                <div class="card-body p-3 p-md-4">
+            <div class="card project-card h-100">
+                <div class="card-body p-4">
 
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-box-seam fs-4 text-primary"></i>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="project-icon">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
                             <div>
-                                <h6 class="fw-bold mb-0">{{ p.name }}</h6>
+                                <h6 class="card-title fw-bold mb-1">{{ p.name }}</h6>
                                 <small class="text-muted">ID: #{{ p.id }}</small>
                             </div>
                         </div>
                         {% if p.status == 'Processing' %}
-                        <span class="badge bg-warning">{{ p.status }}</span>
+                        <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-1">{{ p.status }}</span>
                         {% elif p.status == 'Completed' %}
-                        <span class="badge bg-success">{{ p.status }}</span>
+                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">{{ p.status }}</span>
                         {% else %}
-                        <span class="badge bg-info">{{ p.status }}</span>
+                        <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">{{ p.status }}</span>
                         {% endif %}
                     </div>
 
-                    <div class="row g-2 mb-3">
+                    <div class="row g-3 mb-4">
                         <div class="col-6">
-                            <small class="text-uppercase fw-semibold text-muted d-block"
-                                style="font-size:0.65rem;letter-spacing:.06em;">Scan Date</small>
-                            <div class="small fw-semibold" style="color:var(--text-primary);">{{
-                                p.created_at.strftime('%Y-%m-%d') }}</div>
+                            <div class="project-detail">
+                                <small class="detail-label">Scan Date</small>
+                                <div class="detail-value">{{ p.created_at.strftime('%Y-%m-%d') }}</div>
+                            </div>
                         </div>
                         <div class="col-6">
-                            <small class="text-uppercase fw-semibold text-muted d-block"
-                                style="font-size:0.65rem;letter-spacing:.06em;">Unit No</small>
-                            <div class="small fw-semibold" style="color:var(--text-primary);">{{ p.name }}</div>
+                            <div class="project-detail">
+                                <small class="detail-label">Unit No</small>
+                                <div class="detail-value">{{ p.name }}</div>
+                            </div>
                         </div>
                         <div class="col-12">
-                            <small class="text-uppercase fw-semibold text-muted d-block"
-                                style="font-size:0.65rem;letter-spacing:.06em;">Address</small>
-                            <div class="small text-muted text-truncate">{{ p.address }}</div>
+                            <div class="project-detail">
+                                <small class="detail-label">Address</small>
+                                <div class="detail-value text-truncate">{{ p.address }}</div>
+                            </div>
                         </div>
                     </div>
 
-                    <hr class="my-2">
+                    <hr class="my-3">
 
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="small fw-semibold" style="color:#D97706;">
-                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        <div class="defect-count">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
                             <strong>{{ p.defect_count }}</strong> defects
                         </div>
                         <div class="d-flex gap-2">
                             {% if p.model_path %}
                             {% if p.house_scan_id %}
                             <a href="{{ url_for('module3.visualize_defect', defect_id=p.house_scan_id) }}"
-                                class="btn btn-sm btn-primary rounded-pill px-3">
+                                class="btn btn-primary btn-sm rounded-pill px-3">
                                 <i class="bi bi-box-fill me-1"></i>3D
                             </a>
                             {% else %}
                             <a href="{{ url_for('module3.visualize', project_id=p.id) }}"
-                                class="btn btn-sm btn-primary rounded-pill px-3">
+                                class="btn btn-primary btn-sm rounded-pill px-3">
                                 <i class="bi bi-box-fill me-1"></i>3D
                             </a>
                             {% endif %}
                             {% else %}
-                            <span class="btn btn-sm btn-secondary disabled opacity-50 rounded-pill px-3">
+                            <span class="btn btn-secondary btn-sm disabled opacity-50 rounded-pill px-3">
                                 <i class="bi bi-box me-1"></i>No Model
                             </span>
                             {% endif %}
                             <form action="{{ url_for('module3.delete_project', project_id=p.id) }}" method="POST"
                                 onsubmit="return confirm('Delete this project permanently?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-2">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
@@ -109,11 +122,11 @@
         </div>
         {% else %}
         <div class="col-12">
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-folder-x display-3 d-block mb-3"></i>
-                <h5 class="fw-bold" style="color:var(--text-primary);">No Projects Found</h5>
-                <p class="mb-4">You are not currently linked to any housing project.</p>
-                <a href="{{ url_for('module2.insert_defect') }}" class="btn btn-primary rounded-pill px-4">
+            <div class="empty-state text-center py-5">
+                <i class="bi bi-folder-x display-3 text-muted mb-4"></i>
+                <h4 class="fw-bold text-muted mb-3">No Projects Found</h4>
+                <p class="text-muted mb-4">You are not currently linked to any housing project.</p>
+                <a href="{{ url_for('module2.insert_defect') }}" class="btn btn-primary btn-lg rounded-pill px-4">
                     <i class="bi bi-plus-lg me-2"></i>Join a Project
                 </a>
             </div>
