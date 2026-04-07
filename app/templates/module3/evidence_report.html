@@ -94,8 +94,18 @@
                     <i class="bi bi-arrow-left me-1"></i> Legal Console
                 </a>
             </h6>
-            <h2 class="fw-bold mb-1" style="color:#0f172a;">Evidence Review Console</h2>
-            <p class="mb-0" style="color:#64748b;">AI-analyzed defect reports and photographic evidence.</p>
+            <h2 class="fw-bold display-6" style="color:var(--text-primary);">Evidence Review Console</h2>
+            <p class="mb-0" style="color:var(--text-secondary);">AI-analyzed defect reports and photographic evidence.
+            </p>
+        </div>
+        <div>
+            <div class="bg-white rounded-3 px-4 py-2 border d-flex align-items-center mb-3 shadow-sm">
+                <div class="me-3 text-end">
+                    <h3 class="fw-bold mb-0" style="color:var(--text-primary);">{{ cases|length }}</h3>
+                    <small style="font-size: 0.7rem; color:var(--text-secondary);">TOTAL REPORTS</small>
+                </div>
+                <i class="bi bi-images fs-4" style="color:var(--text-secondary);"></i>
+            </div>
         </div>
 
         <div class="d-flex flex-column align-items-end gap-2">
@@ -108,11 +118,11 @@
                 <i class="bi bi-images fs-4" style="color:#2563eb;"></i>
             </div>
             {# Print buttons #}
-            <a href="http://localhost:5003/module3/api/generate_report/legal?language=en"
+            <a href="http://localhost:5003/api/generate_report/legal?language=en"
                 class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3" target="_blank">
                 <i class="bi bi-printer me-1"></i> Print Summary (English)
             </a>
-            <a href="http://localhost:5003/module3/api/generate_report/legal?language=ms"
+            <a href="http://localhost:5003/api/generate_report/legal?language=ms"
                 class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3" target="_blank">
                 <i class="bi bi-printer me-1"></i> Print Summary (Malay)
             </a>
@@ -140,7 +150,7 @@
                     <div class="position-absolute top-0 w-100 p-3 d-flex justify-content-between">
                         <span class="badge rounded-pill px-3 py-2 shadow-sm"
                             style="background:rgba(255,255,255,0.88);color:#0f172a;border:1px solid #e2e8f0;">
-                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ case.unit_no }}
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ case.unit_no }}
                         </span>
                         {% if case.status == 'locked' %}
                         <span class="badge rounded-pill px-3 py-2 bg-secondary shadow-sm">LOCKED</span>
@@ -155,8 +165,8 @@
                 <div class="card-body p-4 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h5 class="fw-bold mb-1" style="color:#0f172a;">{{ case.element }}</h5>
-                            <small style="color:#64748b;">{{ case.project_name }}</small>
+                            <h5 class="fw-bold mb-1" style="color:var(--text-primary);">{{ case.element }}</h5>
+                            <small style="color:var(--text-secondary);">{{ case.project_name }}</small>
                         </div>
                         <div>
                             {% if case.severity == 'High' %}
@@ -182,7 +192,7 @@
                         style="border-top:1px solid #f1f5f9;">
                         <div>
                             <small class="d-block mb-1"
-                                style="font-size:0.65rem;letter-spacing:.08em;color:#94a3b8;text-transform:uppercase;">AI
+                                style="font-size:0.65rem;letter-spacing:.08em;color:var(--text-secondary);text-transform:uppercase;">AI
                                 Confidence Score</small>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="progress-track">
@@ -192,11 +202,11 @@
                                         aria-valuenow="{{ case.confidence }}" aria-valuemin="0" aria-valuemax="100">
                                     </div>
                                 </div>
-                                <span class="fw-bold small" style="color:#0f172a;">{{ case.confidence }}%</span>
+                                <span class="fw-bold small" style="color:var(--text-primary);">{{ case.confidence
+                                    }}%</span>
                             </div>
                         </div>
-                        <a href="{{ url_for('module3.visualize', project_id=case.scan_id) }}"
-                            class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                        <a href="{{ case.visualize_url }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                             <i class="bi bi-box-arrow-up-right me-1"></i> 3D Context
                         </a>
                     </div>

@@ -73,7 +73,7 @@
                     <h6 class="fw-bold mb-1">Virtual Inspection</h6>
                     <p class="text-muted small mb-3" style="min-height:36px;">Remotely inspect defects in 3D space.</p>
                     {% if cases and cases|length > 0 %}
-                    <a href="{{ url_for('module3.visualize', project_id=cases[0].scan_id) }}"
+                    <a href="{{ cases[0].visualize_url }}"
                         class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-semibold action-btn">
                         Launch 3D Viewer <i class="bi bi-box-arrow-up-right ms-1"></i>
                     </a>
@@ -169,7 +169,7 @@
                             {% endif %}
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{{ url_for('module3.visualize', project_id=case['scan_id']) }}"
+                            <a href="{{ case['visualize_url'] }}"
                                 class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
                                 Inspect <i class="bi bi-arrow-right"></i>
                             </a>

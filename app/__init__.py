@@ -43,15 +43,23 @@ def create_app():
     from app.auth.routes import bp as auth_bp
     app.register_blueprint(auth_bp)
     
-    # 2. Register Defect Form (Module 2)
+    # 2. Register Chatbot / Chat Module (Module 1)
+    from app.module1.routes import bp as module1_bp
+    app.register_blueprint(module1_bp)
+
+    # 3. Register Defect Form (Module 2)
     from app.module2.routes import bp as module2_bp
     app.register_blueprint(module2_bp)
 
-    # 3. Register Reporting & Dashboard (Module 3)
+    # 3b. Register legacy defect viewer endpoints used by old templates
+    from app.module2.defects.routes import defects_bp
+    app.register_blueprint(defects_bp)
+
+    # 4. Register Reporting & Dashboard (Module 3)
     from app.module3.routes import bp as module3_bp
     app.register_blueprint(module3_bp)
     
-    print("Starting WEB Service (Modules 2 & 3)")
+    print("Starting WEB Service (Modules 1, 2 & 3)")
 
     # Root Redirect
     @app.route('/')

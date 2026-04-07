@@ -191,8 +191,7 @@
                                 </td>
 
                                 <td class="d-print-none text-center">
-                                    <a href="{{ url_for('module3.visualize', project_id=defect.scan_id) }}"
-                                        class="btn btn-sm"
+                                    <a href="{{ defect.visualize_url }}" class="btn btn-sm"
                                         style="background:var(--bg-main); border:1px solid var(--primary-blue); color:var(--primary-blue); border-radius:6px; font-weight:500; font-size:0.8rem; white-space:nowrap;">
                                         <i class="bi bi-badge-3d-fill me-1"></i> Open 3D Model
                                     </a>

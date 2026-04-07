@@ -1,200 +1,221 @@
+from flask import Blueprint, jsonify, request, send_from_directory, abort, render_template, url_for, current_app, redirect, flash
+from flask_login import login_required, current_user
+from app.module3.extensions import db
+from app.models import Defect, Project
 import os
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
-from flask_login import login_required, current_user
-from werkzeug.utils import secure_filename
-from app.module3.extensions import db
-from app.models import Defect, Project, DefectImage
 
 # Define the Blueprint
 bp = Blueprint('module2', __name__, url_prefix='/module2')
 
+# Exempt JSON API endpoints from CSRF since they are called via JavaScript fetch()
+# Forms that submit via HTML (with CSRF tokens) are NOT exempted
+
+@bp.route('/projects', methods=['GET'])
+@login_required
+def list_projects():
+    """List all projects in the database"""
+    projects = Project.query.order_by(Project.created_at.desc()).all()
+
+    # Enhance project data with defect counts
+    projects_list = []
+    for proj in projects:
+        defect_count = Defect.query.filter_by(project_id=proj.id).count()
+
+        projects_list.append({
+            'id': proj.id,
+            'name': proj.name,
+            'created_at': proj.created_at,
+            'defect_count': defect_count,
+            'model_path': proj.master_model_path,
+            'metadata': None  # Placeholder for metadata
+        })
+
+    return render_template('module2/projects.html', projects=projects_list)
+
+@bp.route('/projects/<int:project_id>/visualize', methods=['GET'])
+@login_required
+def visualize_project(project_id):
+    project = Project.query.get_or_404(project_id)
+    defects = Defect.query.filter_by(project_id=project_id).all()
+    model_url = url_for('module2.serve_model', project_id=project_id) if project.master_model_path else None
+
+    # The visualization template is shared with scan-based views, so provide
+    # the expected scan context and upload metadata placeholders.
+    scan = project
+    setattr(scan, 'model_path', project.master_model_path)
+    upload_metadata = None
+
+    return render_template('module2/visualization.html',
+                          project=project,
+                          project_id=project_id,
+                          scan=scan,
+                          scan_id=project_id,
+                          model_url=model_url,
+                          defects=defects,
+                          upload_metadata=upload_metadata)
+
+@bp.route('/projects/<int:project_id>/defects', methods=['GET'])
+@login_required
+def get_project_defects(project_id):
+    project = Project.query.get_or_404(project_id)
+    defects = Defect.query.filter_by(project_id=project_id).all()
+
+    defect_list = [{
+        'defectId': d.id,
+        'x': d.x_coord,
+        'y': d.y_coord,
+        'z': d.z_coord,
+        'element': d.element,
+        'location': d.location,
+        'defect_type': d.defect_type,
+        'severity': d.severity,
+        'status': d.status,
+        'description': d.description,
+        'created_at': d.created_at.strftime('%Y-%m-%d') if d.created_at else None
+    } for d in defects]
+    return jsonify(defect_list)
+
+@bp.route('/defect/<int:defect_id>', methods=['GET'])
+@login_required
+def get_defect_details(defect_id):
+    defect = Defect.query.get_or_404(defect_id)
+    image_url = None
+    if defect.images:
+        image_url = f'/module2/image/{defect_id}'
+    return jsonify({
+        'id': defect.id,
+        'element': defect.element,
+        'location': defect.location,
+        'defect_type': defect.defect_type,
+        'severity': defect.severity,
+        'description': defect.description,
+        'x': defect.x_coord,
+        'y': defect.y_coord,
+        'z': defect.z_coord,
+        'status': defect.status,
+        'imageUrl': image_url,
+        'notes': defect.notes
+    })
+
+@bp.route('/defect/<int:defect_id>/status', methods=['PUT'])
+@login_required
+def update_defect_status(defect_id):
+    defect = Defect.query.get_or_404(defect_id)
+    data = request.get_json()
+    # Only developers can change the status
+    if 'status' in data and current_user.role == 'developer':
+        defect.status = data['status']
+    if 'notes' in data:
+        defect.notes = data['notes']
+    if 'location' in data:
+        defect.location = data['location']
+    if 'defect_type' in data:
+        defect.defect_type = data['defect_type']
+    if 'severity' in data:
+        defect.severity = data['severity']
+    db.session.commit()
+    return jsonify({'message': 'Defect updated successfully', 'status': defect.status})
+
+@bp.route('/defect/<int:defect_id>', methods=['DELETE'])
+@login_required
+def delete_defect(defect_id):
+    defect = Defect.query.get_or_404(defect_id)
+    db.session.delete(defect)
+    db.session.commit()
+    return jsonify({'message': 'Defect deleted successfully'})
+
+@bp.route('/projects/<int:project_id>/defects', methods=['POST'])
+def create_defect(project_id):
+    project = Project.query.get_or_404(project_id)
+    data = request.get_json()
+    defect = Defect(
+        project_id=project_id,
+        user_id=current_user.id if current_user.is_authenticated else None,
+        x_coord=data.get('x', 0),
+        y_coord=data.get('y', 0),
+        z_coord=data.get('z', 0),
+        element=data.get('element', ''),
+        location=data.get('location', ''),
+        defect_type=data.get('defect_type', 'Unknown'),
+        severity=data.get('severity', 'Medium'),
+        description=data.get('description', ''),
+        status=data.get('status', 'Reported'),
+        notes=data.get('notes', '')
+    )
+    db.session.add(defect)
+    db.session.commit()
+    return jsonify({'message': 'Defect created', 'defectId': defect.id}), 201
+
+@bp.route('/projects/<int:project_id>/model', methods=['GET'])
+@login_required
+def serve_model(project_id):
+    project = Project.query.get_or_404(project_id)
+    if not project.master_model_path:
+        abort(404)
+    upload_dir = os.path.join(current_app.root_path, 'static')
+    response = send_from_directory(upload_dir, project.master_model_path)
+    response.headers['Content-Type'] = 'model/gltf-binary'
+    return response
+
+@bp.route('/image/<int:defect_id>', methods=['GET'])
+@login_required
+def serve_defect_image(defect_id):
+    defect = Defect.query.get_or_404(defect_id)
+    if not defect.images:
+        abort(404)
+    # Assuming first image
+    image_path = defect.images[0].image_path
+    upload_dir = os.path.join(current_app.root_path, 'static')
+    return send_from_directory(upload_dir, image_path)
+
 @bp.route('/insert_defect', methods=['GET', 'POST'])
 @login_required
 def insert_defect():
+    """Legacy route for defect insertion - redirects to project list"""
     if request.method == 'POST':
+        # Handle POST as before, but simplified
         try:
-            # 1. Handle File Upload
-            lidar_file = request.files.get('lidar_file')
-            lidar_path = None
-            
-            if lidar_file and lidar_file.filename:
-                # Save the new file
-                filename = secure_filename(lidar_file.filename)
-                # Ensure uploads directory exists
-                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-                os.makedirs(upload_folder, exist_ok=True)
-                
-                # Save file
-                file_full_path = os.path.join(upload_folder, filename)
-                lidar_file.save(file_full_path)
-                lidar_path = f"uploads/{filename}"
-                
-            # 2. Get Coordinates from Form
-            try:
-                x = float(request.form.get('x', 0))
-                y = float(request.form.get('y', 0))
-                z = float(request.form.get('z', 0))
-            except (ValueError, TypeError):
-                x, y, z = 0.0, 0.0, 0.0
+            x = float(request.form.get('x', 0))
+            y = float(request.form.get('y', 0))
+            z = float(request.form.get('z', 0))
 
-            # 3. Create the defect
-            # Link to User's Project
             project_id = current_user.project_id
-            
             if not project_id:
-                # Auto-create project for unlinked user (fallback)
-                from datetime import datetime
-                project_name = f"{current_user.full_name or current_user.email}'s Park"
-                
-                new_project = Project(
-                    name=project_name
-                )
-                db.session.add(new_project)
-                db.session.flush()
-                
-                current_user.project_id = new_project.id
-                project_id = new_project.id
-                db.session.commit()
-                flash(f"Assigned to project: {project_name}", "info")
-            
+                flash("No project assigned. Please contact administrator.", "error")
+                return redirect(url_for('module2.list_projects'))
+
             new_defect = Defect(
                 project_id=project_id,
                 user_id=current_user.id,
                 description=request.form.get('description'),
                 location=request.form.get('unit_no'),
                 status='Reported',
-                x_coord=x, y_coord=y, z_coord=z,
-                scan_path=lidar_path # Saving the uploaded scan here
+                x_coord=x, y_coord=y, z_coord=z
             )
-            
             db.session.add(new_defect)
-            db.session.flush() # Get ID
-            
-            # Handle multiple images
-            uploaded_images = request.files.getlist('images')
-            for img_file in uploaded_images:
-                if img_file and img_file.filename:
-                    img_filename = secure_filename(img_file.filename)
-                    # Use unique names
-                    from datetime import datetime
-                    time_prefix = datetime.now().strftime('%Y%m%d%H%M%S_')
-                    img_filename = time_prefix + img_filename
-                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-                    os.makedirs(upload_folder, exist_ok=True)
-                    
-                    img_full_path = os.path.join(upload_folder, img_filename)
-                    img_file.save(img_full_path)
-                    
-                    db.session.add(DefectImage(
-                        defect_id=new_defect.id,
-                        image_path=f"uploads/{img_filename}"
-                    ))
-            
+            db.session.flush() # Get ID before commit
+
+            # Handle 3D Lidar File
+            lidar_file = request.files.get('lidar_file')
+            if lidar_file and lidar_file.filename:
+                import uuid
+                from werkzeug.utils import secure_filename
+                filename = secure_filename(lidar_file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads', 'models')
+                os.makedirs(upload_folder, exist_ok=True)
+                file_path = os.path.join(upload_folder, unique_filename)
+                lidar_file.save(file_path)
+                new_defect.scan_path = f"uploads/models/{unique_filename}"
+
             db.session.commit()
-            
-            # 5. Trigger the success message
-            flash('Defect claim submitted successfully!', 'success')
-            return redirect(url_for('module3.dashboard')) # Redirect to Dashboard (in Module 3 now)
-            
+            flash('Defect submitted successfully!', 'success')
+            return redirect(url_for('module3.dashboard'))
         except Exception as e:
             db.session.rollback()
-            print(f"DATABASE ERROR: {e}")
-            flash(f'Error saving defect: {str(e)}', 'danger')
+            flash(f'Error: {str(e)}', 'danger')
             return redirect(url_for('module2.insert_defect'))
 
-    # GET Request: Fetch existing data for visualization
-    # Use User's Project Master Model if available, or last defect's scan? 
-    # Logic: Show Project Master Model.
-    
-    project = Project.query.get(current_user.project_id) if current_user.project_id else None
-    
-    defects = []
-    model_url = None
-    project_id = None
-    
-    if project:
-        project_id = project.id
-        # Use Master Model if exists
-        if project.master_model_path:
-             model_url = url_for('static', filename=project.master_model_path)
-        
-        # Fetch actual defects for this project
-        defects_query = Defect.query.filter_by(project_id=project.id).all()
-        # Serialize for JS
-        defects = [d.to_dict() for d in defects_query]
-
-    return render_template('module2/insert_defect.html', 
-                          defects=defects, 
-                          model_url=model_url, 
-                          scan_id=project_id) # scan_id -> project_id in template logic eventually
-
-@bp.route('/api/defect/add', methods=['POST'])
-def api_add_defect():
-    try:
-        # 1. Validate File
-        if 'file' not in request.files:
-            return jsonify({'status': 'error', 'message': 'No file part'}), 400
-        
-        file = request.files['file']
-        
-        if file.filename == '':
-            return jsonify({'status': 'error', 'message': 'No selected file'}), 400
-            
-        if file:
-            # 2. Save File
-            filename = secure_filename(file.filename)
-            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-            os.makedirs(upload_folder, exist_ok=True)
-            
-            file_path = os.path.join(upload_folder, filename)
-            file.save(file_path)
-            
-            # 3. Handle User Association
-            user_id = request.form.get('user_id')
-            user = None
-            if user_id:
-                 user = User.query.get(user_id)
-            elif current_user.is_authenticated:
-                 user = current_user
-            
-            project_id = user.project_id if user else None
-
-            # Auto-create project for API calls if missing
-            if user and not project_id:
-                from datetime import datetime
-                project_name = f"{user.full_name or user.email}'s Project ({datetime.now().strftime('%H%M%S')})"
-                new_project = Project(name=project_name)
-                db.session.add(new_project)
-                db.session.flush()
-                user.project_id = new_project.id
-                project_id = new_project.id
-                db.session.commit()
-
-            # 5. Create Defect
-            new_defect = Defect(
-                project_id=project_id,
-                user_id=user.id if user else None,
-                description=request.form.get('description'),
-                location=request.form.get('location'),
-                status='Reported',
-                x_coord=0, y_coord=0, z_coord=0,
-                image_path=f"uploads/{filename}" # Save image path
-            )
-            
-            db.session.add(new_defect)
-            db.session.flush() # Get ID
-            
-
-            db.session.commit()
-            
-            return jsonify({
-                'status': 'success', 
-                'message': 'Defect added successfully', 
-                'defect_id': new_defect.id,
-                'project_id': project_id
-            }), 201
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+    # GET: Render the defect insertion form page directly
+    return render_template('module2/insert_defect.html', defects=[])

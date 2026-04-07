@@ -245,13 +245,13 @@
 <script>
     // --- Configuration ---
     // 'model_url' and 'defects' are passed from routes.py
-    const MODEL_URL = "{{ model_url or '' }}";
+    const MODEL_URL = "{{ model_url | default('') }}";
 
     // Use JSON.parse with string interpolation to satisfy linters and ensure safe parsing
     // We default to '[]' string if defects is undefined/null in template
     let defectsData;
     try {
-        defectsData = JSON.parse('{{ defects | tojson | safe }}');
+        defectsData = JSON.parse('{{ defects | default([]) | tojson | safe }}');
     } catch (e) {
         console.error("Error parsing defects JSON:", e);
         defectsData = [];

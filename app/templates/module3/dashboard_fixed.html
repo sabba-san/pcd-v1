@@ -69,8 +69,8 @@
         </div>
 
         <div class="col-6 col-lg-3">
-            {% if latest_scan_id %}
-            <a href="{{ url_for('module3.visualize_defect', defect_id=latest_scan_id) }}" class="text-decoration-none">
+            {% if visualize_url %}
+            <a href="{{ visualize_url }}" class="text-decoration-none">
                 {% else %}
                 <a href="javascript:void(0);" onclick="showNoProjectAlert()" class="text-decoration-none">
                     {% endif %}

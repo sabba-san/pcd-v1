@@ -24,70 +24,71 @@ def list_projects():
     projects_list = []
     
     if current_user.role == 'user':
-        projects_set = set()
-        user_defects = Defect.query.filter_by(user_id=current_user.id).all()
-        for d in user_defects:
-            if d.project_id:
-                p = Project.query.get(d.project_id)
-                if p: projects_set.add(p)
-                
-        if current_user.project_id:
-             p = Project.query.get(current_user.project_id)
-             # Only show project on first login if it has a developer master model
-             # If user uploaded a scan themselves, it gets handled in user_defects loop above
-             if p and p.master_model_path:
-                 projects_set.add(p)
-             
-        projects_query = list(projects_set)
-    elif current_user.role == 'developer':
-         projects_query = Project.query.filter_by(developer_name=current_user.company_name).all() # Or similar logic
-         if not projects_query: # Fallback to all if name match not precise or null
-              projects_query = Project.query.all()
-    else:
-         projects_query = Project.query.all()
-    
-    
-    for proj in projects_query:
-        if not proj: continue
+        # Homeowners see their own uploaded 3D scans ("My Projects" as units)
+        user_scans = Defect.query.filter_by(user_id=current_user.id).filter(Defect.scan_path != None).all()
         
-        # Calculate Project Status
-        defects = Defect.query.filter_by(project_id=proj.id).all()
-        status = 'New'
-        
-        if not defects:
+        for scan in user_scans:
+            # Gather all pins (defects without a scan) uploaded by this user in this global project to count them
+            user_pins = Defect.query.filter_by(user_id=current_user.id).filter(Defect.scan_path == None).filter_by(project_id=scan.project_id).all()
+            
             status = 'New'
+            if user_pins:
+                statuses = [p.status for p in user_pins]
+                if all(s == 'completed' for s in statuses): status = 'Completed'
+                elif any(s in ['in_progress', 'locked', 'Processing'] for s in statuses): status = 'Processing'
+                elif any(s == 'rejected' for s in statuses): status = 'Action Required'
+                else: status = 'Pending'
+                
+            projects_list.append({
+                'id': scan.id, # Map Defect ID as Project ID for template
+                'name': scan.location if scan.location else "My Unit",
+                'address': current_user.project.name if current_user.project else "No Address Found",
+                'created_at': scan.created_at,
+                'defect_count': len(user_pins),
+                'model_path': scan.scan_path,
+                'house_scan_id': scan.id,
+                'status': status,
+                'metadata': None
+            })
+            
+    else:
+        # Developers / Others see the Global Housing Developments
+        if current_user.role == 'developer':
+            projects_query = Project.query.filter_by(developer_name=current_user.company_name).all()
+            if not projects_query: projects_query = Project.query.all()
         else:
-            statuses = [d.status for d in defects]
-            if all(s == 'completed' for s in statuses):
-                status = 'Completed'
-            elif any(s in ['in_progress', 'locked', 'Processing'] for s in statuses):
-                status = 'Processing'
-            elif any(s == 'rejected' for s in statuses):
-                status = 'Action Required' 
-            else:
-                status = 'Pending'
+            projects_query = Project.query.all()
+            
+        for proj in projects_query:
+            if not proj: continue
+            
+            defects = Defect.query.filter_by(project_id=proj.id).all()
+            status = 'New'
+            if defects:
+                statuses = [d.status for d in defects]
+                if all(s == 'completed' for s in statuses): status = 'Completed'
+                elif any(s in ['in_progress', 'locked', 'Processing'] for s in statuses): status = 'Processing'
+                elif any(s == 'rejected' for s in statuses): status = 'Action Required'
+                else: status = 'Pending'
 
-        # Determine Model Path and House Scan Fallback
-        model_path = proj.master_model_path
-        house_scan_id = None
-        
-        if not model_path:
-            # Fallback to the latest house scan (a defect with a scan_path)
-            latest_scan = Defect.query.filter_by(project_id=proj.id).filter(Defect.scan_path != None).order_by(Defect.created_at.desc()).first()
-            if latest_scan:
-                model_path = latest_scan.scan_path
-                house_scan_id = latest_scan.id
+            model_path = proj.master_model_path
+            house_scan_id = None
+            if not model_path:
+                latest_scan = Defect.query.filter_by(project_id=proj.id).filter(Defect.scan_path != None).order_by(Defect.created_at.desc()).first()
+                if latest_scan:
+                    model_path = latest_scan.scan_path
+                    house_scan_id = latest_scan.id
 
-        projects_list.append({
-            'id': proj.id,
-            'name': proj.name,
-            'created_at': proj.created_at,
-            'defect_count': len(defects),
-            'model_path': model_path,
-            'house_scan_id': house_scan_id,
-            'status': status,
-            'metadata': None 
-        })
+            projects_list.append({
+                'id': proj.id,
+                'name': proj.name,
+                'created_at': proj.created_at,
+                'defect_count': len(defects),
+                'model_path': model_path,
+                'house_scan_id': house_scan_id,
+                'status': status,
+                'metadata': None 
+            })
         
     return render_template('module3/projects.html', projects=projects_list)
 
@@ -249,17 +250,25 @@ def dashboard():
     # Sort groups by scan created_at (most recent first)
     grouped_activity.sort(key=lambda g: g['scan'].created_at if g['scan'].created_at else datetime.min, reverse=True)
     
-    # 3. Fetch Latest Scan (for 3D Visualizer button)
+    # 3. Determine URL for 3D Visualizer
+    visualize_url = None
     latest_scan_defect = Defect.query.filter_by(user_id=current_user.id).filter(Defect.scan_path != None).order_by(Defect.created_at.desc()).first()
-    latest_scan_id = latest_scan_defect.id if latest_scan_defect else None
     
+    view_personal_scan = False
+    
+    if latest_scan_defect:
+        visualize_url = url_for('module3.visualize_defect', defect_id=latest_scan_defect.id)
+    elif current_user.project_id:
+        visualize_url = url_for('module3.visualize', project_id=current_user.project_id)
+        
     project_name = current_user.project.name if current_user.project else 'No Project'
     
     return render_template(
         'module3/dashboard_fixed.html', 
         projects=[], # To avoid breaking legacy references if any
         grouped_activity=grouped_activity, 
-        latest_scan_id=latest_scan_id,
+        visualize_url=visualize_url,
+        latest_scan_id=latest_scan_defect.id if latest_scan_defect else None, # Legacy compat
         defect_count=len(user_defects),
         project_name=project_name
     )
@@ -307,6 +316,16 @@ def developer_portal():
         elif d.status in ['completed', 'Fixed']:
             stats['completed'] += 1
             
+        viz_url = ""
+        if d.scan_path:
+            viz_url = url_for('module3.visualize_defect', defect_id=d.id)
+        else:
+            user_scan = Defect.query.filter_by(user_id=d.user_id, project_id=d.project_id).filter(Defect.scan_path != None).first()
+            if user_scan:
+                viz_url = url_for('module3.visualize_defect', defect_id=user_scan.id)
+            else:
+                viz_url = url_for('module3.visualize', project_id=d.project_id)
+
         defects.append({
             'id': d.id,
             'full_name': d.user.full_name if d.user else "Unknown",
@@ -317,6 +336,7 @@ def developer_portal():
             'project_name': d.project.name if d.project else "Unknown",
             'severity': d.severity,
             'status': d.status,
+            'visualize_url': viz_url,
             'images': [img.image_path for img in d.images] if d.images else []
         })
 
@@ -330,6 +350,16 @@ def lawyer_dashboard():
     
     cases = []
     for d in all_defects:
+        viz_url = ""
+        if d.scan_path:
+            viz_url = url_for('module3.visualize_defect', defect_id=d.id)
+        else:
+            user_scan = Defect.query.filter_by(user_id=d.user_id, project_id=d.project_id).filter(Defect.scan_path != None).first()
+            if user_scan:
+                viz_url = url_for('module3.visualize_defect', defect_id=user_scan.id)
+            else:
+                viz_url = url_for('module3.visualize', project_id=d.project_id)
+
         cases.append({
             'id': d.id,
             'unit_no': d.location or "N/A",
@@ -337,7 +367,8 @@ def lawyer_dashboard():
             'description': d.description,
             'status': d.status,
             'filename': d.scan_path if d.scan_path else None,
-            'scan_id': d.project_id
+            'scan_id': d.project_id,
+            'visualize_url': viz_url
         })
         
     return render_template('module3/lawyer_dashboard.html', user=(current_user.firm_name or current_user.full_name), cases=cases)
@@ -372,6 +403,16 @@ def evidence_report():
         # Get the first image if it exists
         image_url = url_for('static', filename=d.images[0].image_path) if d.images else None
         
+        viz_url = ""
+        if d.scan_path:
+            viz_url = url_for('module3.visualize_defect', defect_id=d.id)
+        else:
+            user_scan = Defect.query.filter_by(user_id=d.user_id, project_id=d.project_id).filter(Defect.scan_path != None).first()
+            if user_scan:
+                viz_url = url_for('module3.visualize_defect', defect_id=user_scan.id)
+            else:
+                viz_url = url_for('module3.visualize', project_id=d.project_id)
+
         cases.append({
             'id': d.id,
             'unit_no': d.location or "N/A",
@@ -382,7 +423,8 @@ def evidence_report():
             'status': d.status,
             'image_url': image_url,
             'confidence': confidence,
-            'scan_id': d.project_id
+            'scan_id': d.project_id,
+            'visualize_url': viz_url
         })
         
     return render_template('module3/evidence_report.html', user=current_user.full_name, cases=cases)
@@ -577,7 +619,7 @@ def download_report(report_type):
     
     # URL of the microservice
     # It must match the module_3_reporting service name on docker network
-    microservice_url = f"http://module_3_reporting:5003/module3/api/generate_report/{report_type}"
+    microservice_url = f"http://module_3_reporting:5003/api/generate_report/{report_type}"
     
     try:
         lang = request.args.get('language', 'ms')
@@ -612,3 +654,37 @@ def download_report(report_type):
     except requests.exceptions.RequestException as e:
         flash(f"Error communicating with reporting service: {str(e)}", "danger")
         return redirect(request.referrer or url_for('module3.dashboard_homeowner'))
+
+@bp.route('/generate_pdf_report/<int:project_id>', methods=['GET'])
+@login_required
+def generate_pdf_report(project_id):
+    """Generate a simple PDF report for the project"""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+    from io import BytesIO
+
+    project = Project.query.get_or_404(project_id)
+    defects = Defect.query.filter_by(project_id=project_id).all()
+
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+
+    # Title
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(50, height - 50, f"Defect Report for {project.name}")
+
+    # Defects
+    y = height - 100
+    pdf.setFont("Helvetica", 12)
+    for defect in defects:
+        if y < 50:
+            pdf.showPage()
+            y = height - 50
+        pdf.drawString(50, y, f"Defect: {defect.title or defect.description}")
+        y -= 20
+
+    pdf.save()
+    buffer.seek(0)
+
+    return send_file(buffer, as_attachment=True, download_name=f"report_{project_id}.pdf", mimetype='application/pdf')
