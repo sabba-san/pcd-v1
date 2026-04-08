@@ -1,0 +1,23 @@
+[
+  {
+    "id": 5,
+    "unit": "No 100",
+    "desc": "The master bedroom and living hall area",
+    "remarks": "",
+    "priority": "Normal"
+  },
+  {
+    "id": 6,
+    "unit": "Master Bedroom",
+    "desc": "A significant crack is present",
+    "remarks": "",
+    "priority": "High"
+  },
+  {
+    "id": 7,
+    "unit": "3D Pin",
+    "desc": "A substantial crack is evident",
+    "remarks": "This is the primary crack",
+    "priority": "Critical"
+  }
+]
