@@ -1,54 +1,514 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-vh-100 d-flex align-items-center justify-content-center py-5">
-    <div class="col-11 col-sm-8 col-md-5 col-lg-4 col-xl-3">
+<style>
+    /* Design System Colors */
+    :root {
+        --primary: #004ac6;
+        --primary-container: #2563eb;
+        --surface: #f7f9fb;
+        --surface-container-lowest: #ffffff;
+        --surface-container-low: #f2f4f6;
+        --surface-container-high: #e6e8ea;
+        --on-surface: #191c1e;
+        --on-surface-variant: #434655;
+        --outline-variant: #c3c6d7;
+        --tertiary: #943700;
+    }
 
-        <div class="text-center mb-4">
-            <div class="brand-icon rounded-3 d-inline-flex align-items-center justify-content-center mb-3">
-                <i class="bi bi-building-check text-white fs-4"></i>
+    /* Hide navbar during auth */
+    .navbar {
+        display: none;
+    }
+
+    /* Full-height auth container */
+    body {
+        background: var(--surface);
+    }
+
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: row;
+    }
+
+    /* Blueprint Grid Background */
+    .blueprint-grid {
+        background-image:
+            radial-gradient(circle, rgba(0, 74, 198, 0.05) 1px, transparent 1px);
+        background-size: 32px 32px;
+        position: relative;
+    }
+
+    .blueprint-grid::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(0, 74, 198, 0.02) 0%, transparent 100%);
+        pointer-events: none;
+    }
+
+    /* Left Hero Section */
+    .auth-hero {
+        flex: 0 0 60%;
+        background-color: var(--surface-container-low);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        padding: 3rem;
+    }
+
+    .auth-hero-content {
+        position: relative;
+        z-index: 10;
+        max-width: 40rem;
+    }
+
+    .enterprise-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        background: rgba(0, 74, 198, 0.1);
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 2rem;
+    }
+
+    .auth-hero h2 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--on-surface);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin-bottom: 1.5rem;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .auth-hero p {
+        font-size: 1.125rem;
+        color: var(--on-surface-variant);
+        line-height: 1.5;
+        margin-bottom: 2.5rem;
+        max-width: 32rem;
+    }
+
+    .hero-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-top: 4rem;
+    }
+
+    .hero-card {
+        background: var(--surface-container-lowest);
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(195, 198, 215, 0.2);
+    }
+
+    .hero-card:nth-child(1) {
+        transform: rotate(-1deg);
+    }
+
+    .hero-card:nth-child(2) {
+        transform: rotate(2deg) translateY(2rem);
+    }
+
+    .hero-card i {
+        color: var(--primary);
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+
+    .hero-card .placeholder-line {
+        background: var(--surface-container-high);
+        height: 0.5rem;
+        border-radius: 9999px;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-card .placeholder-line.short {
+        width: 60%;
+    }
+
+    /* Right Form Section */
+    .auth-form-section {
+        flex: 0 0 40%;
+        background: var(--surface-container-lowest);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem;
+    }
+
+    .auth-form-wrapper {
+        width: 100%;
+        max-width: 28rem;
+    }
+
+    /* Brand */
+    .auth-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 3rem;
+    }
+
+    .auth-brand-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: var(--primary);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .auth-brand h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--on-surface);
+        margin: 0;
+        font-family: 'DM Sans', sans-serif;
+        letter-spacing: -0.02em;
+    }
+
+    /* Form Header */
+    .auth-form-header {
+        margin-bottom: 2.5rem;
+    }
+
+    .auth-form-header h2 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: var(--on-surface);
+        margin-bottom: 0.5rem;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .auth-form-header p {
+        color: var(--on-surface-variant);
+        font-size: 0.95rem;
+    }
+
+    /* Form Fields */
+    .auth-form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .auth-form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--on-surface);
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .auth-form-input-wrapper {
+        position: relative;
+    }
+
+    .auth-form-input {
+        width: 100%;
+        background: var(--surface-container-low);
+        border: none;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        color: var(--on-surface);
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .auth-form-input::placeholder {
+        color: rgba(115, 118, 134, 0.5);
+    }
+
+    .auth-form-input:focus {
+        outline: none;
+        background: var(--surface-container-lowest);
+        box-shadow: 0 0 0 2px rgba(0, 74, 198, 0.05);
+    }
+
+    /* Bottom border accent animation */
+    .auth-form-input-wrapper::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 2px;
+        width: 0;
+        background: var(--primary);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    .auth-form-input:focus~ ::after,
+    .auth-form-input-wrapper:focus-within::after {
+        width: 100%;
+    }
+
+    /* Submit Button */
+    .auth-submit-btn {
+        width: 100%;
+        background: linear-gradient(to bottom, var(--primary), var(--primary-container));
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(0, 74, 198, 0.2);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .auth-submit-btn:hover {
+        opacity: 0.9;
+        box-shadow: 0 12px 24px rgba(0, 74, 198, 0.25);
+        transform: translateY(-1px);
+    }
+
+    .auth-submit-btn:active {
+        transform: scale(0.98);
+    }
+
+    /* Footer Links */
+    .auth-footer {
+        margin-top: 2rem;
+        text-align: center;
+    }
+
+    .auth-footer a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color 0.3s ease;
+    }
+
+    .auth-footer a:hover {
+        color: var(--primary-container);
+    }
+
+    /* Legal */
+    .auth-legal {
+        margin-top: 4rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(195, 198, 215, 0.2);
+        text-align: center;
+    }
+
+    .auth-legal p {
+        font-size: 0.75rem;
+        color: #737686;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        margin: 0;
+    }
+
+    /* Help Button */
+    .help-button {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: rgba(230, 232, 234, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(195, 198, 215, 0.1);
+        width: 3rem;
+        height: 3rem;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.25rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .help-button:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        background: rgba(230, 232, 234, 0.95);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .auth-container {
+            flex-direction: column;
+        }
+
+        .auth-hero {
+            flex: 0 0 auto;
+            min-height: 40vh;
+            padding: 2rem;
+        }
+
+        .auth-form-section {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .auth-hero h2 {
+            font-size: 2rem;
+        }
+
+        .auth-hero p {
+            font-size: 1rem;
+        }
+
+        .hero-cards {
+            grid-template-columns: 1fr;
+            margin-top: 2rem;
+        }
+
+        .hero-card:nth-child(2) {
+            transform: rotate(0deg) translateY(0);
+        }
+
+        .help-button {
+            width: 2.5rem;
+            height: 2.5rem;
+            bottom: 1rem;
+            right: 1rem;
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .auth-hero {
+            min-height: 35vh;
+            padding: 1.5rem;
+        }
+
+        .auth-form-section {
+            padding: 1.5rem;
+        }
+
+        .auth-form-wrapper {
+            max-width: 100%;
+        }
+
+        .auth-brand {
+            margin-bottom: 2rem;
+        }
+
+        .auth-form-header {
+            margin-bottom: 2rem;
+        }
+
+        .auth-hero h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="auth-container blueprint-grid">
+    <!-- Left Hero Section -->
+    <section class="auth-hero">
+        <div class="auth-hero-content">
+            <div class="enterprise-badge">Enterprise Grade</div>
+            <h2>Meticulous management for every square inch.</h2>
+            <p>The professional architectural standard for defect resolution and homeowner peace of mind.</p>
+
+            <!-- Floating Decorative Cards -->
+            <div class="hero-cards">
+                <div class="hero-card">
+                    <i class="bi bi-building"></i>
+                    <div class="placeholder-line"></div>
+                    <div class="placeholder-line short"></div>
+                </div>
+                <div class="hero-card">
+                    <i class="bi bi-check-circle"></i>
+                    <div class="placeholder-line"></div>
+                    <div class="placeholder-line short"></div>
+                </div>
             </div>
-            <h4 class="fw-bold mb-1">Welcome Back</h4>
-            <p class="section-description mb-0">Sign in to access your DLP Advisor dashboard.</p>
+
         </div>
+    </section>
 
-        <div class="card auth-card">
-            <div class="card-body">
-                <form action="{{ url_for('auth.login') }}" method="POST">
+    <!-- Right Form Section -->
+    <section class="auth-form-section">
+        <div class="auth-form-wrapper">
+            <!-- Brand Anchor -->
+            <div class="auth-brand">
+                <div class="auth-brand-icon">
+                    <i class="bi bi-building-check"></i>
+                </div>
+                <h1>DLP Advisor</h1>
+            </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Email Address</label>
-                        <input type="email" name="email" class="form-control" placeholder="name@example.com" required
-                            autocomplete="email">
+
+            <!-- Form Header -->
+            <div class="auth-form-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to access your DLP Dashboard</p>
+            </div>
+
+            <!-- Login Form -->
+            <form action="{{ url_for('auth.login') }}" method="POST">
+                <!-- Email Field -->
+                <div class="auth-form-group">
+                    <label class="auth-form-label" for="email">Email Address</label>
+                    <div class="auth-form-input-wrapper">
+                        <input type="email" id="email" name="email" class="auth-form-input"
+                            placeholder="name@company.com" required autocomplete="email">
                     </div>
+                </div>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold">Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="••••••••" required
-                            autocomplete="current-password">
+                <!-- Password Field -->
+                <div class="auth-form-group">
+                    <label class="auth-form-label" for="password">Password</label>
+                    <div class="auth-form-input-wrapper">
+                        <input type="password" id="password" name="password" class="auth-form-input"
+                            placeholder="••••••••" required autocomplete="current-password">
                     </div>
+                </div>
 
-                    <div class="d-grid mb-3">
-                        <button type="submit" class="btn btn-primary py-2 fw-semibold">
-                            Sign In <i class="bi bi-arrow-right ms-2"></i>
-                        </button>
-                    </div>
+                <!-- Submit Button -->
+                <button type="submit" class="auth-submit-btn">
+                    Sign In
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </form>
 
-                    <div class="text-center">
-                        <small class="text-muted">
-                            New Homeowner?
-                            <a href="{{ url_for('auth.register') }}" class="fw-semibold text-primary">Create Account</a>
-                        </small>
-                    </div>
+            <!-- Footer Navigation -->
+            <div class="auth-footer">
+                <small>
+                    New Homeowner?
+                    <a href="{{ url_for('auth.register') }}">Create Account</a>
+                </small>
+            </div>
 
-                </form>
+            <!-- Legal / Credits -->
+            <div class="auth-legal">
+                <p>DLP Advisor © 2025 — Housing Defect Management</p>
             </div>
         </div>
-
-        <p class="text-center text-muted mt-4" style="font-size:0.75rem;">
-            DLP Advisor &copy; 2025 &mdash; Housing Defect Management
-        </p>
-
-    </div>
+    </section>
 </div>
+
+<!-- Help Button -->
+<button class="help-button" title="Help">
+    <i class="bi bi-question-circle"></i>
+</button>
+
 {% endblock %}

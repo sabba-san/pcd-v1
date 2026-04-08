@@ -1,53 +1,670 @@
+{% extends "base.html" %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <title>Register - DLP Advisor</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;500;600&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
         /* =====================
-           REGISTER PAGE — Clean Light Minimalist Enterprise
+           REGISTER PAGE — Architect Ledger Design System
            ===================== */
+        :root {
+            --primary: #004ac6;
+            --primary-container: #2563eb;
+            --surface: #f7f9fb;
+            --surface-container-lowest: #ffffff;
+            --surface-container-low: #f2f4f6;
+            --surface-container-high: #e6e8ea;
+            --on-surface: #191c1e;
+            --on-surface-variant: #434655;
+            --outline-variant: #c3c6d7;
+            --tertiary: #943700;
+        }
+
+        /* Hide navbar during auth */
+        .navbar {
+            display: none;
+        }
+
         body {
-            background-color: #F8F9FA;
+            background-color: var(--surface);
+            font-family: 'Inter', sans-serif;
+            color: var(--on-surface);
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Register Container */
+        .register-container {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+        }
+
+        /* Left Hero Section */
+        .register-hero {
+            flex: 0 0 50%;
+            background-color: var(--surface-container-low);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Open Sans', sans-serif;
-            padding: 2rem 1rem;
+            overflow: hidden;
+            position: relative;
+            padding: 3rem;
         }
 
-        .register-card {
-            background-color: #ffffff;
-            border: 1px solid #E2E8F0;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
-            width: 100%;
-            max-width: 820px;
-            padding: 2.5rem;
+        .register-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 74, 198, 0.02) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .register-card .brand-icon {
+        .register-hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 28rem;
+        }
+
+        .register-hero h2 {
             font-size: 2.5rem;
-            color: #2563EB;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
         }
 
-        .register-card h3 {
-            font-family: 'Montserrat', sans-serif;
+        .register-hero p {
+            font-size: 1rem;
+            color: var(--on-surface-variant);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .hero-message-box {
+            background: var(--surface-container-lowest);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
+        }
+
+        .hero-message-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-message-title {
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #1E293B;
-            margin-bottom: 0.25rem;
+            color: var(--on-surface);
+            margin-bottom: 0.75rem;
         }
 
-        .register-card .subtitle {
-            color: #475569;
+        .hero-message-text {
             font-size: 0.9rem;
+            color: var(--on-surface-variant);
+            line-height: 1.5;
+        }
+
+        /* Right Form Section */
+        .register-form-section {
+            flex: 1;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            overflow-y: auto;
+        }
+
+        .register-form-wrapper {
+            width: 100%;
+            max-width: 32rem;
+        }
+
+        .register-form-header {
+            margin-bottom: 2rem;
+        }
+
+        .register-form-header h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--on-surface);
+            margin-bottom: 0.5rem;
+        }
+
+        .register-form-header p {
+            color: var(--on-surface-variant);
+            font-size: 0.9rem;
+        }
+
+        /* Form Sections */
+        .form-section {
+            background: var(--surface-container-low);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.5rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--primary);
+            display: none;
+        }
+
+        .form-section.with-title .section-title {
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            padding-left: 0.25rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 0.75rem 1rem;
+            border: none;
+            background: var(--surface-container-lowest);
+            border-bottom: 2px solid transparent;
+            border-radius: 0.375rem;
+            color: var(--on-surface);
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-bottom-color 0.2s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-bottom-color: var(--primary);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23434655' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.25rem;
+            padding-right: 2.5rem;
+            cursor: pointer;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 3rem;
+        }
+
+        /* Action Buttons */
+        .register-actions {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .register-btn {
+            width: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--primary-container));
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 74, 198, 0.2);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .register-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 12px 24px rgba(0, 74, 198, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .register-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Footer Links */
+        .register-footer {
+            text-align: center;
+        }
+
+        .register-footer p {
+            color: var(--on-surface-variant);
+            font-size: 0.875rem;
+        }
+
+        .register-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .register-footer a:hover {
+            color: var(--primary-container);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .register-hero {
+                flex: 0 0 40%;
+                padding: 2rem;
+            }
+
+            .register-form-section {
+                flex: 0 0 60%;
+                padding: 2rem;
+            }
+
+            .register-form-wrapper {
+                max-width: 28rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .register-container {
+                flex-direction: column;
+            }
+
+            .register-hero {
+                flex: 0 0 auto;
+                min-height: 35vh;
+                padding: 2rem;
+            }
+
+            .register-form-section {
+                flex: 1;
+                padding: 1.5rem;
+            }
+
+            .register-form-wrapper {
+                max-width: 100%;
+            }
+
+            .register-hero h2 {
+                font-size: 1.875rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .form-section {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .register-hero {
+                min-height: 30vh;
+                padding: 1.5rem;
+            }
+
+            .register-form-section {
+                padding: 1rem;
+            }
+
+            .register-form-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .form-section {
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .form-row {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-container">
+        <!-- Left Hero Section -->
+        <section class="register-hero">
+            <div class="register-hero-content">
+                <h2>Architect Ledger</h2>
+                <p>The modern digital blueprint for meticulous housing defect management.</p>
+
+                <div class="hero-message-box" id="heroMessage">
+                    <div class="hero-message-label">Registration</div>
+                    <div class="hero-message-title">Secure your investment.</div>
+                    <div class="hero-message-text">Join your property project ledger to track defects, schedule repairs, and ensure architectural integrity.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Form Section -->
+        <section class="register-form-section">
+            <div class="register-form-wrapper">
+                <div class="register-form-header">
+                    <h2>Create Account</h2>
+                    <p>Please enter your details to register with DLP Advisor</p>
+                </div>
+
+                <form action="{{ url_for('auth.register') }}" method="POST" id="registerForm">
+                    <!-- Homeowner Section -->
+                    <div class="form-section active" data-role="homeowner">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" name="full_name_homeowner" class="form-input" placeholder="Ali Baba">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">IC Number</label>
+                                <input type="text" name="ic_number" class="form-input" placeholder="900101-14-1234">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email_homeowner" class="form-input" placeholder="name@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" name="phone_number" class="form-input" placeholder="+60 12 345 6789">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">I am a...</label>
+                                <select name="user_type" class="form-select" id="roleSelector">
+                                    <option value="homeowner" selected>Homeowner</option>
+                                    <option value="lawyer">Lawyer</option>
+                                    <option value="developer">Housing Developer</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Select Your Housing Project</label>
+                                <select name="housing_project" class="form-select">
+                                    <option disabled selected>Select a project</option>
+                                    <option>The Ledger Heights</option>
+                                    <option>Skyline Residency</option>
+                                    <option>Emerald Valley Phase 2</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label class="form-label">Correspondence Address</label>
+                                <textarea name="correspondence_address" class="form-textarea" placeholder="Enter your full mailing address"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label class="form-label">Password</label>
+                                <input type="password" name="password_homeowner" class="form-input" placeholder="••••••••">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lawyer Section -->
+                    <div class="form-section" data-role="lawyer">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" name="full_name_lawyer" class="form-input" placeholder="Ali Baba">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email_lawyer" class="form-input" placeholder="name@example.com">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">I am a...</label>
+                                <select name="user_type_lawyer" class="form-select" id="roleSelector2">
+                                    <option value="homeowner">Homeowner</option>
+                                    <option value="lawyer" selected>Lawyer</option>
+                                    <option value="developer">Housing Developer</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Law Firm Name</label>
+                                <input type="text" name="law_firm_name" class="form-input" placeholder="Zulaikha & Partners">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Bar Council ID</label>
+                                <input type="text" name="bar_council_id" class="form-input" placeholder="BC/A/123">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Password</label>
+                                <input type="password" name="password_lawyer" class="form-input" placeholder="••••••••">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Developer Section -->
+                    <div class="form-section" data-role="developer">
+                        <div class="section-title">Personal Identification</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Full Name (as per NRIC)</label>
+                                <input type="text" name="full_name_developer" class="form-input" placeholder="Enter full name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" name="email_developer" class="form-input" placeholder="official@developer.com">
+                            </div>
+                        </div>
+
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label class="form-label">I am a...</label>
+                                <select name="user_type_developer" class="form-select" id="roleSelector3">
+                                    <option value="homeowner">Homeowner</option>
+                                    <option value="lawyer">Lawyer</option>
+                                    <option value="developer" selected>Housing Developer</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Developer Company Details -->
+                    <div class="form-section with-title" data-role="developer">
+                        <div class="section-title">Company Details</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Company Name (Nama Syarikat)</label>
+                                <input type="text" name="company_name" class="form-input" placeholder="Enter company name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Company Registration No. (SSM)</label>
+                                <input type="text" name="company_registration_no" class="form-input" placeholder="SSM Number">
+                            </div>
+                        </div>
+
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label class="form-label">Company Address (Alamat Surat Menyurat)</label>
+                                <textarea name="company_address" class="form-textarea" placeholder="Full postal address"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Contact Number (No. Telefon Syarikat)</label>
+                                <input type="tel" name="company_contact_number" class="form-input" placeholder="+60 3-XXXX XXXX">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Fax / Email (No. Faks/E-mel)</label>
+                                <input type="text" name="company_fax_email" class="form-input" placeholder="Fax or Company Email">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Developer Representative Details -->
+                    <div class="form-section with-title" data-role="developer">
+                        <div class="section-title">Representative Details</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Representative Staff Name</label>
+                                <input type="text" name="representative_name" class="form-input" placeholder="Representative name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Representative NRIC</label>
+                                <input type="text" name="representative_nric" class="form-input" placeholder="XXXXXX-XX-XXXX">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Section (all roles) -->
+                    <div class="form-section" style="display: block;">
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label class="form-label">Account Password</label>
+                                <input type="password" name="password" class="form-input" placeholder="••••••••••••">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="register-actions">
+                        <button type="submit" class="register-btn">Register</button>
+                        <div class="register-footer">
+                            <p>Already have an account? <a href="{{ url_for('auth.login') }}">Sign In</a></p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Role-based form section visibility
+        const roleSelectors = [
+            document.getElementById('roleSelector'),
+            document.getElementById('roleSelector2'),
+            document.getElementById('roleSelector3')
+        ];
+
+        const heroMessages = {
+            homeowner: {
+                label: 'Registration',
+                title: 'Secure your investment.',
+                text: 'Join your property project ledger to track defects, schedule repairs, and ensure architectural integrity.'
+            },
+            lawyer: {
+                label: 'Registration',
+                title: 'Precision in Legal Documentation.',
+                text: 'Join the network of professional legal advisors to provide architectural-grade legal oversight.'
+            },
+            developer: {
+                label: 'Registration',
+                title: 'Secure your investment.',
+                text: 'Trusted by leading developers nationwide. Join to track defects, schedule repairs, and ensure architectural integrity.'
+            }
+        };
+
+        function updateFormAndHero(role) {
+            // Update form sections
+            document.querySelectorAll('.form-section').forEach(section => {
+                const dataRole = section.getAttribute('data-role');
+                if (dataRole === role) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+
+            // Update all role selectors to match
+            roleSelectors.forEach(selector => {
+                if (selector) selector.value = role;
+            });
+
+            // Update hero message
+            const heroMessage = heroMessages[role];
+            if (heroMessage) {
+                document.querySelector('.hero-message-label').textContent = heroMessage.label;
+                document.querySelector('.hero-message-title').textContent = heroMessage.title;
+                document.querySelector('.hero-message-text').textContent = heroMessage.text;
+            }
+        }
+
+        // Event listeners for role selectors
+        roleSelectors.forEach(selector => {
+            if (selector) {
+                selector.addEventListener('change', (e) => {
+                    updateFormAndHero(e.target.value);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
+{% endblock %}
         }
 
         /* Labels */
