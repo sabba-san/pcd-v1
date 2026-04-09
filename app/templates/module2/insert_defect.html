@@ -1,254 +1,341 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block extra_head %}
 <!-- Babylon.js Core and Loaders -->
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 
+<!-- Tailwind CDN & Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+<!-- Tailwind Configurator -->
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "secondary-container": "#acbfff",
+                    "tertiary-container": "#bc4800",
+                    "secondary-fixed": "#dbe1ff",
+                    "primary-container": "#2563eb",
+                    "inverse-on-surface": "#eff1f3",
+                    "primary-fixed": "#dbe1ff",
+                    "on-secondary-fixed-variant": "#31447b",
+                    "on-error": "#ffffff",
+                    "on-background": "#191c1e",
+                    "primary": "#004ac6",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "secondary-fixed-dim": "#b4c5ff",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#00174b",
+                    "on-surface": "#191c1e",
+                    "outline-variant": "#c3c6d7",
+                    "tertiary": "#943700",
+                    "surface-container-low": "#f2f4f6",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-secondary-container": "#394c84",
+                    "surface-variant": "#e0e3e5",
+                    "on-tertiary-container": "#ffede6",
+                    "surface": "#f7f9fb",
+                    "background": "#f7f9fb",
+                    "inverse-primary": "#b4c5ff",
+                    "surface-bright": "#f7f9fb",
+                    "inverse-surface": "#2d3133",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#eeefff",
+                    "on-primary": "#ffffff",
+                    "secondary": "#495c95",
+                    "on-surface-variant": "#434655",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#0053db",
+                    "on-tertiary-fixed": "#360f00",
+                    "surface-dim": "#d8dadc",
+                    "surface-container": "#eceef0",
+                    "tertiary-fixed-dim": "#ffb596",
+                    "on-primary-fixed": "#00174b",
+                    "outline": "#737686",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#e6e8ea",
+                    "tertiary-fixed": "#ffdbcd"
+                },
+                borderRadius: {
+                    "DEFAULT": "0.5rem",
+                    "lg": "1rem",
+                    "xl": "1.25rem",
+                    "full": "9999px"
+                },
+                fontFamily: {
+                    "headline": ["Manrope", "sans-serif"],
+                    "body": ["Inter", "sans-serif"],
+                    "label": ["Inter", "sans-serif"]
+                }
+            }
+        }
+    }
+</script>
 <style>
-    .upload-zone {
-        border: 2px dashed #475569;
-        border-radius: 12px;
-        padding: 30px;
-        text-align: center;
-        background: rgba(51, 65, 85, 0.3);
-        transition: 0.2s;
-        cursor: pointer;
-        position: relative;
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
-    .upload-zone:hover {
-        border-color: #3b82f6;
-        background: rgba(59, 130, 246, 0.05);
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
     }
 
-    .upload-icon {
-        font-size: 2rem;
-        color: #64748b;
-        margin-bottom: 10px;
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
     }
 
-    .file-input-hidden {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        cursor: pointer;
-        z-index: 2;
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #c3c6d7;
+        border-radius: 10px;
     }
 
-    .upload-zone.dragover {
-        border-color: #3b82f6;
-        background: rgba(59, 130, 246, 0.1);
-    }
-
-    .preview-card {
-        position: relative;
-        width: 80px;
-        height: 80px;
-        border-radius: 8px;
-        overflow: hidden;
-        background: #1e293b;
-        border: 1px solid #334155;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    .preview-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .preview-card .pdf-icon {
-        font-size: 2rem;
-        color: #ef4444;
-    }
-
-    .preview-card .file-name {
-        font-size: 0.55rem;
-        color: #cbd5e1;
-        text-align: center;
-        width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        padding: 2px 4px;
-        position: absolute;
-        bottom: 0;
-        background: rgba(15, 23, 42, 0.75);
-    }
-
-    .delete-btn {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        background: rgba(220, 38, 38, 0.9);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 10;
-        padding: 0;
-        line-height: 1;
-        transition: 0.2s;
-    }
-
-    .delete-btn:hover {
-        background: #b91c1c;
-        transform: scale(1.1);
-    }
-
-    /* 3D Viewer Styles */
     #canvasZone {
         width: 100%;
-        height: 400px;
-        background: #0f172a;
-        border-radius: 12px;
-        border: 1px solid #334155;
-        overflow: hidden;
+        height: 100%;
         position: relative;
-        margin-bottom: 20px;
+        overflow: hidden;
     }
 
     #renderCanvas {
         width: 100%;
         height: 100%;
         outline: none;
-    }
-
-    .instruction-overlay {
         position: absolute;
-        top: 10px;
-        left: 10px;
-        background: rgba(15, 23, 42, 0.8);
-        padding: 8px 12px;
-        border-radius: 6px;
-        color: #94a3b8;
-        font-size: 0.85rem;
-        pointer-events: none;
-        border: 1px solid #334155;
+        inset: 0;
     }
 </style>
+{% endblock %}
 
-<div class="row justify-content-center">
-    <div class="col-xl-11 col-lg-12">
+{% block content %}
+<!-- Main Content Canvas -->
+<div class="flex flex-col h-[calc(100vh-60px)] md:ml-[0px] lg:ml-[256px]">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h3 class="fw-bold text-white mb-1">New Defect Submission</h3>
-                <p class="text-muted small">Click on the model to pinpoint the defect location.</p>
+    <!-- We inject the homeowner sidebar so the layouts look consistent -->
+    <!-- Sidebar from Homeowner Dashboard -->
+    <aside
+        class="hidden lg:flex fixed left-0 top-[60px] h-[calc(100vh-60px)] w-64 border-r border-slate-200 flex-col p-4 z-40 bg-white shadow-sm">
+        <!-- Project Info -->
+        <div class="flex flex-col gap-4 mb-6">
+            <div class="flex items-center gap-3 px-2">
+                <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined text-[20px]">home_work</span>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-slate-900">Project Ledger</p>
+                    <p class="text-xs text-slate-500 truncate max-w-[140px]">{{ current_user.project_name or 'No
+                        Project' }}</p>
+                </div>
             </div>
-            <div
-                class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill border border-primary border-opacity-25">
-                <i class="bi bi-check-circle-fill me-2"></i> All-in-One Form
-            </div>
+            <a href="{{ url_for('module2.insert_defect') }}"
+                class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-md hover:bg-blue-700 transition-all text-sm no-underline active:scale-95 duration-200">
+                <span class="material-symbols-outlined text-[18px]"
+                    style="font-variation-settings:'FILL' 1;">add_circle</span>
+                Report Defect
+            </a>
         </div>
 
-        <div class="card shadow-lg p-0 border-0 overflow-hidden" style="background-color: #334155;">
-            <form action="{{ url_for('module2.insert_defect') }}" method="POST" enctype="multipart/form-data">
+        <!-- Nav Links -->
+        <nav class="flex-1 flex flex-col gap-1">
+            <a href="{{ url_for('module3.dashboard') }}"
+                class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-slate-100 rounded-lg text-sm font-medium transition-all hover:translate-x-1 duration-200 no-underline">
+                <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                Dashboard
+            </a>
+            <!-- Active link -->
+            <a href="{{ url_for('module2.insert_defect') }}"
+                class="flex items-center gap-3 text-blue-700 bg-blue-50 rounded-lg px-4 py-3 font-semibold text-sm transition-all hover:translate-x-1 duration-200 no-underline">
+                <span class="material-symbols-outlined text-[20px]">report_problem</span>
+                Report Defect
+            </a>
+            <a href="http://localhost:5002/"
+                class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-slate-100 rounded-lg text-sm font-medium transition-all hover:translate-x-1 duration-200 no-underline">
+                <span class="material-symbols-outlined text-[20px]">gavel</span>
+                Legal AI Chat
+            </a>
+            <a href="{{ url_for('module3.list_projects') }}"
+                class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-slate-100 rounded-lg text-sm font-medium transition-all hover:translate-x-1 duration-200 no-underline">
+                <span class="material-symbols-outlined text-[20px]">folder_open</span>
+                My Defects
+            </a>
+        </nav>
 
-                <!-- Hidden Coordinates -->
-                <input type="hidden" name="x" id="coordX" value="0">
-                <input type="hidden" name="y" id="coordY" value="0">
-                <input type="hidden" name="z" id="coordZ" value="0">
-                <!-- Pass Project Name if needed for new scans -->
-                <input type="hidden" name="project_name" value="{{ current_user.project_name or 'Default Project' }}">
+        <!-- Bottom Links -->
+        <div class="mt-auto flex flex-col gap-1 border-t border-slate-200 pt-4">
+            <a href="{{ url_for('auth.logout') }}"
+                class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-red-50 hover:text-red-600 rounded-lg text-sm font-medium transition-all no-underline">
+                <span class="material-symbols-outlined text-[20px]">logout</span>
+                Logout
+            </a>
+        </div>
+    </aside>
 
-                <div class="row g-0">
-                    <!-- Left Side: 3D Viewer -->
-                    <div class="col-lg-7 p-4 border-end border-secondary">
-                        <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">
-                            1.
-                            Defect Location</h6>
+    <main class="flex-1 flex flex-col overflow-hidden bg-surface relative">
+        <!-- Page Header Area -->
+        <header class="px-6 md:px-10 py-6 md:py-8 flex-none">
+            <h1 class="text-3xl md:text-4xl font-headline font-extrabold text-on-surface tracking-tight mb-2">New Defect
+                Submission</h1>
+            <p class="text-on-surface-variant font-body">Click on the model to pinpoint the defect location.</p>
+        </header>
 
-                        <!-- 3D Viewer -->
-                        <div id="canvasZone" style="height: 500px; margin-bottom: 0;">
-                            <canvas id="renderCanvas"></canvas>
-                            <div class="instruction-overlay">
-                                <i class="fas fa-mouse-pointer me-1"></i> Click model to set location (Cyan Marker)
-                            </div>
+        <!-- Side-by-Side Application Layout -->
+        <div class="flex-1 flex flex-col md:flex-row px-6 md:px-10 pb-10 gap-8 overflow-hidden">
+            <!-- Section 1: Defect Location (Interactive 3D View) -->
+            <section class="flex-[3] flex flex-col gap-4 overflow-hidden min-h-[400px]">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-headline font-bold text-on-surface-variant tracking-wider text-xs uppercase">DEFECT
+                        LOCATION</h2>
+                    <div class="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                        <span class="text-[10px] font-bold text-primary tracking-wide">CLICK MODEL TO SET LOCATION (CYAN
+                            MARKER)</span>
+                    </div>
+                </div>
+
+                <div
+                    class="relative flex-1 rounded-xl overflow-hidden bg-slate-900 group border border-outline-variant/10 shadow-inner">
+                    <!-- Babylon.js 3D Model Renderer -->
+                    <div id="canvasZone">
+                        <canvas id="renderCanvas"></canvas>
+                    </div>
+
+                    <!-- Floating Controls Overlay -->
+                    <div class="absolute top-4 right-4 flex flex-col gap-2 z-10 pointer-events-none">
+                        <div
+                            class="px-3 py-2 bg-black/60 backdrop-blur rounded-lg flex items-center justify-center text-white/90 text-xs shadow-sm font-medium border border-white/10">
+                            Use mouse to rotate & zoom
                         </div>
                     </div>
 
-                    <!-- Right Side: Form Inputs -->
-                    <div class="col-lg-5 p-4 d-flex flex-column">
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label text-white">Owner Name</label>
-                                <input type="text" class="form-control" value="{{ current_user.full_name }}" readonly
-                                    style="background-color: #1e293b; color: #94a3b8;">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label text-white">Unit No. <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control bg-dark text-white border-secondary"
-                                    name="unit_no" placeholder="e.g. A-85" required>
-                            </div>
-                        </div>
+                    <!-- Interaction Prompt -->
+                    <div
+                        class="absolute bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-[#191c1e]/90 backdrop-blur text-white rounded-full text-xs font-medium tracking-wide flex items-center gap-2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <span class="material-symbols-outlined text-sm">ads_click</span>
+                        PINPOINT LOCATION ON THE MODEL
+                    </div>
+                </div>
+            </section>
 
-                        <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">
-                            2.
-                            Defect Description</h6>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-12">
-                                <label class="form-label text-white">Detailed Description</label>
-                                <textarea class="form-control bg-dark text-white border-secondary" name="description"
-                                    rows="4" placeholder="Describe the defect location..." required></textarea>
-                            </div>
-                        </div>
+            <!-- Section 2: Form Submission -->
+            <aside class="flex-[2] flex flex-col gap-6 overflow-hidden max-w-lg w-full">
+                <form action="{{ url_for('module2.insert_defect') }}" method="POST" enctype="multipart/form-data"
+                    class="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-sm border border-outline-variant/10 flex-1 flex flex-col overflow-hidden m-0 h-full">
+                    <!-- Hidden Coordinates -->
+                    <input type="hidden" name="x" id="coordX" value="0">
+                    <input type="hidden" name="y" id="coordY" value="0">
+                    <input type="hidden" name="z" id="coordZ" value="0">
+                    <input type="hidden" name="project_name"
+                        value="{{ current_user.project_name or 'Default Project' }}">
 
-                        <h6 class="text-white-50 text-uppercase small fw-bold mb-3 border-bottom border-secondary pb-2">
-                            3.
-                            Evidence Upload</h6>
-                        <div class="row g-3 mb-4 flex-grow-1">
-                            <div class="col-md-12">
-                                <label class="form-label text-white">3D Lidar Scan (.glb)</label>
-                                <div class="upload-zone h-100 d-flex flex-column justify-content-center">
-                                    <i class="bi bi-box-seam upload-icon"></i>
-                                    <h6 class="text-white small">Drag Lidar Scan Here</h6>
-                                    <p class="text-muted small mb-0">Max 50MB (Updates Viewer)</p>
-                                    <input type="file" name="lidar_file" id="lidarInput" class="file-input-hidden"
-                                        accept=".glb,.gltf">
+                    <div class="custom-scrollbar overflow-y-auto pr-2 space-y-6 md:space-y-8 h-full flex flex-col">
+
+                        <div class="space-y-6 flex-1">
+                            <!-- Field Group 1 -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="flex flex-col gap-2">
+                                    <label
+                                        class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase px-1">Owner
+                                        Name</label>
+                                    <input type="text"
+                                        class="w-full bg-surface-container-high border-none rounded-lg p-3 text-sm text-on-surface-variant opacity-70 cursor-not-allowed"
+                                        value="{{ current_user.full_name }}" readonly>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label
+                                        class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase px-1">Unit
+                                        No. <span class="text-error font-extrabold">*</span></label>
+                                    <input type="text" name="unit_no"
+                                        class="w-full bg-surface border border-outline-variant/30 rounded-lg p-3 text-sm focus:ring-0 focus:border-b-2 focus:border-primary transition-all shadow-sm"
+                                        placeholder="e.g. A-85" required>
+                                </div>
+                            </div>
+
+                            <!-- Field Group 2 -->
+                            <div class="flex flex-col gap-4">
+                                <h3
+                                    class="font-headline font-bold text-on-surface-variant tracking-wider text-xs uppercase border-b border-outline-variant/20 pb-2">
+                                    DEFECT DESCRIPTION <span class="text-error font-extrabold">*</span></h3>
+                                <div class="flex flex-col gap-2">
+                                    <textarea name="description"
+                                        class="w-full bg-surface border border-outline-variant/30 rounded-lg p-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none shadow-sm"
+                                        placeholder="Describe the severity and issue in detail..." rows="4"
+                                        required></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Field Group 3 -->
+                            <div class="flex flex-col gap-4 mt-2">
+                                <h3
+                                    class="font-headline font-bold text-on-surface-variant tracking-wider text-xs uppercase border-b border-outline-variant/20 pb-2">
+                                    EVIDENCE UPLOAD</h3>
+                                <div class="flex flex-col gap-2 relative">
+                                    <label
+                                        class="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase px-1">3D
+                                        Lidar Scan (.glb / .gltf)</label>
+
+                                    <div
+                                        class="border-2 border-dashed border-outline-variant/40 rounded-xl p-8 flex flex-col items-center justify-center gap-3 bg-surface hover:bg-primary/5 hover:border-primary/50 transition-all cursor-pointer group relative overflow-hidden">
+                                        <div
+                                            class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform z-10">
+                                            <span class="material-symbols-outlined"
+                                                style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+                                        </div>
+                                        <div class="text-center z-10">
+                                            <p class="text-xs font-semibold text-on-surface filename-preview">Drag and
+                                                drop file here or click to browse</p>
+                                            <p class="text-[10px] text-on-surface-variant mt-1">Supports GLB, GLTF up to
+                                                50MB (Updates Viewer)</p>
+                                        </div>
+                                        <!-- Keep actual file input secretly over the whole div -->
+                                        <input type="file" name="lidar_file" id="lidarInput"
+                                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                                            accept=".glb,.gltf">
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div
-                            class="d-grid gap-2 d-md-flex justify-content-md-end mt-auto pt-4 border-top border-secondary">
+                        <!-- Footer Actions -->
+                        <div class="flex items-center gap-4 pt-6 border-t border-outline-variant/20 mt-auto">
                             <a href="{{ url_for('module3.dashboard') }}"
-                                class="btn btn-outline-secondary border-0 text-white-50 fw-bold px-4">
+                                class="flex-1 py-3 text-center text-sm font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors no-underline">
                                 Cancel
                             </a>
-                            <button type="submit" name="action" value="submit" class="btn btn-primary fw-bold px-5">
-                                Submit Claim <i class="bi bi-send-fill ms-2"></i>
+                            <button type="submit" name="action" value="submit"
+                                class="flex-[2] flex justify-center items-center gap-2 py-3 text-sm font-bold text-white bg-gradient-to-b from-primary to-primary-container rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:opacity-95 active:scale-[0.98] transition-all border border-blue-700">
+                                Submit Claim
+                                <span class="material-symbols-outlined text-[18px]">send</span>
                             </button>
                         </div>
-                    </div>
-                </div>
 
-            </form>
+                    </div>
+                </form>
+            </aside>
         </div>
-    </div>
+
+        <!-- Signature Status Ribbon (Visual Accent) -->
+        <div
+            class="absolute bottom-0 left-0 h-[6px] w-full bg-gradient-to-r from-primary via-primary-container to-secondary-container rounded-t-sm opacity-90">
+        </div>
+    </main>
 </div>
 
+<!-- Babylon.js Scripts (Preserved) -->
 <script>
     // --- Configuration ---
-    // 'model_url' and 'defects' are passed from routes.py
     const MODEL_URL = "{{ model_url | default('') }}";
 
-    // Use JSON.parse with string interpolation to satisfy linters and ensure safe parsing
-    // We default to '[]' string if defects is undefined/null in template
     let defectsData;
     try {
         defectsData = JSON.parse('{{ defects | default([]) | tojson | safe }}');
@@ -270,19 +357,19 @@
         lidarInputEl.addEventListener('change', function () {
             const fileName = this.files[0]?.name;
             if (fileName) {
-                const h6 = this.parentElement.querySelector('h6');
-                h6.textContent = fileName;
-                h6.style.color = '#3b82f6';
+                const previewText = document.querySelector('.filename-preview');
+                if (previewText) {
+                    previewText.textContent = fileName;
+                    previewText.style.color = '#004ac6';
+                }
             }
         });
     }
 
-
-
     // --- Babylon.js Setup ---
     const engine = new BABYLON.Engine(canvas, true);
     let scene, camera;
-    let currentMarker = null; // The new defect marker (Cyan)
+    let currentMarker = null;
 
     const createScene = function () {
         scene = new BABYLON.Scene(engine);
@@ -291,7 +378,6 @@
         // Camera
         camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 10, BABYLON.Vector3.Zero(), scene);
         camera.attachControl(canvas, true);
-        // Enabled scroll zoom interactions
         camera.wheelPrecision = 50;
         camera.minZ = 0.1;
 
@@ -304,12 +390,9 @@
             if (evt.button !== 0) return; // Left click only
 
             if (pickResult.hit && pickResult.pickedMesh) {
-                // Determine if we clicked the model or an existing marker
-                // Existing markers will start with "m_"
                 if (pickResult.pickedMesh.name.startsWith("m_")) {
                     return; // Don't place a new marker on top of an old one
                 }
-
                 placeNewMarker(pickResult.pickedPoint);
             }
         };
@@ -341,16 +424,13 @@
 
     async function loadModel(url) {
         if (!url) {
-            // Fallback box
             BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
             return;
         }
 
         try {
-            // Import into scene. 
             const result = await BABYLON.SceneLoader.ImportMeshAsync("", "", url, scene, undefined, ".glb");
 
-            // Focus camera on model and Auto-frame
             if (result.meshes.length > 0) {
                 let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
                 let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -374,8 +454,6 @@
                     camera.wheelPrecision = 50 / maxDimension;
                     camera.minZ = maxDimension * 0.001;
                     camera.maxZ = maxDimension * 10;
-
-                    // Expose max dimension globally for marker scaling
                     window.modelMaxDimension = maxDimension;
                 }
             }
@@ -385,10 +463,7 @@
     }
 
     function renderExistingDefects() {
-        if (!EXISTING_DEFECTS || EXISTING_DEFECTS.length === 0) {
-            console.log("No existing defects to render.");
-            return;
-        }
+        if (!EXISTING_DEFECTS || EXISTING_DEFECTS.length === 0) return;
 
         EXISTING_DEFECTS.forEach(d => {
             const markerDiameter = window.modelMaxDimension ? Math.max(0.1, Math.min(window.modelMaxDimension * 0.02, 5.0)) : 0.2;
@@ -398,28 +473,17 @@
             const mat = new BABYLON.StandardMaterial("oldMat_" + d.id, scene);
             mat.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red
             sphere.material = mat;
-
-            // Optional: Add tooltip or action?
-            // For now, just visualization.
         });
     }
 
     // --- Init ---
     scene = createScene();
 
-    console.log("Existing Defects:", EXISTING_DEFECTS);
-    console.log("Model URL:", MODEL_URL);
-
-    // Initial Load
     if (MODEL_URL) {
         loadModel(MODEL_URL).then(() => {
-            console.log("Model loaded, rendering defects...");
             renderExistingDefects();
         });
     } else {
-        console.log("No model URL, creating dummy box and rendering defects...");
-        // Just render defects if they exist in valid space (unlikely without model reference)
-        // or create fallback
         const box = BABYLON.MeshBuilder.CreateBox("dummy", { size: 1 }, scene);
         renderExistingDefects();
     }
@@ -433,30 +497,19 @@
     });
 
     // --- File Input Change (Preview Mode) ---
-    lidarInput.addEventListener('change', function (evt) {
-        const file = evt.target.files[0];
-        if (file) {
-            const fileURL = URL.createObjectURL(file);
-
-            // Reset Scene Meshes (Keep camera/light/markers?)
-            // Simplest: Dispose all meshes that are not markers? 
-            // Or just reload scene. Let's try disposing root nodes of imported models.
-            scene.meshes.forEach(m => {
-                if (m.name !== "newDefect" && !m.name.startsWith("m_")) {
-                    m.dispose();
-                }
-            });
-
-            // Also we should probably clear existing defect markers if the model changes entirely?
-            // The user might be uploading a NEW scan for a NEW project.
-            // The task says "Update the JavaScript... to loop through these saved {{ defects }}".
-            // If the user uploads a new file, the old defects (linked to old scan) might not be relevant visually.
-            // But let's keep them if they are just re-uploading the same model?
-            // For safety, let's keep them but maybe the user will ignore them if they are floating in void.
-
-            loadModel(fileURL);
-        }
-    });
-
+    if (lidarInputEl) {
+        lidarInputEl.addEventListener('change', function (evt) {
+            const file = evt.target.files[0];
+            if (file) {
+                const fileURL = URL.createObjectURL(file);
+                scene.meshes.forEach(m => {
+                    if (m.name !== "newDefect" && !m.name.startsWith("m_")) {
+                        m.dispose();
+                    }
+                });
+                loadModel(fileURL);
+            }
+        });
+    }
 </script>
 {% endblock %}

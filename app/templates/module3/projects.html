@@ -1,138 +1,303 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="content-wrapper">
+{% block extra_head %}
+<!-- Tailwind CDN & Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+<!-- Tailwind Configurator -->
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "on-secondary-fixed": "#00174b",
+                    "tertiary": "#943700",
+                    "primary-fixed": "#dbe1ff",
+                    "surface-variant": "#e0e3e5",
+                    "primary": "#004ac6",
+                    "outline": "#737686",
+                    "outline-variant": "#c3c6d7",
+                    "secondary-fixed": "#dbe1ff",
+                    "on-primary-container": "#eeefff",
+                    "error": "#ba1a1a",
+                    "primary-container": "#2563eb",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-background": "#191c1e",
+                    "background": "#f7f9fb",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#0053db",
+                    "surface-container": "#eceef0",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed-dim": "#b4c5ff",
+                    "on-surface-variant": "#434655",
+                    "on-secondary-fixed-variant": "#31447b",
+                    "on-primary-fixed": "#00174b",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#bc4800",
+                    "surface-bright": "#f7f9fb",
+                    "on-surface": "#191c1e",
+                    "on-tertiary-container": "#ffede6",
+                    "inverse-primary": "#b4c5ff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb596",
+                    "surface": "#f7f9fb",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface-dim": "#d8dadc",
+                    "secondary-container": "#acbfff",
+                    "inverse-surface": "#2d3133",
+                    "surface-container-high": "#e6e8ea",
+                    "tertiary-fixed": "#ffdbcd",
+                    "surface-container-low": "#f2f4f6",
+                    "on-secondary-container": "#394c84",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#360f00",
+                    "secondary": "#495c95"
+                },
+                borderRadius: {
+                    "DEFAULT": "0.5rem",
+                    "lg": "1rem",
+                    "xl": "1.25rem",
+                    "full": "9999px"
+                },
+                fontFamily: {
+                    "headline": ["Manrope", "sans-serif"],
+                    "body": ["Inter", "sans-serif"],
+                    "label": ["Inter", "sans-serif"]
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+</style>
+{% endblock %}
 
-    <!-- Header -->
-    <div class="section-header">
-        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
-            <div>
-                <h1 class="section-title mb-1">
-                    <i class="bi bi-folder-fill me-2 text-primary"></i>My Projects
-                </h1>
-                <p class="section-subtitle mb-0">Select a project to view defects in the 3D visualization viewer.</p>
+{% block content %}
+<!-- Sidebar from Homeowner Dashboard -->
+<aside
+    class="hidden md:flex fixed left-0 top-[60px] h-[calc(100vh-60px)] w-64 border-r border-slate-200 flex-col p-4 z-40 bg-white">
+    <!-- Project Info -->
+    <div class="flex flex-col gap-4 mb-6">
+        <div class="flex items-center gap-3 px-2">
+            <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                <span class="material-symbols-outlined text-[20px]">home_work</span>
             </div>
-            <a href="{{ url_for('module2.insert_defect') }}" class="btn btn-primary btn-lg rounded-pill px-4 fw-semibold">
-                <i class="bi bi-plus-lg me-1"></i> New Project
+            <div>
+                <p class="text-sm font-semibold text-slate-900">Project Ledger</p>
+                <p class="text-xs text-slate-500 truncate max-w-[140px]">{{ current_user.project_name or 'No Project' }}
+                </p>
+            </div>
+        </div>
+        <a href="{{ url_for('module2.insert_defect') }}"
+            class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all text-sm no-underline">
+            <span class="material-symbols-outlined text-[18px]"
+                style="font-variation-settings:'FILL' 1;">add_circle</span>
+            Report New Defect
+        </a>
+    </div>
+
+    <!-- Nav Links -->
+    <nav class="flex-1 flex flex-col gap-1">
+        <a href="{{ url_for('module3.dashboard') }}"
+            class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-slate-100 rounded-lg text-sm transition-all hover:translate-x-1 duration-200 no-underline">
+            <span class="material-symbols-outlined text-[20px]">dashboard</span>
+            Dashboard
+        </a>
+        <a href="{{ url_for('module2.insert_defect') }}"
+            class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-slate-100 rounded-lg text-sm transition-all hover:translate-x-1 duration-200 no-underline">
+            <span class="material-symbols-outlined text-[20px]">report_problem</span>
+            Report Defect
+        </a>
+        <a href="http://localhost:5002/"
+            class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-slate-100 rounded-lg text-sm transition-all hover:translate-x-1 duration-200 no-underline">
+            <span class="material-symbols-outlined text-[20px]">gavel</span>
+            Legal AI Chat
+        </a>
+        <a href="{{ url_for('module3.list_projects') }}"
+            class="flex items-center gap-3 text-blue-700 bg-blue-50 rounded-lg px-4 py-3 font-semibold text-sm transition-all hover:translate-x-1 duration-200 no-underline">
+            <span class="material-symbols-outlined text-[20px]">folder_open</span>
+            My Defects
+        </a>
+    </nav>
+
+    <!-- Bottom Links -->
+    <div class="mt-auto flex flex-col gap-1 border-t border-slate-200 pt-4">
+        <a href="{{ url_for('auth.logout') }}"
+            class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-red-50 hover:text-red-600 rounded-lg text-sm transition-all no-underline">
+            <span class="material-symbols-outlined text-[20px]">logout</span>
+            Logout
+        </a>
+    </div>
+</aside>
+
+<div class="md:ml-64 px-6 md:px-12 py-8 md:py-12 w-full max-w-7xl mx-auto">
+    <!-- Header & Search Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div class="space-y-2">
+            <h1 class="text-4xl font-extrabold font-headline text-on-surface tracking-tight">My Projects</h1>
+            <p class="text-on-surface-variant max-w-md">Manage and monitor the progress of your architectural
+                investments.</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="{{ url_for('module2.insert_defect') }}"
+                class="bg-gradient-to-b from-primary to-primary-container text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 shadow-lg hover:shadow-primary/20 transition-all active:scale-95 no-underline">
+                <span class="material-symbols-outlined text-lg">add</span>
+                New Project
             </a>
         </div>
     </div>
 
-    <!-- Search -->
-    <div class="card mb-4">
-        <div class="card-body p-3">
-            <div class="input-group">
-                <span class="input-group-text bg-transparent border-0 text-muted">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" class="form-control border-0 bg-transparent"
-                    placeholder="Search projects by name, ID, or location...">
-            </div>
+    <!-- Search Bar: Tonal Bucket Layering -->
+    <div class="bg-surface-container-low p-6 rounded-xl mb-12 flex items-center">
+        <div class="relative flex-1 group">
+            <span
+                class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+            <input type="text"
+                class="w-full bg-surface-container-lowest border-none pl-12 pr-4 py-4 rounded-md shadow-sm focus:ring-0 focus:border-primary border-b-2 border-transparent transition-all placeholder:text-outline/60 text-on-surface"
+                placeholder="Search projects by name, ID, or location...">
         </div>
     </div>
 
-    <!-- Project Grid -->
-    <div class="section-header">
-        <h2 class="section-title">All Projects</h2>
-        <p class="section-subtitle">Browse and manage your housing development projects</p>
-    </div>
-
-    <div class="row g-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for p in projects %}
-        <div class="col-12 col-sm-6 col-lg-4">
-            <div class="card project-card h-100">
-                <div class="card-body p-4">
+        <div
+            class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 hover:shadow-md hover:border-primary/30 transition-all group flex flex-col relative overflow-hidden">
+            <!-- Subtle background design element -->
+            <div
+                class="absolute top-0 right-0 w-32 h-32 bg-primary/0 group-hover:bg-primary/5 rounded-full -mr-16 -mt-16 blur-xl transition-colors">
+            </div>
 
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="project-icon">
-                                <i class="bi bi-box-seam"></i>
-                            </div>
-                            <div>
-                                <h6 class="card-title fw-bold mb-1">{{ p.name }}</h6>
-                                <small class="text-muted">ID: #{{ p.id }}</small>
-                            </div>
-                        </div>
-                        {% if p.status == 'Processing' %}
-                        <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-1">{{ p.status }}</span>
-                        {% elif p.status == 'Completed' %}
-                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1">{{ p.status }}</span>
-                        {% else %}
-                        <span class="badge bg-info-subtle text-info rounded-pill px-3 py-1">{{ p.status }}</span>
-                        {% endif %}
+            <div class="flex justify-between items-start mb-6 z-10 w-full">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 bg-surface-container-low text-primary rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl"
+                            style="font-variation-settings: 'FILL' 1;">business</span>
                     </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-6">
-                            <div class="project-detail">
-                                <small class="detail-label">Scan Date</small>
-                                <div class="detail-value">{{ p.created_at.strftime('%Y-%m-%d') }}</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="project-detail">
-                                <small class="detail-label">Unit No</small>
-                                <div class="detail-value">{{ p.name }}</div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="project-detail">
-                                <small class="detail-label">Address</small>
-                                <div class="detail-value text-truncate">{{ p.address }}</div>
-                            </div>
-                        </div>
+                    <div>
+                        <h3 class="text-xl font-bold font-headline text-on-surface mb-0">{{ p.name }}</h3>
+                        <p class="text-xs font-bold text-outline mt-1 tracking-wider uppercase">ID: #{{ p.id }}</p>
                     </div>
-
-                    <hr class="my-3">
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="defect-count">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <strong>{{ p.defect_count }}</strong> defects
-                        </div>
-                        <div class="d-flex gap-2">
-                            {% if p.model_path %}
-                            {% if p.house_scan_id %}
-                            <a href="{{ url_for('module3.visualize_defect', defect_id=p.house_scan_id) }}"
-                                class="btn btn-primary btn-sm rounded-pill px-3">
-                                <i class="bi bi-box-fill me-1"></i>3D
-                            </a>
-                            {% else %}
-                            <a href="{{ url_for('module3.visualize', project_id=p.id) }}"
-                                class="btn btn-primary btn-sm rounded-pill px-3">
-                                <i class="bi bi-box-fill me-1"></i>3D
-                            </a>
-                            {% endif %}
-                            {% else %}
-                            <span class="btn btn-secondary btn-sm disabled opacity-50 rounded-pill px-3">
-                                <i class="bi bi-box me-1"></i>No Model
-                            </span>
-                            {% endif %}
-                            <form action="{{ url_for('module3.delete_project', project_id=p.id) }}" method="POST"
-                                onsubmit="return confirm('Delete this project permanently?');">
-                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-2">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
                 </div>
+                <div>
+                    {% if p.status == 'Processing' %}
+                    <span
+                        class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-full uppercase tracking-wider">{{
+                        p.status }}</span>
+                    {% elif p.status == 'Completed' %}
+                    <span
+                        class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full uppercase tracking-wider">{{
+                        p.status }}</span>
+                    {% else %}
+                    <span
+                        class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full uppercase tracking-wider">{{
+                        p.status }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="space-y-4 mb-6 z-10 flex-1">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-on-surface-variant font-medium">Scan Date</span>
+                    <span class="font-bold text-on-surface">{{ p.created_at.strftime('%Y-%m-%d') }}</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-on-surface-variant font-medium">Defects Found</span>
+                    <div class="flex items-center gap-1.5 text-error font-bold bg-error/10 px-2 py-0.5 rounded">
+                        <span class="material-symbols-outlined text-sm">warning</span>
+                        <span>{{ p.defect_count }}</span>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-outline-variant/10">
+                    <p class="text-sm text-on-surface-variant flex items-start gap-2">
+                        <span class="material-symbols-outlined text-[16px] mt-0.5 text-primary/70">location_on</span>
+                        <span class="line-clamp-2 leading-relaxed">{{ p.address }}</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-auto flex gap-3 z-10 border-t border-outline-variant/10 pt-6">
+                {% if p.model_path %}
+                {% if p.house_scan_id %}
+                <a href="{{ url_for('module3.visualize_defect', defect_id=p.house_scan_id) }}"
+                    class="flex-1 bg-primary text-white py-2.5 rounded-lg font-bold text-center hover:bg-primary-container transition-colors shadow-sm active:scale-95 text-sm no-underline">Open
+                    3D Model</a>
+                {% else %}
+                <a href="{{ url_for('module3.visualize', project_id=p.id) }}"
+                    class="flex-1 bg-primary text-white py-2.5 rounded-lg font-bold text-center hover:bg-primary-container transition-colors shadow-sm active:scale-95 text-sm no-underline">Open
+                    3D Model</a>
+                {% endif %}
+                {% else %}
+                <button disabled
+                    class="flex-1 bg-surface-container-high text-outline py-2.5 rounded-lg font-bold text-center opacity-75 cursor-not-allowed text-sm">No
+                    Model</button>
+                {% endif %}
+                <form action="{{ url_for('module3.delete_project', project_id=p.id) }}" method="POST"
+                    onsubmit="return confirm('Delete this project permanently?');" class="m-0">
+                    <button type="submit"
+                        class="w-11 h-11 flex items-center justify-center rounded-lg border border-error/30 text-error hover:bg-error hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                </form>
             </div>
         </div>
         {% else %}
-        <div class="col-12">
-            <div class="empty-state text-center py-5">
-                <i class="bi bi-folder-x display-3 text-muted mb-4"></i>
-                <h4 class="fw-bold text-muted mb-3">No Projects Found</h4>
-                <p class="text-muted mb-4">You are not currently linked to any housing project.</p>
-                <a href="{{ url_for('module2.insert_defect') }}" class="btn btn-primary btn-lg rounded-pill px-4">
-                    <i class="bi bi-plus-lg me-2"></i>Join a Project
+        <!-- Empty State: Architectural Bento-style Focal Point -->
+        <div
+            class="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center py-24 px-6 bg-surface-container-lowest rounded-xl shadow-sm relative overflow-hidden border border-outline-variant/20">
+            <!-- Subtle background design element -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-yellow-600/5 rounded-full -ml-32 -mb-32 blur-3xl"></div>
+
+            <div class="relative z-10 flex flex-col items-center text-center">
+                <div class="w-20 h-20 bg-surface-container-low rounded-full flex items-center justify-center mb-8">
+                    <span class="material-symbols-outlined text-4xl text-primary"
+                        style="font-variation-settings: 'FILL' 0;">folder</span>
+                </div>
+                <h2 class="text-2xl font-bold font-headline text-on-surface mb-3">No Projects Found</h2>
+                <p class="text-on-surface-variant max-w-sm mb-10 leading-relaxed">
+                    You are not currently linked to any housing project.
+                </p>
+                <a href="{{ url_for('module2.insert_defect') }}"
+                    class="bg-surface-container-high text-on-secondary-container px-10 py-3.5 rounded-lg font-semibold hover:bg-surface-container-highest transition-colors active:scale-95 flex items-center gap-3 no-underline">
+                    <span class="material-symbols-outlined text-lg">domain_add</span>
+                    Join a Project
                 </a>
             </div>
         </div>
         {% endfor %}
     </div>
 
+    <!-- Asymmetrical Footer Decoration -->
+    <div
+        class="mt-24 border-t border-outline-variant/20 pt-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 opacity-40 grayscale">
+        <div class="flex gap-12">
+            <div class="space-y-1">
+                <div class="h-1 w-8 bg-primary"></div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface">Structural Reliability</p>
+            </div>
+            <div class="space-y-1">
+                <div class="h-1 w-8 bg-yellow-600"></div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface">Premium Assurance</p>
+            </div>
+        </div>
+        <div class="text-[10px] font-medium text-on-surface-variant">
+            DOCUMENT REF: PRJ-MGR-001
+        </div>
+    </div>
 </div>
 {% endblock %}
