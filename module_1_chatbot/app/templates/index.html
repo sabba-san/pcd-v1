@@ -1,247 +1,704 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DLP Chatbot - Malaysian Property Law Assistant</title>
-    <!-- Combined Premium CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='shared/css/main.css') }}">
-    <!-- Local Overrides if needed -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Defect Liability Period Chatbot</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2d3133",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-bright": "#f7f9fb",
+                        "secondary": "#495c95",
+                        "on-surface-variant": "#434655",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eceef0",
+                        "surface-tint": "#0053db",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-dim": "#d8dadc",
+                        "surface-container-high": "#e6e8ea",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "outline": "#737686",
+                        "secondary-fixed": "#dbe1ff",
+                        "tertiary-container": "#bc4800",
+                        "primary-container": "#2563eb",
+                        "secondary-container": "#acbfff",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1e",
+                        "primary": "#004ac6",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-secondary-fixed-variant": "#31447b",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#00174b",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#191c1e",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary-container": "#394c84",
+                        "surface": "#f7f9fb",
+                        "background": "#f7f9fb",
+                        "on-tertiary-container": "#ffede6",
+                        "outline-variant": "#c3c6d7",
+                        "surface-container-highest": "#e0e3e5",
+                        "tertiary": "#943700",
+                        "surface-container-low": "#f2f4f6",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.25rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .active-nav-bg {
+            background-color: white;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .blueprint-grid {
+            background-image: radial-gradient(#004ac610 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* Essential classes for active/hidden tab behavior */
+        .tab-content {
+            display: none !important;
+        }
+
+        .tab-content.active {
+            display: flex !important;
+        }
+
+        /* Message Bubble Styles for JS injects */
+        .chat-message {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .chat-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .chat-message .message-bubble {
+            padding: 16px 20px;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .chat-message.user .message-bubble {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-top-right-radius: 4px;
+        }
+
+        .chat-message.bot .message-bubble {
+            background-color: #ffffff;
+            border: 1px solid #e0e3e5;
+            color: #191c1e;
+            border-top-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .chat-message.bot .chat-avatar {
+            width: 40px;
+            height: 40px;
+            background: #f2f4f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-read-aloud {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.5;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-read-aloud:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .btn-read-aloud.hidden {
+            display: none;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e0e3e5;
+            border-radius: 12px;
+            border-top-left-radius: 4px;
+        }
+
+        .typing-indicator .dot {
+            width: 6px;
+            height: 6px;
+            background: #c3c6d7;
+            border-radius: 100%;
+            animation: blink 1.4s infinite both;
+        }
+
+        .typing-indicator .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 0.2;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.2;
+            }
+        }
+
+        /* Sidebar dynamic elements */
+        .history-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: #434655;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .history-item-row:hover {
+            background-color: #ffffff;
+        }
+
+        .history-item-row.active {
+            background-color: #ffffff;
+            color: var(--primary);
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .history-title-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.85rem;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .history-item-row:hover .history-actions {
+            opacity: 1;
+        }
+
+        .btn-icon-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .btn-icon-action:hover {
+            opacity: 1;
+        }
+
+        .history-rename-input {
+            width: 100%;
+            font-size: 0.85rem;
+            padding: 2px 4px;
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            outline: none;
+        }
+    </style>
 </head>
 
-<body>
-    <div class="app-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <a href="http://localhost:5000/module3/dashboard" class="btn-back-dashboard">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+<body class="bg-surface font-body text-on-surface">
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar Navigation -->
+        <aside class="w-72 bg-surface-container-low flex flex-col border-r-0 h-screen fixed left-0 top-0 z-20">
+            <!-- Header Section -->
+            <div class="p-6">
+                <!-- Back to dashboard link -->
+                <a href="http://localhost:5000/module3/dashboard"
+                    class="flex items-center gap-2 text-sm text-outline hover:text-primary mb-6 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Back to Dashboard
                 </a>
-                <a href="http://localhost:5000/module3/dashboard" style="text-decoration: none; color: inherit;">
-                    <h1 class="sidebar-title">DLP Chatbot</h1>
-                </a>
-                <p class="sidebar-subtitle">Malaysian Property Law</p>
-                <button id="newChatBtn" class="btn-new-chat">+ New Chat</button>
+
+                <div class="flex items-center gap-3 mb-2">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container">
+                        <span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+                    </div>
+                    <div>
+                        <h1 class="font-headline font-bold text-lg text-primary tracking-tight">DLP Chatbot</h1>
+                        <p class="font-label text-xs text-on-surface-variant leading-tight">Malaysian Property Law</p>
+                    </div>
+                </div>
             </div>
 
-            <nav class="sidebar-nav">
-                <button class="nav-tab active" data-tab="chat">💬 Current Chat</button>
-                <button class="nav-tab" data-tab="guidelines">📋 Guidelines</button>
-                <button class="nav-tab" data-tab="assessment">⚖️ Assessment</button>
-                <button class="nav-tab" data-tab="legal">⚖️ Legal Refs</button>
-                <button class="nav-tab" data-tab="feedback">💭 Feedback</button>
+            <!-- CTA Section -->
+            <div class="px-6 mb-6">
+                <button id="newChatBtn"
+                    class="w-full bg-gradient-to-b from-primary to-primary-container text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2 font-headline font-bold text-sm shadow-sm transition-transform active:scale-95 duration-150">
+                    <span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                    + New Chat
+                </button>
+            </div>
+
+            <!-- Main Navigation Tabs -->
+            <nav class="flex-1 px-3 space-y-1 overflow-y-auto">
+                <div class="nav-tab active active-nav-bg text-primary font-semibold rounded-lg px-4 py-2.5 flex items-center gap-3 transition-all cursor-pointer"
+                    data-tab="chat">
+                    <span class="material-symbols-outlined" data-icon="chat_bubble" data-weight="fill"
+                        style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+                    <span class="text-sm">Current Chat</span>
+                </div>
+                <div class="nav-tab text-on-surface-variant hover:text-primary hover:translate-x-1 transition-all rounded-lg px-4 py-2.5 flex items-center gap-3 cursor-pointer"
+                    data-tab="guidelines">
+                    <span class="material-symbols-outlined" data-icon="description">description</span>
+                    <span class="text-sm">Guidelines</span>
+                </div>
+                <div class="nav-tab text-on-surface-variant hover:text-primary hover:translate-x-1 transition-all rounded-lg px-4 py-2.5 flex items-center gap-3 cursor-pointer"
+                    data-tab="assessment">
+                    <span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+                    <span class="text-sm">Assessment</span>
+                </div>
+                <div class="nav-tab text-on-surface-variant hover:text-primary hover:translate-x-1 transition-all rounded-lg px-4 py-2.5 flex items-center gap-3 cursor-pointer"
+                    data-tab="legal">
+                    <span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+                    <span class="text-sm">Legal Refs</span>
+                </div>
+                <div class="nav-tab text-on-surface-variant hover:text-primary hover:translate-x-1 transition-all rounded-lg px-4 py-2.5 flex items-center gap-3 cursor-pointer"
+                    data-tab="feedback">
+                    <span class="material-symbols-outlined" data-icon="feedback">feedback</span>
+                    <span class="text-sm">Feedback</span>
+                </div>
+
+                <!-- Recent Chats Section -->
+                <div class="mt-8 px-4">
+                    <p class="text-[10px] font-bold tracking-widest text-outline uppercase mb-4">RECENT CHATS</p>
+                    <div id="conversationList" class="conversation-list"></div>
+                </div>
             </nav>
 
-            <div class="conversation-history-section">
-                <h3 class="history-label">Recent Chats</h3>
-                <div id="conversationList" class="conversation-list"></div>
-            </div>
-
-            <div class="sidebar-footer" style="padding-top: 1rem; border-top: 1px solid var(--border);">
-                <button id="clearAllData" class="btn btn-secondary"
-                    style="width: 100%; margin-bottom: 0.5rem; justify-content: flex-start;">🗑️ Clear Data</button>
-                <button id="toggleTheme" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">🌙
-                    Theme</button>
+            <!-- Bottom Actions -->
+            <div class="p-6 border-t border-outline-variant/10">
+                <div class="space-y-1">
+                    <button id="clearAllData"
+                        class="w-full flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-primary transition-all text-sm rounded-lg">
+                        <span class="material-symbols-outlined" data-icon="delete_sweep">delete_sweep</span>
+                        Clear Data
+                    </button>
+                    <button id="toggleTheme"
+                        class="w-full flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-primary transition-all text-sm rounded-lg">
+                        <span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+                        Theme
+                    </button>
+                </div>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
+        <!-- Main Content Canvas -->
+        <main class="flex-1 ml-72 relative flex flex-col bg-surface overflow-hidden blueprint-grid">
+
+            <!-- Top Header Bar (Architectural Anchor) -->
+            <header
+                class="h-16 flex items-center justify-between px-8 bg-surface-container-lowest/80 backdrop-blur-md z-10 shrink-0 border-b border-outline-variant/10">
+                <div class="flex items-center gap-4">
+                    <h2 class="font-headline font-extrabold text-lg text-on-surface tracking-tight">Legal Ledger AI</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span
+                        class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors"
+                        data-icon="account_balance">account_balance</span>
+                    <span
+                        class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors"
+                        data-icon="help_outline">help_outline</span>
+                </div>
+            </header>
+
             <!-- Chat Tab -->
-            <section id="chat" class="tab-content active">
-                <div class="chat-container">
-                    <div id="chatMessages" class="chat-messages">
-                        <div class="message bot">
-                            Hello! I am your DLP Assistant. How can I help you with your property defects today?
+            <section id="chat" class="tab-content active flex-1 flex-col w-full h-full relative overflow-hidden">
+                <div class="flex-1 flex flex-col overflow-y-auto px-8 pt-8 pb-4">
+                    <div id="chatMessages" class="chat-messages w-full max-w-4xl mx-auto flex flex-col">
+                        <!-- Chat Content (Empty State Template - Can be cleared dynamically by JS) -->
+                        <div class="empty-state-intro flex flex-col items-center justify-center py-20 text-center">
+                            <div
+                                class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-surface-container-lowest shadow-sm mb-6 relative">
+                                <span class="material-symbols-outlined text-primary text-4xl" data-icon="gavel"
+                                    style="font-variation-settings: 'wght' 300;">gavel</span>
+                                <div
+                                    class="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full border-4 border-surface">
+                                </div>
+                            </div>
+                            <h3 class="font-headline text-3xl font-bold text-on-surface mb-3 tracking-tight">
+                                Consultation Hub</h3>
+                            <p class="text-on-surface-variant text-lg leading-relaxed max-w-md mx-auto">
+                                Access expert guidance on Malaysian property law and housing defect management.
+                            </p>
                         </div>
                     </div>
                 </div>
-                <div class="chat-input-area">
-                    <textarea id="userInput" class="chat-input" placeholder="Ask a question..." rows="1"></textarea>
-                    <button id="sendBtn" class="btn-primary">Send</button>
+
+                <!-- Message Input Area -->
+                <div class="p-8 w-full max-w-4xl mx-auto shrink-0 bg-gradient-to-t from-surface to-surface/0 mt-auto">
+                    <div
+                        class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 p-2 transition-all focus-within:ring-primary/40 focus-within:ring-2">
+                        <div class="flex items-end gap-2">
+                            <div class="flex-1">
+                                <textarea id="userInput"
+                                    class="w-full bg-transparent border-0 focus:ring-0 outline-none text-on-surface placeholder:text-outline-variant resize-none py-3 px-4 min-h-[56px] max-h-48 font-body"
+                                    placeholder="Ask a legal question regarding your property defects..."
+                                    rows="1"></textarea>
+                            </div>
+                            <div class="pb-1.5 pr-1.5 shrink-0">
+                                <button id="sendBtn"
+                                    class="bg-primary text-white p-3 rounded-lg flex items-center justify-center hover:bg-primary-container transition-all active:scale-95 shadow-sm">
+                                    <span class="material-symbols-outlined text-[20px]" data-icon="send"
+                                        data-weight="fill" style="font-variation-settings: 'FILL' 1;">send</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="mt-4 flex items-center justify-center gap-6 text-[11px] font-medium text-outline-variant tracking-wide">
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm"
+                                data-icon="verified_user">verified_user</span>
+                            MALAYSIAN LAW VERIFIED
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
+                            AI POWERED ANALYSIS
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- Guidelines Tab -->
-            <section id="guidelines" class="tab-content">
-                <div class="guidelines-container">
+            <section id="guidelines" class="tab-content flex-1 flex-col overflow-y-auto p-8 w-full">
+                <div
+                    class="max-w-4xl mx-auto w-full bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 p-10 mt-8">
+                    <header class="mb-8 border-b border-outline-variant/20 pb-6">
+                        <h1 class="text-3xl font-headline font-bold text-on-surface mb-2 tracking-tight">Defect
+                            Liability Guidelines</h1>
+                        <p class="text-on-surface-variant font-medium">Malaysian Property Law Reference</p>
+                    </header>
 
-                    <article class="guidelines-paper">
-
-                        <header class="guidelines-header">
-                            <h1>Defect Liability Guidelines</h1>
-                            <p>Malaysian Property Law Reference</p>
-                        </header>
-
-                        <div class="guidelines-content">
-
-                            <div class="guide-section">
-                                <h3><span class="icon">🔍</span> Overview</h3>
-                                <p>The <strong>Defect Liability Period (DLP)</strong> is a mandatory warranty period
-                                    (typically 24 months) where the developer acts as the "contractor" to fix defects at
-                                    no cost.</p>
-                            </div>
-
-                            <div class="guide-section">
-                                <h3><span class="icon">⚖️</span> Legal Basis</h3>
-                                <ul>
-                                    <li><strong>HDA 1966:</strong> The primary Housing Development Act.</li>
-                                    <li><strong>Schedule G & H:</strong> Standard agreements for landed & strata titles.
-                                    </li>
-                                    <li><strong>CIS 7:</strong> QLASSIC quality standards.</li>
-                                </ul>
-                            </div>
-
-                            <div class="guide-section">
-                                <h3><span class="icon">📅</span> Standard Duration</h3>
-                                <ul>
-                                    <li><strong>Residential:</strong> 24 Months from Vacant Possession (VP).</li>
-                                    <li><strong>Commercial:</strong> Typically 12-24 Months (Check your SPA).</li>
-                                </ul>
-                            </div>
-
-                            <div class="guide-section">
-                                <h3><span class="icon">⚠️</span> Common Issues & Tips</h3>
-                                <ul>
-                                    <li><strong>Written Notice:</strong> Report immediately via official channels.</li>
-                                    <li><strong>Evidence:</strong> Photos/Videos are required before renovation.</li>
-                                    <li><strong>Marking:</strong> Use masking tape for visual inspection.</li>
-                                </ul>
-                            </div>
-
+                    <div class="space-y-8">
+                        <div class="guide-section">
+                            <h3 class="flex items-center gap-2 text-xl font-bold text-on-surface mb-3"><span
+                                    class="text-primary text-2xl">🔍</span> Overview</h3>
+                            <p class="text-on-surface-variant leading-relaxed">The <strong
+                                    class="text-on-surface">Defect Liability Period (DLP)</strong> is a mandatory
+                                warranty period (typically 24 months) where the developer acts as the "contractor" to
+                                fix defects at no cost.</p>
                         </div>
-                        <div class="guidelines-footer">
-                            <button id="backToChatBtn">Back to Chat</button>
+
+                        <div class="guide-section">
+                            <h3 class="flex items-center gap-2 text-xl font-bold text-on-surface mb-3"><span
+                                    class="text-primary text-2xl">⚖️</span> Legal Basis</h3>
+                            <ul class="list-disc pl-5 space-y-2 text-on-surface-variant marker:text-primary">
+                                <li><strong>HDA 1966:</strong> The primary Housing Development Act.</li>
+                                <li><strong>Schedule G & H:</strong> Standard agreements for landed & strata titles.
+                                </li>
+                                <li><strong>CIS 7:</strong> QLASSIC quality standards.</li>
+                            </ul>
                         </div>
-                    </article>
+
+                        <div class="guide-section">
+                            <h3 class="flex items-center gap-2 text-xl font-bold text-on-surface mb-3"><span
+                                    class="text-primary text-2xl">📅</span> Standard Duration</h3>
+                            <ul class="list-disc pl-5 space-y-2 text-on-surface-variant marker:text-primary">
+                                <li><strong>Residential:</strong> 24 Months from Vacant Possession (VP).</li>
+                                <li><strong>Commercial:</strong> Typically 12-24 Months (Check your SPA).</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h3 class="flex items-center gap-2 text-xl font-bold text-on-surface mb-3"><span
+                                    class="text-primary text-2xl">⚠️</span> Common Issues & Tips</h3>
+                            <ul class="list-disc pl-5 space-y-2 text-on-surface-variant marker:text-primary">
+                                <li><strong>Written Notice:</strong> Report immediately via official channels.</li>
+                                <li><strong>Evidence:</strong> Photos/Videos are required before renovation.</li>
+                                <li><strong>Marking:</strong> Use masking tape for visual inspection.</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- Assessment Tab -->
-            <section id="assessment" class="tab-content">
-                <div class="content-header">
-                    <h2>DLP Assessment Tool</h2>
-                    <p>Evaluate defect liability based on Malaysian property law</p>
+            <section id="assessment" class="tab-content flex-1 flex-col overflow-y-auto p-8 w-full">
+                <div class="max-w-3xl mx-auto w-full mt-8">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-headline font-bold tracking-tight text-on-surface mb-2">DLP Assessment
+                            Tool</h2>
+                        <p class="text-on-surface-variant text-lg">Evaluate defect liability based on Malaysian property
+                            law</p>
+                    </div>
+
+                    <form id="assessmentForm"
+                        class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 p-8 space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-on-surface mb-2">Defect Type</label>
+                            <select id="defectType" required
+                                class="w-full rounded-lg border-outline-variant/30 py-3 px-4 focus:ring-primary focus:border-primary">
+                                <option value="">-- Select Defect Type --</option>
+                                <option value="structural">Structural Defect</option>
+                                <option value="finishing">Finishing Defect</option>
+                                <option value="electrical">Electrical Defect</option>
+                                <option value="plumbing">Plumbing Defect</option>
+                                <option value="other">Other Defect</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-on-surface mb-2">Reported Within DLP
+                                Period</label>
+                            <select id="reportedWithin" required
+                                class="w-full rounded-lg border-outline-variant/30 py-3 px-4 focus:ring-primary focus:border-primary">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-on-surface mb-2">Severity Level</label>
+                            <select id="severity" required
+                                class="w-full rounded-lg border-outline-variant/30 py-3 px-4 focus:ring-primary focus:border-primary">
+                                <option value="minor">Minor</option>
+                                <option value="moderate">Moderate</option>
+                                <option value="severe">Severe</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-on-surface mb-2">Estimated Repair Cost
+                                (RM)</label>
+                            <input type="number" id="repairCost" min="0" placeholder="Enter amount"
+                                class="w-full rounded-lg border-outline-variant/30 py-3 px-4 focus:ring-primary focus:border-primary">
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-primary text-white font-bold rounded-lg py-4 hover:bg-primary-container transition-colors mt-4">Run
+                            Assessment</button>
+                    </form>
+                    <div id="assessmentResult" class="mt-8 bg-surface-container-low rounded-xl p-6 hidden"></div>
                 </div>
-                <form id="assessmentForm" class="assessment-form">
-                    <div class="form-group">
-                        <label for="defectType">Defect Type:</label>
-                        <select id="defectType" required>
-                            <option value="">-- Select Defect Type --</option>
-                            <option value="structural">Structural Defect</option>
-                            <option value="finishing">Finishing Defect</option>
-                            <option value="electrical">Electrical Defect</option>
-                            <option value="plumbing">Plumbing Defect</option>
-                            <option value="other">Other Defect</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="reportedWithin">Reported Within DLP Period:</label>
-                        <select id="reportedWithin" required>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="severity">Severity Level:</label>
-                        <select id="severity" required>
-                            <option value="minor">Minor</option>
-                            <option value="moderate">Moderate</option>
-                            <option value="severe">Severe</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="repairCost">Estimated Repair Cost (RM):</label>
-                        <input type="number" id="repairCost" min="0" placeholder="Enter amount">
-                    </div>
-                    <button type="submit" class="btn-primary">Run Assessment</button>
-                </form>
-                <div id="assessmentResult" class="assessment-result"></div>
             </section>
 
             <!-- Legal References Tab -->
-            <section id="legal" class="tab-content">
-                <div class="content-header">
-                    <h2>Legal References</h2>
-                    <p>Official sources and acts related to Malaysian Property Law</p>
-                </div>
+            <section id="legal" class="tab-content flex-1 flex-col overflow-y-auto p-8 w-full">
+                <div class="max-w-5xl mx-auto w-full mt-8">
+                    <div class="mb-10 text-center">
+                        <h2 class="text-3xl font-headline font-bold tracking-tight text-on-surface mb-2">Legal
+                            References</h2>
+                        <p class="text-on-surface-variant text-lg">Official sources and acts related to Malaysian
+                            Property Law</p>
+                    </div>
 
-                <div class="legal-grid">
-
-                    <a href="https://www.iproperty.com.my/guides/what-is-hda-housing-development-act-malaysia-53570"
-                        target="_blank" class="legal-card">
-                        <div class="legal-icon">🏠</div>
-                        <div class="legal-info">
-                            <h4>Housing Development Act (HDA) <span class="external-icon">↗</span></h4>
-                            <p>The primary act governing residential property development and buyer protection.</p>
-                        </div>
-                    </a>
-
-                    <a href="https://www.ppj.gov.my/en/second-page/akta-pengurusan-strata-2013-akta-757" target="_blank"
-                        class="legal-card">
-                        <div class="legal-icon">🏢</div>
-                        <div class="legal-info">
-                            <h4>Strata Management Act 2013 <span class="external-icon">↗</span></h4>
-                            <p>Governs the maintenance and management of buildings and common property.</p>
-                        </div>
-                    </a>
-
-                    <a href="https://www.propertyguru.com.my/property-guides/what-is-schedule-g-h-i-j-certificate-of-fitness-34566"
-                        target="_blank" class="legal-card">
-                        <div class="legal-icon">📜</div>
-                        <div class="legal-info">
-                            <h4>Schedule G & H Agreements <span class="external-icon">↗</span></h4>
-                            <p>Standard Sale & Purchase Agreements (SPA) for Landed vs. Strata properties.</p>
-                        </div>
-                    </a>
-
-                    <a href="https://www.cidb.gov.my/eng/qlassic-quality-assessment-system-for-building-construction-works/"
-                        target="_blank" class="legal-card">
-                        <div class="legal-icon">🏗️</div>
-                        <div class="legal-info">
-                            <h4>CIS 7: QLASSIC Standards <span class="external-icon">↗</span></h4>
-                            <p>Quality Assessment System in Construction standards by CIDB.</p>
-                        </div>
-                    </a>
-
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <a href="https://www.iproperty.com.my/guides/what-is-hda-housing-development-act-malaysia-53570"
+                            target="_blank"
+                            class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 hover:shadow-md hover:border-primary/50 transition-all group flex gap-5 no-underline">
+                            <div class="text-3xl mt-1">🏠</div>
+                            <div>
+                                <h4
+                                    class="font-bold text-on-surface group-hover:text-primary transition-colors flex items-center gap-1 mb-2">
+                                    Housing Development Act <span
+                                        class="material-symbols-outlined text-[16px] text-outline">open_in_new</span>
+                                </h4>
+                                <p class="text-sm text-on-surface-variant leading-relaxed">The primary act governing
+                                    residential property development and buyer protection.</p>
+                            </div>
+                        </a>
+                        <a href="https://www.ppj.gov.my/en/second-page/akta-pengurusan-strata-2013-akta-757"
+                            target="_blank"
+                            class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 hover:shadow-md hover:border-primary/50 transition-all group flex gap-5 no-underline">
+                            <div class="text-3xl mt-1">🏢</div>
+                            <div>
+                                <h4
+                                    class="font-bold text-on-surface group-hover:text-primary transition-colors flex items-center gap-1 mb-2">
+                                    Strata Management Act 2013 <span
+                                        class="material-symbols-outlined text-[16px] text-outline">open_in_new</span>
+                                </h4>
+                                <p class="text-sm text-on-surface-variant leading-relaxed">Governs the maintenance and
+                                    management of buildings and common property.</p>
+                            </div>
+                        </a>
+                        <a href="https://www.propertyguru.com.my/property-guides/what-is-schedule-g-h-i-j-certificate-of-fitness-34566"
+                            target="_blank"
+                            class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 hover:shadow-md hover:border-primary/50 transition-all group flex gap-5 no-underline">
+                            <div class="text-3xl mt-1">📜</div>
+                            <div>
+                                <h4
+                                    class="font-bold text-on-surface group-hover:text-primary transition-colors flex items-center gap-1 mb-2">
+                                    Schedule G & H Agreements <span
+                                        class="material-symbols-outlined text-[16px] text-outline">open_in_new</span>
+                                </h4>
+                                <p class="text-sm text-on-surface-variant leading-relaxed">Standard Sale & Purchase
+                                    Agreements (SPA) for Landed vs. Strata properties.</p>
+                            </div>
+                        </a>
+                        <a href="https://www.cidb.gov.my/eng/qlassic-quality-assessment-system-for-building-construction-works/"
+                            target="_blank"
+                            class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 hover:shadow-md hover:border-primary/50 transition-all group flex gap-5 no-underline">
+                            <div class="text-3xl mt-1">🏗️</div>
+                            <div>
+                                <h4
+                                    class="font-bold text-on-surface group-hover:text-primary transition-colors flex items-center gap-1 mb-2">
+                                    CIS 7: QLASSIC Standards <span
+                                        class="material-symbols-outlined text-[16px] text-outline">open_in_new</span>
+                                </h4>
+                                <p class="text-sm text-on-surface-variant leading-relaxed">Quality Assessment System in
+                                    Construction standards by CIDB.</p>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </section>
 
             <!-- Feedback Tab -->
-            <section id="feedback" class="tab-content">
-                <div class="content-header">
-                    <h2>Send Feedback</h2>
-                    <p>Help us improve the DLP Chatbot</p>
+            <section id="feedback" class="tab-content flex-1 flex-col overflow-y-auto p-8 w-full">
+                <div class="max-w-2xl mx-auto w-full mt-10">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-headline font-bold text-on-surface mb-2">Send Feedback</h2>
+                        <p class="text-on-surface-variant">Help us improve the DLP Chatbot experience</p>
+                    </div>
+                    <form id="feedbackForm"
+                        class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 p-8 space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-on-surface mb-2">Feedback Type</label>
+                            <select id="feedbackType" required
+                                class="w-full rounded-lg border-outline-variant/30 py-3 px-4 focus:ring-primary focus:border-primary">
+                                <option value="suggestion">💡 Suggestion</option>
+                                <option value="bug">🐛 Bug Report</option>
+                                <option value="other">💬 Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-on-surface mb-2">Your Feedback</label>
+                            <textarea id="feedbackText" rows="6" required
+                                placeholder="Please describe your experience or issue..."
+                                class="w-full rounded-lg border-outline-variant/30 py-3 px-4 focus:ring-primary focus:border-primary resize-y"></textarea>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-on-surface text-white font-bold rounded-lg py-4 hover:bg-black transition-colors mt-4">Submit
+                            Feedback</button>
+                    </form>
+                    <div id="feedbackStatus" class="mt-4 text-center font-bold text-primary"></div>
                 </div>
-                <form id="feedbackForm" class="feedback-form">
-                    <div class="form-group">
-                        <label for="feedbackType">Feedback Type:</label>
-                        <select id="feedbackType" required>
-                            <option value="suggestion">Suggestion</option>
-                            <option value="bug">Bug Report</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="feedbackText">Your Feedback:</label>
-                        <textarea id="feedbackText" rows="5" required
-                            placeholder="Please share your feedback..."></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary">Submit Feedback</button>
-                </form>
-                <div id="feedbackStatus" class="feedback-status"></div>
             </section>
 
         </main>
     </div>
 
-    <div id="notification" class="notification"></div>
+    <!-- Background Decorative Element -->
+    <div
+        class="fixed top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none z-0">
+    </div>
 
-    <!-- Linked correct JS -->
+    <div id="notification"
+        class="fixed bottom-6 right-6 px-6 py-3 rounded-lg text-white font-bold shadow-lg opacity-0 transition-opacity z-50">
+    </div>
+
+    <!-- Essential JS specific to chatbot -->
     <script src="{{ url_for('static', filename='shared/js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+    <script>
+        // Very simple script to ensure empty state disappears when history renders
+        // app.js will handle the rest cleanly
+        const observeTarget = document.getElementById('chatMessages');
+        if (observeTarget) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    const emptyState = document.querySelector('.empty-state-intro');
+                    if (emptyState && observeTarget.querySelectorAll('.chat-message').length > 0) {
+                        emptyState.style.display = 'none';
+                    } else if (emptyState && observeTarget.querySelectorAll('.chat-message').length === 0) {
+                        emptyState.style.display = 'flex';
+                    }
+                });
+            });
+            observer.observe(observeTarget, { childList: true });
+        }
+    </script>
 </body>
 
 </html>

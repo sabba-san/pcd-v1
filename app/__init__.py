@@ -20,8 +20,12 @@ def create_app():
     db.init_app(app)
     
     with app.app_context():
-        from app import models # Ensure models are loaded
-        db.create_all()
+        from app import models  # Ensure models are loaded
+        try:
+            db.create_all()
+        except Exception as e:
+            print(f"[WARNING] db.create_all() failed (DB may not be ready yet): {e}")
+
     
     # --- FLASK LOGIN SETUP ---
     from flask_login import LoginManager

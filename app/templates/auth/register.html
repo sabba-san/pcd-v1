@@ -9,7 +9,9 @@
     <title>Register - DLP Advisor</title>
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
         /* =====================
@@ -42,7 +44,9 @@
             padding: 0;
         }
 
-        h1, h2, h3 {
+        h1,
+        h2,
+        h3 {
             font-family: 'DM Sans', sans-serif;
             font-weight: 700;
         }
@@ -386,13 +390,14 @@
         <!-- Left Hero Section -->
         <section class="register-hero">
             <div class="register-hero-content">
-                <h2>Architect Ledger</h2>
+                <h2>DLP Portal</h2>
                 <p>The modern digital blueprint for meticulous housing defect management.</p>
 
                 <div class="hero-message-box" id="heroMessage">
                     <div class="hero-message-label">Registration</div>
                     <div class="hero-message-title">Secure your investment.</div>
-                    <div class="hero-message-text">Join your property project ledger to track defects, schedule repairs, and ensure architectural integrity.</div>
+                    <div class="hero-message-text">Join your property project ledger to track defects, schedule repairs,
+                        and ensure architectural integrity.</div>
                 </div>
             </div>
         </section>
@@ -406,12 +411,15 @@
                 </div>
 
                 <form action="{{ url_for('auth.register') }}" method="POST" id="registerForm">
+                    <!-- Hidden role field updated by JS -->
+                    <input type="hidden" name="role" id="hiddenRole" value="user">
                     <!-- Homeowner Section -->
                     <div class="form-section active" data-role="homeowner">
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Full Name</label>
-                                <input type="text" name="full_name_homeowner" class="form-input" placeholder="Ali Baba">
+                                <input type="text" name="full_name" id="full_name_homeowner" class="form-input"
+                                    placeholder="Ali Baba">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">IC Number</label>
@@ -422,7 +430,8 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Email</label>
-                                <input type="email" name="email_homeowner" class="form-input" placeholder="name@example.com">
+                                <input type="email" name="email" id="email_homeowner" class="form-input"
+                                    placeholder="name@example.com">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Phone Number</label>
@@ -433,19 +442,20 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">I am a...</label>
-                                <select name="user_type" class="form-select" id="roleSelector">
-                                    <option value="homeowner" selected>Homeowner</option>
+                                <select class="form-select" id="roleSelector">
+                                    <option value="user" selected>Homeowner</option>
                                     <option value="lawyer">Lawyer</option>
                                     <option value="developer">Housing Developer</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Select Your Housing Project</label>
-                                <select name="housing_project" class="form-select">
-                                    <option disabled selected>Select a project</option>
+                                <select name="project_name_select" class="form-select">
+                                    <option value="" disabled selected>Select a project</option>
                                     <option>The Ledger Heights</option>
                                     <option>Skyline Residency</option>
                                     <option>Emerald Valley Phase 2</option>
+                                    <option value="Other">Other</option>
                                 </select>
                             </div>
                         </div>
@@ -453,16 +463,12 @@
                         <div class="form-row full">
                             <div class="form-group">
                                 <label class="form-label">Correspondence Address</label>
-                                <textarea name="correspondence_address" class="form-textarea" placeholder="Enter your full mailing address"></textarea>
+                                <textarea name="correspondence_address" class="form-textarea"
+                                    placeholder="Enter your full mailing address"></textarea>
                             </div>
                         </div>
 
-                        <div class="form-row full">
-                            <div class="form-group">
-                                <label class="form-label">Password</label>
-                                <input type="password" name="password_homeowner" class="form-input" placeholder="••••••••">
-                            </div>
-                        </div>
+
                     </div>
 
                     <!-- Lawyer Section -->
@@ -470,26 +476,28 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Full Name</label>
-                                <input type="text" name="full_name_lawyer" class="form-input" placeholder="Ali Baba">
+                                <input type="text" name="full_name_lawyer_display" class="form-input"
+                                    placeholder="Ali Baba">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email</label>
-                                <input type="email" name="email_lawyer" class="form-input" placeholder="name@example.com">
+                                <input type="email" name="email_lawyer_display" class="form-input"
+                                    placeholder="name@example.com">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">I am a...</label>
-                                <select name="user_type_lawyer" class="form-select" id="roleSelector2">
-                                    <option value="homeowner">Homeowner</option>
+                                <select class="form-select" id="roleSelector2">
+                                    <option value="user">Homeowner</option>
                                     <option value="lawyer" selected>Lawyer</option>
                                     <option value="developer">Housing Developer</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Law Firm Name</label>
-                                <input type="text" name="law_firm_name" class="form-input" placeholder="Zulaikha & Partners">
+                                <input type="text" name="law_firm" class="form-input" placeholder="Zulaikha & Partners">
                             </div>
                         </div>
 
@@ -497,10 +505,6 @@
                             <div class="form-group">
                                 <label class="form-label">Bar Council ID</label>
                                 <input type="text" name="bar_council_id" class="form-input" placeholder="BC/A/123">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Password</label>
-                                <input type="password" name="password_lawyer" class="form-input" placeholder="••••••••">
                             </div>
                         </div>
                     </div>
@@ -511,19 +515,21 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Full Name (as per NRIC)</label>
-                                <input type="text" name="full_name_developer" class="form-input" placeholder="Enter full name">
+                                <input type="text" name="full_name_developer_display" class="form-input"
+                                    placeholder="Enter full name">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email Address</label>
-                                <input type="email" name="email_developer" class="form-input" placeholder="official@developer.com">
+                                <input type="email" name="email_developer_display" class="form-input"
+                                    placeholder="official@developer.com">
                             </div>
                         </div>
 
                         <div class="form-row full">
                             <div class="form-group">
                                 <label class="form-label">I am a...</label>
-                                <select name="user_type_developer" class="form-select" id="roleSelector3">
-                                    <option value="homeowner">Homeowner</option>
+                                <select class="form-select" id="roleSelector3">
+                                    <option value="user">Homeowner</option>
                                     <option value="lawyer">Lawyer</option>
                                     <option value="developer" selected>Housing Developer</option>
                                 </select>
@@ -537,29 +543,33 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Company Name (Nama Syarikat)</label>
-                                <input type="text" name="company_name" class="form-input" placeholder="Enter company name">
+                                <input type="text" name="developer_company" class="form-input"
+                                    placeholder="Enter company name">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Company Registration No. (SSM)</label>
-                                <input type="text" name="company_registration_no" class="form-input" placeholder="SSM Number">
+                                <input type="text" name="developer_ssm" class="form-input" placeholder="SSM Number">
                             </div>
                         </div>
 
                         <div class="form-row full">
                             <div class="form-group">
                                 <label class="form-label">Company Address (Alamat Surat Menyurat)</label>
-                                <textarea name="company_address" class="form-textarea" placeholder="Full postal address"></textarea>
+                                <textarea name="developer_address" class="form-textarea"
+                                    placeholder="Full postal address"></textarea>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Contact Number (No. Telefon Syarikat)</label>
-                                <input type="tel" name="company_contact_number" class="form-input" placeholder="+60 3-XXXX XXXX">
+                                <input type="tel" name="contact_number_dev" class="form-input"
+                                    placeholder="+60 3-XXXX XXXX">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Fax / Email (No. Faks/E-mel)</label>
-                                <input type="text" name="company_fax_email" class="form-input" placeholder="Fax or Company Email">
+                                <input type="text" name="fax_email" class="form-input"
+                                    placeholder="Fax or Company Email">
                             </div>
                         </div>
                     </div>
@@ -570,11 +580,12 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Representative Staff Name</label>
-                                <input type="text" name="representative_name" class="form-input" placeholder="Representative name">
+                                <input type="text" name="staff_name" class="form-input"
+                                    placeholder="Representative name">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Representative NRIC</label>
-                                <input type="text" name="representative_nric" class="form-input" placeholder="XXXXXX-XX-XXXX">
+                                <input type="text" name="nric" class="form-input" placeholder="XXXXXX-XX-XXXX">
                             </div>
                         </div>
                     </div>
@@ -583,7 +594,7 @@
                     <div class="form-section" style="display: block;">
                         <div class="form-row full">
                             <div class="form-group">
-                                <label class="form-label">Account Password</label>
+                                <label class="form-label">Password</label>
                                 <input type="password" name="password" class="form-input" placeholder="••••••••••••">
                             </div>
                         </div>
@@ -608,9 +619,15 @@
             document.getElementById('roleSelector2'),
             document.getElementById('roleSelector3')
         ];
+        const hiddenRole = document.getElementById('hiddenRole');
+        const emailHomeowner = document.getElementById('email_homeowner');
+        const fullNameHomeowner = document.getElementById('full_name_homeowner');
+
+        // Map display role values to data-role attributes
+        const roleToDataRole = { 'user': 'homeowner', 'lawyer': 'lawyer', 'developer': 'developer' };
 
         const heroMessages = {
-            homeowner: {
+            user: {
                 label: 'Registration',
                 title: 'Secure your investment.',
                 text: 'Join your property project ledger to track defects, schedule repairs, and ensure architectural integrity.'
@@ -628,17 +645,22 @@
         };
 
         function updateFormAndHero(role) {
-            // Update form sections
+            const dataRole = roleToDataRole[role] || 'homeowner';
+
+            // Update hidden role field sent to backend
+            hiddenRole.value = role;
+
+            // Show/hide form sections
             document.querySelectorAll('.form-section').forEach(section => {
-                const dataRole = section.getAttribute('data-role');
-                if (dataRole === role) {
+                const sectionRole = section.getAttribute('data-role');
+                if (sectionRole === dataRole || sectionRole === null) {
                     section.classList.add('active');
                 } else {
                     section.classList.remove('active');
                 }
             });
 
-            // Update all role selectors to match
+            // Sync all role selectors
             roleSelectors.forEach(selector => {
                 if (selector) selector.value = role;
             });
@@ -651,6 +673,23 @@
                 document.querySelector('.hero-message-text').textContent = heroMessage.text;
             }
         }
+
+        // On submit: copy visible role-specific email/full_name into the common fields
+        document.getElementById('registerForm').addEventListener('submit', function () {
+            const role = hiddenRole.value;
+            const form = this;
+            if (role === 'lawyer') {
+                const lawyerEmail = form.querySelector('[name="email_lawyer_display"]');
+                const lawyerName = form.querySelector('[name="full_name_lawyer_display"]');
+                if (lawyerEmail && lawyerEmail.value) emailHomeowner.value = lawyerEmail.value;
+                if (lawyerName && lawyerName.value) fullNameHomeowner.value = lawyerName.value;
+            } else if (role === 'developer') {
+                const devEmail = form.querySelector('[name="email_developer_display"]');
+                const devName = form.querySelector('[name="full_name_developer_display"]');
+                if (devEmail && devEmail.value) emailHomeowner.value = devEmail.value;
+                if (devName && devName.value) fullNameHomeowner.value = devName.value;
+            }
+        });
 
         // Event listeners for role selectors
         roleSelectors.forEach(selector => {
@@ -665,100 +704,101 @@
 
 </html>
 {% endblock %}
-        }
+}
 
-        /* Labels */
-        .register-card .form-label {
-            font-family: 'Open Sans', sans-serif;
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: #1E293B;
-        }
+/* Labels */
+.register-card .form-label {
+font-family: 'Open Sans', sans-serif;
+font-weight: 500;
+font-size: 0.85rem;
+color: #1E293B;
+}
 
-        /* Inputs & selects */
-        .register-card .form-control,
-        .register-card .form-select {
-            background-color: #F8F9FA;
-            border: 1px solid #CBD5E1;
-            border-radius: 6px;
-            color: #1E293B !important;
-            padding: 0.75rem 1rem;
-            font-family: 'Open Sans', sans-serif;
-            font-size: 0.9rem;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
+/* Inputs & selects */
+.register-card .form-control,
+.register-card .form-select {
+background-color: #F8F9FA;
+border: 1px solid #CBD5E1;
+border-radius: 6px;
+color: #1E293B !important;
+padding: 0.75rem 1rem;
+font-family: 'Open Sans', sans-serif;
+font-size: 0.9rem;
+transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
 
-        .register-card .form-control:focus,
-        .register-card .form-select:focus {
-            background-color: #ffffff;
-            border-color: #2563EB;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-            color: #1E293B !important;
-            outline: none;
-        }
+.register-card .form-control:focus,
+.register-card .form-select:focus {
+background-color: #ffffff;
+border-color: #2563EB;
+box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+color: #1E293B !important;
+outline: none;
+}
 
-        .register-card .form-control::placeholder {
-            color: #94A3B8;
-            opacity: 1;
-        }
+.register-card .form-control::placeholder {
+color: #94A3B8;
+opacity: 1;
+}
 
-        /* Dropdown arrow (dark on light bg) */
-        .register-card .form-select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%231E293B' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 14px 10px;
-        }
+/* Dropdown arrow (dark on light bg) */
+.register-card .form-select {
+background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath
+fill='%231E293B' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+background-repeat: no-repeat;
+background-position: right 1rem center;
+background-size: 14px 10px;
+}
 
-        /* Textarea */
-        .register-card textarea.form-control {
-            resize: none;
-        }
+/* Textarea */
+.register-card textarea.form-control {
+resize: none;
+}
 
-        /* Submit button */
-        .register-card .btn-register {
-            background-color: #2563EB;
-            color: #ffffff;
-            border: none;
-            border-radius: 6px;
-            font-family: 'Open Sans', sans-serif;
-            font-weight: 600;
-            padding: 0.75rem;
-            font-size: 0.95rem;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease;
-            width: 100%;
-        }
+/* Submit button */
+.register-card .btn-register {
+background-color: #2563EB;
+color: #ffffff;
+border: none;
+border-radius: 6px;
+font-family: 'Open Sans', sans-serif;
+font-weight: 600;
+padding: 0.75rem;
+font-size: 0.95rem;
+transition: background-color 0.2s ease, box-shadow 0.2s ease;
+width: 100%;
+}
 
-        .register-card .btn-register:hover {
-            background-color: #1D4ED8;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
+.register-card .btn-register:hover {
+background-color: #1D4ED8;
+box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
 
-        /* Login link */
-        .register-card .login-link-row {
-            text-align: center;
-            font-size: 0.875rem;
-            color: #475569;
-            margin-top: 0.5rem;
-        }
+/* Login link */
+.register-card .login-link-row {
+text-align: center;
+font-size: 0.875rem;
+color: #475569;
+margin-top: 0.5rem;
+}
 
-        .register-card .login-link-row a {
-            color: #2563EB;
-            font-weight: 600;
-            text-decoration: none;
-        }
+.register-card .login-link-row a {
+color: #2563EB;
+font-weight: 600;
+text-decoration: none;
+}
 
-        .register-card .login-link-row a:hover {
-            color: #1D4ED8;
-            text-decoration: underline;
-        }
+.register-card .login-link-row a:hover {
+color: #1D4ED8;
+text-decoration: underline;
+}
 
-        /* Section divider */
-        .role-fields-divider {
-            border-top: 1px solid #E2E8F0;
-            margin: 1rem 0 1.25rem;
-        }
-    </style>
+/* Section divider */
+.role-fields-divider {
+border-top: 1px solid #E2E8F0;
+margin: 1rem 0 1.25rem;
+}
+</style>
 </head>
 
 <body>

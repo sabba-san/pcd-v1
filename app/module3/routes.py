@@ -263,14 +263,32 @@ def dashboard():
         
     project_name = current_user.project.name if current_user.project else 'No Project'
     
+    stats = {
+        'total': len(user_defects),
+        'pending': sum(1 for d in user_defects if d.status not in ['Completed', 'completed', 'Fixed']),
+        'completed': sum(1 for d in user_defects if d.status in ['Completed', 'completed', 'Fixed'])
+    }
+    
+    formatted_defects = []
+    for d in user_defects:
+        formatted_defects.append({
+            'id': d.id,
+            'unit': d.location or 'N/A',
+            'desc': d.description or 'No description',
+            'status': d.status or 'Reported',
+            'remarks': d.notes if hasattr(d, 'notes') else ''
+        })
+
     return render_template(
-        'module3/dashboard_fixed.html', 
-        projects=[], # To avoid breaking legacy references if any
+        'module3/dashboard_homeowner.html', 
+        projects=[],
         grouped_activity=grouped_activity, 
         visualize_url=visualize_url,
-        latest_scan_id=latest_scan_defect.id if latest_scan_defect else None, # Legacy compat
+        latest_scan_id=latest_scan_defect.id if latest_scan_defect else None,
         defect_count=len(user_defects),
-        project_name=project_name
+        project_name=project_name,
+        stats=stats,
+        defects=formatted_defects
     )
 
 @bp.route('/developer_portal')

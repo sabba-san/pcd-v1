@@ -1,182 +1,474 @@
-{% extends "module3/base_reporting.html" %}
-{% block title %}{{ role }} Defect Dashboard{% endblock %}
+<!DOCTYPE html>
+<html class="light" lang="en">
 
-{% block content %}
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>DLP Portal - Homeowner Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "primary-container": "#2563eb",
+                        "secondary": "#495c95",
+                        "tertiary": "#943700",
+                        "error": "#ba1a1a",
+                        "surface": "#f7f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-container": "#eceef0",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface": "#191c1e",
+                        "on-surface-variant": "#434655",
+                        "outline-variant": "#c3c6d7",
+                        "secondary-container": "#acbfff",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"
+                    },
+                    fontFamily: {
+                        headline: ["Manrope"], body: ["Inter"], label: ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
 
-<!-- Page Header -->
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
-    <div>
-        <p class="text-uppercase fw-bold mb-0" style="font-size:.7rem;letter-spacing:.12em;color:#2563EB;">Reporting
-            Module</p>
-        <h2 class="fw-bold mb-0">{{ role }} <span style="color:#2563EB;">Defect Dashboard</span></h2>
-    </div>
-    <div class="d-flex flex-wrap gap-2 align-items-center">
-        <div>
-            <label class="form-label fw-semibold mb-1" style="font-size:.78rem;">Role</label>
-            <select class="form-select form-select-sm" onchange="changeRole(this)" style="min-width:130px;">
-                <option value="Homeowner" {{ 'selected' if role=='Homeowner' }}>Homeowner</option>
-                <option value="Legal" {{ 'selected' if role=='Legal' }}>Legal</option>
-                <option value="Developer" {{ 'selected' if role=='Developer' }}>Developer</option>
-            </select>
-        </div>
-        <div>
-            <label class="form-label fw-semibold mb-1" style="font-size:.78rem;">Language</label>
-            <select class="form-select form-select-sm" id="language-select" style="min-width:150px;">
-                <option value="ms" selected>Bahasa Malaysia</option>
-                <option value="en">English</option>
-            </select>
-        </div>
-        <div class="d-flex gap-2 align-items-end" style="padding-top:1.4rem;">
-            <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="generateReport()">
-                <i class="bi bi-cpu me-1"></i> Generate Claim Report
-            </button>
-            <form id="pdf-form" action="{{ url_for('routes.export_pdf') }}" method="POST" class="m-0">
-                <input type="hidden" name="role" value="{{ role }}">
-                <input type="hidden" name="language" id="pdf-language" value="ms">
-                <input type="hidden" name="ai_report" id="pdf-ai-report" value="">
-                <button class="btn btn-sm btn-success rounded-pill px-3" id="export-btn" disabled>
-                    <i class="bi bi-file-earmark-pdf me-1"></i> Export PDF
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
 
-<!-- Stats -->
-<div class="row g-3 mb-4">
-    <div class="col-12 col-md-4">
-        <div class="summary-card border-blue p-4 text-center">
-            <div class="stat-number">{{ stats.total }}</div>
-            <div class="stat-label">Reported Defects</div>
-        </div>
-    </div>
-    <div class="col-12 col-md-4">
-        <div class="summary-card border-yellow p-4 text-center">
-            <div class="stat-number">{{ stats.pending }}</div>
-            <div class="stat-label">Pending</div>
-        </div>
-    </div>
-    <div class="col-12 col-md-4">
-        <div class="summary-card border-green p-4 text-center">
-            <div class="stat-number">{{ stats.completed }}</div>
-            <div class="stat-label">Completed</div>
-        </div>
-    </div>
-</div>
+        h1,
+        h2,
+        h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
 
-<!-- AI Report Preview -->
-<div id="report-output" class="card p-4 mb-4" style="display:none;">
-    <h5 class="fw-bold mb-2"><i class="bi bi-robot me-2 text-primary"></i>AI Claim Report Preview</h5>
-    <small class="text-muted">
-        Generated on: <span id="timestamp-placeholder"></span>
-        &mdash; Language: <span id="language-placeholder"></span>
-    </small>
-    <pre id="report-json" class="mt-3 p-3 rounded"
-        style="background:#F8FAFC;border:1px solid #E2E8F0;font-size:.8rem;white-space:pre-wrap;"></pre>
-</div>
+<body class="bg-surface text-on-surface">
 
-<!-- Defect Table -->
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0 fw-bold"><i class="bi bi-list-check me-2 text-primary"></i>My Reported Defects</h5>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle">
-            <thead>
-                <tr>
-                    <th class="ps-4">ID</th>
-                    <th>Unit</th>
-                    <th class="d-none d-md-table-cell">Description</th>
-                    <th>Status</th>
-                    <th>Note</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for defect in defects %}
-                <tr>
-                    <td class="ps-4 font-monospace text-muted">#{{ defect.id }}</td>
-                    <td class="fw-semibold" style="color:#0F172A;">{{ defect.unit }}</td>
-                    <td class="text-muted small d-none d-md-table-cell">{{ defect.desc }}</td>
-                    <td>
-                        <span class="badge {{ 'bg-success' if defect.status=='Completed' else 'bg-warning' }}">
-                            {{ defect.status }}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3"
-                            data-defect-id="{{ defect.id }}" onclick="openRemarkModal(this.dataset.defectId)">
-                            <i class="bi bi-pencil me-1"></i>Add Note
-                        </button>
-                        <div id="remark-{{ defect.id }}" class="small text-muted mt-1">{{ defect.remarks }}</div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Remark Modal -->
-<div class="modal fade" id="remarkModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">Add Personal Remark</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Top App Bar -->
+    <header class="bg-white/80 backdrop-blur-md top-0 sticky z-50 border-b border-slate-200">
+        <div class="flex justify-between items-center w-full px-6 py-4 max-w-[1440px] mx-auto">
+            <div class="flex items-center gap-4">
+                <span class="text-xl font-black text-slate-900 tracking-tighter">DLP Portal</span>
             </div>
-            <div class="modal-body">
-                <p class="text-muted small mb-2">Defect # <strong id="modal-defect-id"></strong></p>
-                <textarea class="form-control" id="remark-textarea" rows="3"
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('auth.logout') }}"
+                    class="flex items-center gap-2 text-slate-500 hover:text-red-500 transition-colors text-sm font-medium">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
+
+        <!-- Sidebar -->
+        <aside
+            class="hidden md:flex fixed left-0 top-[73px] h-[calc(100vh-73px)] w-64 border-r border-slate-200 flex-col p-4 z-40 bg-white">
+            <!-- Project Info -->
+            <div class="flex flex-col gap-4 mb-6">
+                <div class="flex items-center gap-3 px-2">
+                    <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined text-[20px]">home_work</span>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-on-surface">Project Ledger</p>
+                        <p class="text-xs text-on-surface-variant truncate max-w-[140px]">{{ current_user.project_name
+                            or 'No Project' }}</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('module2.insert_defect') }}"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all text-sm">
+                    <span class="material-symbols-outlined text-[18px]"
+                        style="font-variation-settings:'FILL' 1;">add_circle</span>
+                    Report New Defect
+                </a>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex-1 flex flex-col gap-1">
+                <a href="{{ url_for('module3.dashboard') }}"
+                    class="flex items-center gap-3 text-blue-700 bg-blue-50 rounded-lg px-4 py-3 font-semibold text-sm transition-all hover:translate-x-1 duration-200">
+                    <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('module2.insert_defect') }}"
+                    class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-slate-100 rounded-lg text-sm transition-all hover:translate-x-1 duration-200">
+                    <span class="material-symbols-outlined text-[20px]">report_problem</span>
+                    Report Defect
+                </a>
+                <a href="http://localhost:5002/"
+                    class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-slate-100 rounded-lg text-sm transition-all hover:translate-x-1 duration-200">
+                    <span class="material-symbols-outlined text-[20px]">gavel</span>
+                    Legal AI Chat
+                </a>
+                <a href="{{ url_for('module3.list_projects') }}"
+                    class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-slate-100 rounded-lg text-sm transition-all hover:translate-x-1 duration-200">
+                    <span class="material-symbols-outlined text-[20px]">folder_open</span>
+                    My Defects
+                </a>
+            </nav>
+
+            <!-- Bottom Links -->
+            <div class="mt-auto flex flex-col gap-1 border-t border-slate-200 pt-4">
+                <a href="{{ url_for('auth.logout') }}"
+                    class="flex items-center gap-3 text-slate-600 px-4 py-3 hover:bg-red-50 hover:text-red-600 rounded-lg text-sm transition-all">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 md:ml-64 p-6 lg:p-10 max-w-7xl w-full">
+
+            <!-- Page Header -->
+            <header class="mb-10">
+                <p class="text-xs font-bold uppercase tracking-widest text-blue-600 mb-1">Homeowner Dashboard</p>
+                <h1 class="text-4xl font-extrabold text-on-surface tracking-tight mb-2">
+                    Welcome back, <span class="text-blue-600">{{ current_user.full_name or current_user.username
+                        }}</span>
+                </h1>
+                <p class="text-on-surface-variant text-lg">Monitor your home's health and track all reported defects.
+                </p>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <!-- Total -->
+                <div
+                    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-blue-600 shadow-[0_4px_24px_rgba(25,28,30,0.06)] flex items-center gap-5">
+                    <div class="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                        <span class="material-symbols-outlined text-3xl">assignment</span>
+                    </div>
+                    <div>
+                        <p class="text-4xl font-extrabold text-on-surface">{{ stats.total }}</p>
+                        <p class="text-sm text-on-surface-variant font-medium mt-1">Total Defects</p>
+                    </div>
+                </div>
+                <!-- Pending -->
+                <div
+                    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-amber-500 shadow-[0_4px_24px_rgba(25,28,30,0.06)] flex items-center gap-5">
+                    <div class="w-14 h-14 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+                        <span class="material-symbols-outlined text-3xl">pending</span>
+                    </div>
+                    <div>
+                        <p class="text-4xl font-extrabold text-on-surface">{{ stats.pending }}</p>
+                        <p class="text-sm text-on-surface-variant font-medium mt-1">Pending</p>
+                    </div>
+                </div>
+                <!-- Completed -->
+                <div
+                    class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-emerald-500 shadow-[0_4px_24px_rgba(25,28,30,0.06)] flex items-center gap-5">
+                    <div class="w-14 h-14 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
+                        <span class="material-symbols-outlined text-3xl">check_circle</span>
+                    </div>
+                    <div>
+                        <p class="text-4xl font-extrabold text-on-surface">{{ stats.completed }}</p>
+                        <p class="text-sm text-on-surface-variant font-medium mt-1">Completed</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bento Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <!-- Legal AI Consultation -->
+                <a href="http://localhost:5002/"
+                    class="group relative bg-surface-container-lowest p-6 rounded-xl border-l-4 border-blue-600 shadow-[0_4px_24px_rgba(25,28,30,0.04)] hover:shadow-[0_8px_32px_rgba(25,28,30,0.10)] transition-all flex flex-col gap-4 no-underline">
+                    <div
+                        class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-3xl">gavel</span>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-on-surface mb-1">Legal AI Chat</h3>
+                        <p class="text-sm text-on-surface-variant leading-relaxed">Expert guidance on property laws and
+                            dispute resolution.</p>
+                    </div>
+                </a>
+                <!-- My Projects -->
+                <a href="{{ url_for('module3.list_projects') }}"
+                    class="group relative bg-surface-container-lowest p-6 rounded-xl border-l-4 border-secondary shadow-[0_4px_24px_rgba(25,28,30,0.04)] hover:shadow-[0_8px_32px_rgba(25,28,30,0.10)] transition-all flex flex-col gap-4 no-underline">
+                    <div
+                        class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-3xl">home_work</span>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-on-surface mb-1">My Defects</h3>
+                        <p class="text-sm text-on-surface-variant leading-relaxed">Manage and track your active defect
+                            reports.</p>
+                    </div>
+                </a>
+                <!-- Add New Defect -->
+                <a href="{{ url_for('module2.insert_defect') }}"
+                    class="group relative bg-surface-container-lowest p-6 rounded-xl border-l-4 border-error shadow-[0_4px_24px_rgba(25,28,30,0.04)] hover:shadow-[0_8px_32px_rgba(25,28,30,0.10)] transition-all flex flex-col gap-4 no-underline">
+                    <div
+                        class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-error group-hover:bg-error group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-3xl">report_problem</span>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-on-surface mb-1">Add New Defect</h3>
+                        <p class="text-sm text-on-surface-variant leading-relaxed">Log structural issues or cosmetic
+                            defects instantly.</p>
+                    </div>
+                </a>
+                <!-- Generate Report -->
+                <div class="group relative bg-surface-container-lowest p-6 rounded-xl border-l-4 border-tertiary shadow-[0_4px_24px_rgba(25,28,30,0.04)] hover:shadow-[0_8px_32px_rgba(25,28,30,0.10)] transition-all flex flex-col gap-4 cursor-pointer"
+                    onclick="generateReport()">
+                    <div
+                        class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-tertiary group-hover:bg-tertiary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-3xl">description</span>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-on-surface mb-1">Generate Report</h3>
+                        <p class="text-sm text-on-surface-variant leading-relaxed">Create an AI-powered claim report for
+                            your defects.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Report Preview (hidden by default) -->
+            <div id="report-output"
+                class="hidden bg-surface-container-lowest rounded-xl p-6 mb-8 shadow-[0_4px_24px_rgba(25,28,30,0.06)]">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="material-symbols-outlined text-blue-600"
+                        style="font-variation-settings:'FILL' 1;">smart_toy</span>
+                    <h2 class="text-lg font-bold text-on-surface">AI Claim Report Preview</h2>
+                    <span class="ml-auto text-xs text-on-surface-variant">
+                        Generated: <span id="timestamp-placeholder"></span> &mdash; <span
+                            id="language-placeholder"></span>
+                    </span>
+                </div>
+                <div class="flex gap-3 mb-4">
+                    <select id="language-select"
+                        class="text-sm border border-outline-variant rounded-lg px-3 py-2 bg-surface focus:ring-2 focus:ring-blue-600">
+                        <option value="ms">Bahasa Malaysia</option>
+                        <option value="en">English</option>
+                    </select>
+                    <form id="pdf-form" action="{{ url_for('module3.download_report', report_type='homeowner') }}"
+                        method="POST" class="m-0 inline">
+                        <input type="hidden" name="role" value="{{ role }}">
+                        <input type="hidden" name="language" id="pdf-language" value="ms">
+                        <input type="hidden" name="ai_report" id="pdf-ai-report" value="">
+                        <button id="export-btn" disabled
+                            class="flex items-center gap-2 bg-emerald-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                            <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                            Export PDF
+                        </button>
+                    </form>
+                </div>
+                <pre id="report-json"
+                    class="bg-surface-container-low rounded-lg p-4 text-xs text-on-surface-variant whitespace-pre-wrap leading-relaxed"></pre>
+            </div>
+
+            <!-- Recent Defects Table -->
+            <section
+                class="bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(25,28,30,0.06)] overflow-hidden">
+                <div class="px-8 py-6 border-b border-surface-container flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-on-surface">Recent Activity</h2>
+                    <a href="{{ url_for('module3.list_projects') }}"
+                        class="text-sm text-blue-600 font-semibold hover:underline">View all →</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-low">
+                                <th
+                                    class="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                                    ID</th>
+                                <th
+                                    class="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                                    Unit</th>
+                                <th
+                                    class="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant hidden md:table-cell">
+                                    Description</th>
+                                <th
+                                    class="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                                    Status</th>
+                                <th
+                                    class="px-8 py-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                                    Note</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container-low">
+                            {% for defect in defects %}
+                            <tr class="hover:bg-surface-container-low transition-colors">
+                                <td class="px-8 py-4 font-mono text-xs text-on-surface-variant">#{{ defect.id }}</td>
+                                <td class="px-8 py-4 font-semibold text-on-surface text-sm">{{ defect.unit }}</td>
+                                <td
+                                    class="px-8 py-4 text-sm text-on-surface-variant hidden md:table-cell max-w-xs truncate">
+                                    {{ defect.desc }}</td>
+                                <td class="px-8 py-4">
+                                    {% if defect.status == 'Completed' %}
+                                    <span
+                                        class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full">
+                                        <span class="material-symbols-outlined text-[14px]"
+                                            style="font-variation-settings:'FILL' 1;">check_circle</span>
+                                        Completed
+                                    </span>
+                                    {% else %}
+                                    <span
+                                        class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">
+                                        <span class="material-symbols-outlined text-[14px]">pending</span>
+                                        {{ defect.status }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-8 py-4">
+                                    <button
+                                        class="text-xs font-semibold text-blue-600 border border-blue-200 hover:bg-blue-50 px-3 py-1.5 rounded-full transition-colors"
+                                        data-defect-id="{{ defect.id }}"
+                                        onclick="openRemarkModal(this.dataset.defectId)">
+                                        + Add Note
+                                    </button>
+                                    <div id="remark-{{ defect.id }}" class="text-xs text-on-surface-variant mt-1">{{
+                                        defect.remarks }}</div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="px-8 py-24 text-center">
+                                    <div class="flex flex-col items-center justify-center gap-4">
+                                        <div
+                                            class="w-20 h-20 rounded-full bg-surface-container flex items-center justify-center text-outline-variant">
+                                            <span class="material-symbols-outlined text-5xl">inventory_2</span>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <p class="text-xl font-semibold text-on-surface">No activity yet</p>
+                                            <p class="text-on-surface-variant text-sm">Your defect ledger is currently
+                                                clear. Start by reporting a new defect.</p>
+                                        </div>
+                                        <a href="{{ url_for('module2.insert_defect') }}"
+                                            class="mt-2 inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors">
+                                            <span class="material-symbols-outlined text-[18px]">add</span>
+                                            Report First Defect
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Add Note Modal -->
+    <div id="remarkModal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-on-surface">Add Personal Note</h3>
+                <button onclick="closeRemarkModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="px-6 py-5">
+                <p class="text-sm text-on-surface-variant mb-3">Defect <span
+                        class="font-semibold text-on-surface">#<span id="modal-defect-id"></span></span></p>
+                <textarea id="remark-textarea" rows="3"
+                    class="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm text-on-surface resize-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                     placeholder="Enter your note..."></textarea>
             </div>
-            <div class="modal-footer border-0">
-                <button class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary rounded-pill px-4" onclick="saveRemark()">Save</button>
+            <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeRemarkModal()"
+                    class="text-sm font-semibold text-slate-600 border border-slate-200 px-5 py-2.5 rounded-lg hover:bg-slate-50 transition-colors">
+                    Cancel
+                </button>
+                <button onclick="saveRemark()"
+                    class="text-sm font-semibold text-white bg-blue-600 px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors">
+                    Save Note
+                </button>
             </div>
         </div>
     </div>
-</div>
 
-{% endblock %}
+    <script>
+        let currentDefectId = null;
 
-{% block scripts %}
-<script>
-    let currentDefectId = null;
-    function changeRole(select) { window.location.href = "/?role=" + select.value; }
-    function openRemarkModal(id) {
-        currentDefectId = id;
-        document.getElementById("modal-defect-id").innerText = id;
-        document.getElementById("remark-textarea").value = "";
-        new bootstrap.Modal(document.getElementById('remarkModal')).show();
-    }
-    function saveRemark() {
-        const remark = document.getElementById("remark-textarea").value.trim();
-        if (!remark) { alert("Please enter a remark."); return; }
-        fetch("/add_remark", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: currentDefectId, remark, role: "Homeowner" })
-        }).then(r => r.json()).then(data => {
-            if (data.success) {
-                document.getElementById(`remark-${currentDefectId}`).innerText = remark;
-                bootstrap.Modal.getInstance(document.getElementById('remarkModal')).hide();
-            } else { alert("Failed to save remark."); }
-        }).catch(() => alert("Server error."));
-    }
-    function generateReport() {
-        const language = document.getElementById("language-select").value;
-        document.getElementById("pdf-language").value = language;
-        fetch("/generate_ai_report", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ role: "{{ role }}", language })
-        }).then(r => r.json()).then(data => {
-            if (data.error) { alert("Error: " + data.error); return; }
-            document.getElementById("report-output").style.display = "block";
-            document.getElementById("timestamp-placeholder").innerText = data.generated_at;
-            document.getElementById("language-placeholder").innerText = data.language === "ms" ? "Bahasa Malaysia" : "English";
-            document.getElementById("report-json").innerText = data.report;
-            document.getElementById("pdf-ai-report").value = data.report;
-            document.getElementById("export-btn").disabled = false;
-        }).catch(() => alert("Failed to generate AI report."));
-    }
-</script>
-{% endblock %}
+        function openRemarkModal(id) {
+            currentDefectId = id;
+            document.getElementById('modal-defect-id').innerText = id;
+            document.getElementById('remark-textarea').value = '';
+            document.getElementById('remarkModal').classList.remove('hidden');
+        }
+
+        function closeRemarkModal() {
+            document.getElementById('remarkModal').classList.add('hidden');
+        }
+
+        function saveRemark() {
+            const remark = document.getElementById('remark-textarea').value.trim();
+            if (!remark) { alert('Please enter a note.'); return; }
+            fetch('/add_remark', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: currentDefectId, remark, role: 'Homeowner' })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById(`remark-${currentDefectId}`).innerText = remark;
+                    closeRemarkModal();
+                } else { alert('Failed to save note.'); }
+            }).catch(() => alert('Server error.'));
+        }
+
+        function generateReport() {
+            const language = document.getElementById('language-select')?.value || 'ms';
+            document.getElementById('pdf-language').value = language;
+            fetch('/generate_ai_report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: '{{ role }}', language })
+            }).then(r => r.json()).then(data => {
+                if (data.error) { alert('Error: ' + data.error); return; }
+                document.getElementById('report-output').classList.remove('hidden');
+                document.getElementById('timestamp-placeholder').innerText = data.generated_at;
+                document.getElementById('language-placeholder').innerText = data.language === 'ms' ? 'Bahasa Malaysia' : 'English';
+                document.getElementById('report-json').innerText = data.report;
+                document.getElementById('pdf-ai-report').value = data.report;
+                document.getElementById('export-btn').disabled = false;
+            }).catch(() => alert('Failed to generate AI report.'));
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('remarkModal').addEventListener('click', function (e) {
+            if (e.target === this) closeRemarkModal();
+        });
+    </script>
+
+</body>
+
+</html>
