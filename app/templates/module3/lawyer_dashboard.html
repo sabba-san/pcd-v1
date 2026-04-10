@@ -1,192 +1,416 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block content %}
-<div class="container-fluid px-3 px-md-4 py-4">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>DefectLedger | Evidence Review Console</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#dbe1ff",
+                        "primary-container": "#2563eb",
+                        "tertiary-container": "#bc4800",
+                        "surface-dim": "#d8dadc",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface-variant": "#434655",
+                        "on-primary-container": "#eeefff",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "inverse-primary": "#b4c5ff",
+                        "tertiary-fixed": "#ffdbcd",
+                        "outline-variant": "#c3c6d7",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container": "#eceef0",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "secondary-container": "#acbfff",
+                        "on-primary-fixed": "#00174b",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-fixed-variant": "#31447b",
+                        "on-primary": "#ffffff",
+                        "secondary": "#495c95",
+                        "on-background": "#191c1e",
+                        "on-tertiary-container": "#ffede6",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface": "#f7f9fb",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "primary": "#004ac6",
+                        "on-surface": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#394c84",
+                        "background": "#f7f9fb",
+                        "surface-tint": "#0053db",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "tertiary": "#943700",
+                        "surface-container-highest": "#e0e3e5",
+                        "outline": "#737686",
+                        "on-tertiary-fixed": "#360f00",
+                        "on-secondary-fixed": "#00174b",
+                        "primary-fixed": "#dbe1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.25rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
 
-    <!-- Page Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
-        <div>
-            <p class="text-uppercase fw-bold mb-1"
-                style="font-size:0.72rem;letter-spacing:.12em;color:var(--primary-blue);">Legal Console</p>
-            <h2 class="fw-bold mb-0" style="font-family:'DM Sans',sans-serif;">
-                Welcome, <span class="text-gradient">{{ user }}</span>
-            </h2>
-            <p class="text-muted mb-0 mt-1" style="font-size:0.875rem;">Here is your case overview for today.</p>
-        </div>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
 
-        <!-- Summary stats + CTA -->
-        <div class="d-flex flex-column flex-sm-row align-items-sm-end gap-2">
-            <div class="d-flex gap-2">
-                <div class="summary-card border-blue px-3 py-2 d-flex align-items-center gap-2">
-                    <div>
-                        <div class="fw-bold text-dark mb-0" style="font-size:1.3rem;line-height:1;">{{ cases|length }}
-                        </div>
-                        <div style="font-size:0.65rem;color:var(--text-secondary);letter-spacing:.06em;">TOTAL DEFECTS
-                        </div>
-                    </div>
-                    <i class="bi bi-briefcase fs-5 text-primary"></i>
-                </div>
-                <div class="summary-card border-red px-3 py-2 d-flex align-items-center gap-2"
-                    style="background:rgba(239,68,68,0.05)!important;">
-                    <div>
-                        <div class="fw-bold text-danger mb-0" style="font-size:0.95rem;line-height:1.2;">
-                            Action<br>Required</div>
-                        <div style="font-size:0.65rem;color:#EF4444;letter-spacing:.06em;">REVIEW STATUS</div>
-                    </div>
-                    <i class="bi bi-exclamation-circle-fill text-danger fs-5"></i>
-                </div>
+        h1,
+        h2,
+        h3,
+        .headline {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(247, 249, 251, 0.8);
+            backdrop-filter: blur(12px);
+        }
+
+        .tonal-card {
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .status-ribbon-error {
+            border-left: 4px solid #ba1a1a;
+        }
+
+        .status-ribbon-primary {
+            border-left: 4px solid #004ac6;
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface min-h-screen">
+    <!-- TopNavBar Component -->
+    <header class="bg-[#ffffff] shadow-sm sticky top-0 z-50">
+        <div class="flex justify-between items-center w-full px-8 py-4 max-w-full mx-auto">
+            <div class="flex items-center gap-12">
+                <a href="{{ url_for('module3.dashboard') }}"
+                    class="text-xl font-black text-[#191c1e] tracking-tight">DLP Advisor</a>
+
             </div>
-            <a href="http://localhost:5003/dashboard?role=Legal" class="btn btn-primary rounded-pill px-4 fw-semibold"
-                style="white-space:nowrap;">
-                <i class="bi bi-graph-up-arrow me-2"></i>Reporting Dashboard
-            </a>
-        </div>
-    </div>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="relative group">
+                        <button
+                            class="p-2 text-on-surface-variant hover:bg-slate-100 rounded-full transition-all active:opacity-80 pb-2">
+                            <span class="material-symbols-outlined mt-1 block" data-icon="settings">settings</span>
+                        </button>
 
-    <!-- Quick Action Cards -->
-    <div class="row g-3 mb-4">
-
-        <div class="col-6 col-lg-3">
-            <div class="card h-100 task-card border position-relative overflow-hidden">
-                <div class="card-body p-3 p-md-4">
-                    <div class="icon-circle bg-primary text-white mb-3">
-                        <i class="bi bi-bar-chart-fill"></i>
+                        <div
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border border-surface-variant opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <a href="{{ url_for('module3.profile') }}"
+                                class="px-4 py-2 text-sm text-on-surface hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">person</span>
+                                My Profile
+                            </a>
+                            <a href="{{ url_for('module3.settings') }}"
+                                class="px-4 py-2 text-sm text-on-surface hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">settings</span>
+                                Settings
+                            </a>
+                        </div>
                     </div>
-                    <h6 class="fw-bold mb-1">Evidence Review</h6>
-                    <p class="text-muted small mb-3" style="min-height:36px;">Analyze AI confidence scores & severity
-                        levels.</p>
-                    <a href="{{ url_for('module3.evidence_report') }}"
-                        class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-semibold action-btn">
-                        View Reports <i class="bi bi-arrow-right ms-1"></i>
+                    <a href="{{ url_for('module3.profile') }}"
+                        class="h-10 w-10 rounded-full overflow-hidden border-2 border-surface-container ml-2 bg-primary flex items-center justify-center text-white font-bold hover:opacity-80 transition-opacity">
+                        {% if session.get('username') == 'admin' %}
+                        <span class="material-symbols-outlined text-white text-sm">shield_person</span>
+                        {% else %}
+                        {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0]).upper()
+                        }}
+                        {% endif %}
                     </a>
-                    <i class="bi bi-file-earmark-text bg-icon"></i>
+                    <a href="{{ url_for('auth.logout') }}"
+                        class="p-2 text-error hover:bg-error-container/30 rounded-full transition-all active:opacity-80 ms-2"
+                        title="Logout">
+                        <span class="material-symbols-outlined" data-icon="logout">logout</span>
+                    </a>
                 </div>
             </div>
         </div>
-
-        <div class="col-6 col-lg-3">
-            <div class="card h-100 task-card border position-relative overflow-hidden">
-                <div class="card-body p-3 p-md-4">
-                    <div class="icon-circle bg-info text-white mb-3">
-                        <i class="bi bi-box-fill"></i>
+    </header>
+    <main class="max-w-[1440px] mx-auto px-8 py-10">
+        <!-- Header Section -->
+        <div class="mb-12">
+            <span class="text-[10px] font-bold tracking-[0.2em] text-primary uppercase mb-2 block">LEGAL CONSOLE</span>
+            <h1 class="text-4xl font-extrabold tracking-tight text-on-surface">Welcome, {{ user }}</h1>
+        </div>
+        <!-- Summary Section -->
+        <section class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-12">
+            <div
+                class="md:col-span-3 surface-container-lowest rounded-xl p-6 shadow-[0px_4px_24px_rgba(0,0,0,0.04)] flex flex-col justify-between border-l-4 border-primary">
+                <span class="text-xs font-bold text-on-surface-variant tracking-wider uppercase">Total Defects</span>
+                <div class="flex items-baseline gap-2 mt-4">
+                    <span class="text-5xl font-black text-on-surface">{{ cases|length }}</span>
+                    <span class="text-on-surface-variant text-sm font-medium">Recorded</span>
+                </div>
+            </div>
+            <div
+                class="md:col-span-6 surface-container-lowest rounded-xl p-6 shadow-[0px_4px_24px_rgba(0,0,0,0.04)] flex items-center gap-6 border-l-4 border-error">
+                <div class="bg-error-container/30 p-4 rounded-full">
+                    <span class="material-symbols-outlined text-error text-3xl" data-icon="warning">warning</span>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-on-surface-variant tracking-wider uppercase">Action Required /
+                        Review Status</span>
+                    <p class="text-lg font-bold text-on-surface mt-1">Pending initial review of case evidence files.</p>
+                </div>
+            </div>
+            <div class="md:col-span-3 flex items-center justify-end">
+                <a href="http://localhost:5003/dashboard?role=Legal"
+                    class="flex items-center gap-3 bg-gradient-to-b from-primary to-primary-container text-white px-8 py-4 rounded-lg font-bold text-sm tracking-wide shadow-lg hover:shadow-primary-container/20 transition-all active:scale-95">
+                    Reporting Dashboard
+                    <span class="material-symbols-outlined text-lg" data-icon="arrow_forward">arrow_forward</span>
+                </a>
+            </div>
+        </section>
+        <!-- Main Content Cards Section (Asymmetric Bento) -->
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
+            <!-- Evidence Review Card -->
+            <div
+                class="md:col-span-1 surface-container-lowest rounded-xl p-8 shadow-[0px_4px_24px_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-xl transition-shadow duration-300">
+                <div class="mb-6">
+                    <div class="bg-primary/5 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
+                        <span class="material-symbols-outlined text-primary" data-icon="fact_check">fact_check</span>
                     </div>
-                    <h6 class="fw-bold mb-1">Virtual Inspection</h6>
-                    <p class="text-muted small mb-3" style="min-height:36px;">Remotely inspect defects in 3D space.</p>
+                    <h3 class="text-xl font-bold mb-3">Evidence Review</h3>
+                    <p class="text-on-surface-variant text-sm leading-relaxed mb-8">Analyze AI confidence scores and
+                        review uploaded defect documentation.</p>
+                </div>
+                <div class="mt-auto">
+                    <a href="{{ url_for('module3.evidence_report') }}"
+                        class="w-full py-3 px-4 border border-outline-variant text-primary font-bold text-sm rounded-lg hover:bg-primary/5 transition-colors text-center block">View
+                        Reports</a>
+                </div>
+            </div>
+            <!-- Virtual Inspection Card -->
+            <div
+                class="md:col-span-1 surface-container-lowest rounded-xl p-8 shadow-[0px_4px_24px_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-xl transition-shadow duration-300">
+                <div class="mb-6">
+                    <div class="bg-primary/5 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
+                        <span class="material-symbols-outlined text-primary" data-icon="videocam">videocam</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Virtual Inspection</h3>
+                    <p class="text-on-surface-variant text-sm leading-relaxed mb-8">Remotely inspect defects through
+                        visual streams and 3D reconstruction data.</p>
+                </div>
+                <div class="mt-auto">
                     {% if cases and cases|length > 0 %}
                     <a href="{{ cases[0].visualize_url }}"
-                        class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-semibold action-btn">
-                        Launch 3D Viewer <i class="bi bi-box-arrow-up-right ms-1"></i>
-                    </a>
+                        class="w-full py-3 px-4 bg-surface-container-low text-primary font-bold text-sm rounded-lg hover:bg-secondary-fixed transition-colors text-center block">Launch
+                        3D Viewer</a>
                     {% else %}
-                    <button class="btn btn-outline-secondary btn-sm w-100 rounded-pill fw-semibold" disabled>
-                        No Cases Available
-                    </button>
+                    <button
+                        class="w-full py-3 px-4 bg-surface-container-high text-on-surface-variant font-bold text-sm rounded-lg cursor-not-allowed opacity-75"
+                        disabled>No Cases Available</button>
                     {% endif %}
-                    <i class="bi bi-badge-3d bg-icon"></i>
                 </div>
             </div>
-        </div>
-
-        <div class="col-6 col-lg-3">
-            <div class="card h-100 task-card border position-relative overflow-hidden">
-                <div class="card-body p-3 p-md-4">
-                    <div class="icon-circle bg-warning text-white mb-3">
-                        <i class="bi bi-chat-dots-fill"></i>
+            <!-- Clause Retrieval Card -->
+            <div
+                class="md:col-span-1 surface-container-lowest rounded-xl p-8 shadow-[0px_4px_24px_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-xl transition-shadow duration-300">
+                <div class="mb-6">
+                    <div class="bg-primary/5 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
+                        <span class="material-symbols-outlined text-primary" data-icon="gavel">gavel</span>
                     </div>
-                    <h6 class="fw-bold mb-1">Clause Retrieval</h6>
-                    <p class="text-muted small mb-3" style="min-height:36px;">Find HDA clauses for drafting letters.</p>
+                    <h3 class="text-xl font-bold mb-3">Clause Retrieval</h3>
+                    <p class="text-on-surface-variant text-sm leading-relaxed mb-8">Find HDA clauses and legal
+                        precedents related to identified building defects.</p>
+                </div>
+                <div class="mt-auto">
                     <a href="http://localhost:5002/?project_name=All%20Projects&defect_count={{ cases|length }}&user_id={{ current_user.id }}"
-                        class="btn btn-outline-warning btn-sm w-100 rounded-pill fw-semibold action-btn">
-                        Ask Legal AI <i class="bi bi-robot ms-1"></i>
-                    </a>
-                    <i class="bi bi-journal-text bg-icon"></i>
+                        class="w-full py-3 px-4 bg-surface-container-low text-primary font-bold text-sm rounded-lg hover:bg-secondary-fixed transition-colors text-center block">Ask
+                        Legal AI</a>
                 </div>
             </div>
-        </div>
-
-        <div class="col-6 col-lg-3">
-            <div class="card h-100 task-card border position-relative overflow-hidden">
-                <div class="card-body p-3 p-md-4">
-                    <div class="icon-circle bg-danger text-white mb-3">
-                        <i class="bi bi-shield-lock-fill"></i>
+            <!-- Lock Evidence Card -->
+            <div
+                class="md:col-span-1 surface-container-lowest rounded-xl p-8 shadow-[0px_4px_24px_rgba(0,0,0,0.04)] flex flex-col h-full hover:shadow-xl transition-shadow duration-300">
+                <div class="mb-6">
+                    <div class="bg-primary/5 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
+                        <span class="material-symbols-outlined text-primary" data-icon="lock">lock</span>
                     </div>
-                    <h6 class="fw-bold mb-1">Lock Evidence</h6>
-                    <p class="text-muted small mb-3" style="min-height:36px;">Finalize defect list for Tribunal.</p>
-                    <form action="{{ url_for('module3.validate_all') }}" method="POST">
+                    <h3 class="text-xl font-bold mb-3">Lock Evidence</h3>
+                    <p class="text-on-surface-variant text-sm leading-relaxed mb-8">Finalize defect list and lock
+                        evidence files for formal submission.</p>
+                </div>
+                <div class="mt-auto">
+                    <form action="{{ url_for('module3.validate_all') }}" method="POST" class="w-full">
                         <button type="submit"
-                            class="btn btn-outline-danger btn-sm w-100 rounded-pill fw-semibold action-btn hover-danger"
-                            onclick="return confirm('WARNING: Are you sure you want to finalize ALL active cases?');">
-                            Confirm & Save <i class="bi bi-check-circle ms-1"></i>
-                        </button>
+                            onclick="return confirm('WARNING: Are you sure you want to finalize ALL active cases?');"
+                            class="w-full py-3 px-4 border border-primary text-primary font-bold text-sm rounded-lg hover:bg-primary/5 transition-colors">Confirm
+                            &amp; Save</button>
                     </form>
-                    <i class="bi bi-lock bg-icon"></i>
                 </div>
             </div>
+        </section>
+        <!-- Pending Cases Queue Section -->
+        <section>
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold tracking-tight text-on-surface">Pending Cases Queue</h2>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Filter by</span>
+                    <div class="relative">
+                        <select
+                            class="appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg pl-4 pr-10 py-2 text-sm font-medium focus:ring-primary focus:border-primary">
+                            <option>All Statuses</option>
+                            <option>In Review</option>
+                            <option>Completed</option>
+                        </select>
+                        <span
+                            class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant"
+                            data-icon="expand_more">expand_more</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if cases %}
+            <div class="bg-white rounded-xl shadow-sm border border-surface-variant overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr
+                            class="bg-surface-container-lowest border-b border-surface-variant text-xs uppercase tracking-wider text-on-surface-variant">
+                            <th class="px-6 py-4 font-bold">ID</th>
+                            <th class="px-6 py-4 font-bold">Unit / Project</th>
+                            <th class="px-6 py-4 font-bold hidden md:table-cell">Defect Description</th>
+                            <th class="px-6 py-4 font-bold">Status</th>
+                            <th class="px-6 py-4 font-bold text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-variant">
+                        {% for case in cases %}
+                        <tr class="hover:bg-surface-container-lowest transition-colors">
+                            <td class="px-6 py-4 font-bold text-primary">#{{ case['id'] }}</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-on-surface">{{ case['unit_no'] }}</div>
+                                <div class="text-xs text-on-surface-variant mt-1">{{ case['project_name'] }}</div>
+                            </td>
+                            <td class="px-6 py-4 hidden md:table-cell text-sm text-on-surface-variant">{{
+                                case['description'] }}</td>
+                            <td class="px-6 py-4">
+                                {% if case['status'] == 'locked' %}
+                                <span
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-surface-variant text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[14px]">lock</span>LOCKED
+                                </span>
+                                {% else %}
+                                <span
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-tertiary-fixed text-on-tertiary-fixed-variant">
+                                    <span class="material-symbols-outlined text-[14px]">history</span>DRAFT
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{{ case['visualize_url'] }}"
+                                    class="inline-flex items-center gap-2 px-4 py-2 border border-primary text-primary rounded-full text-sm font-bold hover:bg-primary/5 transition-colors">
+                                    Inspect <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <!-- Empty State Container -->
+            <div
+                class="bg-surface-container-low rounded-xl border border-dashed border-outline-variant/50 min-h-[320px] flex flex-col items-center justify-center p-12">
+                <div class="bg-white p-6 rounded-full shadow-sm mb-6">
+                    <span class="material-symbols-outlined text-outline-variant text-5xl"
+                        data-icon="database">database</span>
+                </div>
+                <p class="text-on-surface-variant font-medium text-lg text-center">No active cases found in the
+                    database.</p>
+                <p class="text-outline text-sm mt-2 text-center max-w-md">Once a new case is initiated by a surveyor or
+                    legal associate, it will appear here for review.</p>
+            </div>
+            {% endif %}
+
+        </section>
+    </main>
+    <!-- Global Footer Decoration -->
+    <footer
+        class="max-w-[1440px] mx-auto px-8 py-12 mt-12 border-t border-surface-variant/30 flex justify-between items-center opacity-50">
+        <span class="text-xs font-medium text-on-surface-variant">© 2024 DefectLedger Architectural Evidence
+            System</span>
+        <div class="flex gap-6">
+            <span class="text-xs font-medium text-on-surface-variant">System Status: Optimal</span>
+            <span class="text-xs font-medium text-on-surface-variant">v2.4.1</span>
         </div>
+    </footer>
 
-    </div>
-
-    <!-- Cases Table -->
-    <div class="card border shadow-sm">
+    <!-- Toast Container from base -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2">
+        {% set flash_messages = get_flashed_messages(with_categories=true) %}
+        {% if flash_messages %}
+        {% for category, message in flash_messages %}
         <div
-            class="card-header d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 py-3">
-            <h6 class="mb-0 fw-bold">
-                <i class="bi bi-list-task me-2 text-primary"></i>Pending Cases Queue
-            </h6>
-            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-                Filter by Priority <i class="bi bi-chevron-down ms-1"></i>
+            class="bg-white rounded-lg shadow-lg border-l-4 border-{{ 'error' if category == 'error' else 'primary' }} p-4 flex items-start gap-3 w-80 animate-[slideIn_0.3s_ease-out]">
+            <span class="material-symbols-outlined text-{{ 'error' if category == 'error' else 'primary' }}">
+                {{ 'error' if category == 'error' else 'check_circle' }}
+            </span>
+            <div class="flex-1">
+                <p class="text-sm font-medium text-on-surface">{{ message }}</p>
+            </div>
+            <button onclick="this.parentElement.remove()"
+                class="text-on-surface-variant hover:bg-surface-variant rounded-full p-1 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">close</span>
             </button>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
-                <thead>
-                    <tr>
-                        <th class="ps-4">ID</th>
-                        <th>Unit / Project</th>
-                        <th class="d-none d-md-table-cell">Defect Description</th>
-                        <th>Status</th>
-                        <th class="text-end pe-4">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for case in cases %}
-                    <tr>
-                        <td class="ps-4 fw-bold text-primary">#{{ case['id'] }}</td>
-                        <td>
-                            <div class="fw-semibold" style="color:var(--text-primary);">{{ case['unit_no'] }}</div>
-                            <small class="text-muted">{{ case['project_name'] }}</small>
-                        </td>
-                        <td class="d-none d-md-table-cell text-muted small">{{ case['description'] }}</td>
-                        <td>
-                            {% if case['status'] == 'locked' %}
-                            <span class="badge bg-secondary">
-                                <i class="bi bi-lock-fill me-1"></i>LOCKED
-                            </span>
-                            {% else %}
-                            <span class="badge bg-warning">
-                                <i class="bi bi-clock-history me-1"></i>DRAFT
-                            </span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end pe-4">
-                            <a href="{{ case['visualize_url'] }}"
-                                class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
-                                Inspect <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-4 d-block mb-2"></i>
-                            No active cases found in the database.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        {% endfor %}
+        {% endif %}
     </div>
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
 
-</div>
-{% endblock %}
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+
+</body>
+
+</html>

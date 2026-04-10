@@ -1,81 +1,242 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>DLP Advisor | Account Details</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#fff7f6",
+                        "inverse-surface": "#0b0f10",
+                        "on-tertiary-container": "#414f62",
+                        "on-tertiary-fixed": "#2e3d4e",
+                        "outline": "#717c82",
+                        "secondary": "#506076",
+                        "surface-container-highest": "#d9e4ea",
+                        "background": "#f7f9fb",
+                        "on-primary": "#f8f7ff",
+                        "on-surface-variant": "#566166",
+                        "on-surface": "#2a3439",
+                        "primary": "#0053db",
+                        "inverse-on-surface": "#9a9d9f",
+                        "secondary-dim": "#44546a",
+                        "on-primary-fixed": "#003798",
+                        "error": "#9f403d",
+                        "on-primary-container": "#0048bf",
+                        "on-secondary": "#f7f9ff",
+                        "on-tertiary": "#f7f9ff",
+                        "error-dim": "#4e0309",
+                        "surface-bright": "#f7f9fb",
+                        "secondary-container": "#d3e4fe",
+                        "on-secondary-fixed": "#314055",
+                        "on-background": "#2a3439",
+                        "primary-fixed-dim": "#c7d3ff",
+                        "tertiary": "#526073",
+                        "surface-variant": "#d9e4ea",
+                        "surface": "#f7f9fb",
+                        "primary-dim": "#0048c1",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed-variant": "#4d5d73",
+                        "tertiary-container": "#cfdef5",
+                        "on-error-container": "#752121",
+                        "secondary-fixed": "#d3e4fe",
+                        "tertiary-fixed-dim": "#c1d0e6",
+                        "outline-variant": "#a9b4b9",
+                        "tertiary-fixed": "#cfdef5",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#0053db",
+                        "on-tertiary-fixed-variant": "#4a596c",
+                        "on-secondary-container": "#435368",
+                        "primary-container": "#dbe1ff",
+                        "surface-container": "#e8eff3",
+                        "secondary-fixed-dim": "#c5d6f0",
+                        "surface-container-high": "#e1e9ee",
+                        "on-primary-fixed-variant": "#0050d4",
+                        "inverse-primary": "#618bff",
+                        "error-container": "#fe8983",
+                        "surface-dim": "#cfdce3",
+                        "tertiary-dim": "#465467",
+                        "surface-container-low": "#f0f4f7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
 
-        <div class="card shadow-lg border-0 mb-4" style="background-color: #1e293b;">
-            <div class="card-body text-center py-5">
-                
-                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                     style="width: 80px; height: 80px; font-size: 2rem; border: 2px solid rgba(59,130,246,0.3);">
-                     {{ user.full_name[0].upper() if user.full_name else user.username[0].upper() }}
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col">
+    <!-- TopAppBar -->
+    <header
+        class="fixed top-0 w-full z-50 bg-[#f7f9fb]/80 backdrop-blur-xl flex items-center justify-between px-6 py-4">
+        <div class="flex items-center gap-4">
+            <a href="{{ url_for('module3.dashboard') }}"
+                class="hover:bg-[#f0f4f7] transition-colors p-2 rounded-full active:scale-95 duration-200">
+                <span class="material-symbols-outlined text-[#2563EB]">arrow_back</span>
+            </a>
+            <h1 class="font-['Inter'] font-semibold text-lg tracking-tight text-[#2a3439]">Settings</h1>
+        </div>
+        <div class="flex items-center">
+            <span class="text-xl font-bold text-[#2563EB]">DLP Advisor</span>
+        </div>
+    </header>
+    <!-- Main Content Canvas -->
+    <main class="flex-1 mt-20 mb-28 px-6 max-w-2xl mx-auto w-full">
+        <!-- Contextual Header -->
+        <section class="mb-12 pt-8">
+            <div class="flex flex-col gap-1">
+                <span class="font-label text-[0.75rem] uppercase tracking-[0.05em] text-on-surface-variant">Profile
+                    Overview</span>
+                <h2 class="font-headline font-extrabold text-[2rem] tracking-tight leading-tight text-on-surface">
+                    Account Details</h2>
+            </div>
+        </section>
+        <!-- Profile Hero Section -->
+        <div class="mb-10 flex flex-col items-center gap-6">
+            <div class="relative group">
+                <div
+                    class="w-32 h-32 rounded-full overflow-hidden shadow-[0_12px_40px_rgba(42,52,57,0.06)] border-4 border-surface-container-lowest">
+                    <div
+                        class="w-full h-full bg-primary flex items-center justify-center text-white text-5xl font-bold">
+                        {{ user.full_name[0].upper() if user.full_name else user.username[0].upper() }}
+                    </div>
                 </div>
-
-                <h3 class="text-white fw-bold mb-1">
-                    {{ user.full_name if user.full_name else user.username }}
-                </h3>
-                <p class="text-white-50 small mb-4">{{ user.username }}</p>
-
-                <div class="row justify-content-center g-0 border-top border-secondary pt-4 mt-4 opacity-75">
-                    <div class="col-4 border-end border-secondary">
-                        <div class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem;">ROLE</div>
-                        <span class="badge bg-info bg-opacity-10 text-info mt-1">{{ user.role|capitalize }}</span>
-                    </div>
-                    <div class="col-4 border-end border-secondary">
-                        <div class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem;">PROJECT</div>
-                        <div class="text-white fw-bold mt-1">{{ user.project_name if user.project_name else 'Not Assigned' }}</div>
-                    </div>
-                    <div class="col-4">
-                        <div class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem;">TOTAL ACTIVITY</div>
-                        <div class="text-white fw-bold mt-1">{{ activity_count }} Records</div>
-                    </div>
+                <div class="absolute bottom-0 right-0 bg-primary p-2 rounded-full text-on-primary shadow-lg scale-90">
+                    <span class="material-symbols-outlined text-sm">verified_user</span>
                 </div>
-
+            </div>
+            <div class="text-center">
+                <h3 class="font-headline font-bold text-xl text-on-surface">{{ user.full_name if user.full_name else
+                    user.username }}</h3>
+                <p class="font-body text-on-surface-variant text-sm">{{ user.role|capitalize }} Member</p>
             </div>
         </div>
-
-        <div class="card shadow-sm border-0" style="background-color: #1e293b;">
-            <div class="card-header bg-transparent border-secondary text-white fw-bold py-3">
-                <i class="bi bi-person-lines-fill me-2 text-primary"></i> Account Details
+        <!-- Info Cards Grid (Asymmetric) -->
+        <div class="grid grid-cols-1 gap-4">
+            <!-- Email Info -->
+            <div
+                class="bg-surface-container-lowest p-6 rounded-xl flex items-center justify-between group transition-all duration-300 hover:bg-surface-bright">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined">mail</span>
+                    </div>
+                    <div>
+                        <p class="font-label text-[0.7rem] uppercase tracking-widest text-on-surface-variant">Email
+                            Address</p>
+                        <p class="font-body font-medium text-on-surface">{{ user.email if user.email else 'No email set'
+                            }}</p>
+                    </div>
+                </div>
+                <span
+                    class="material-symbols-outlined text-outline-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
             </div>
-            <div class="card-body p-4">
-                
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label text-white-50 small text-uppercase fw-bold">Full Name</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary" 
-                               value="{{ user.full_name }}" readonly style="background-color: #0f172a !important;">
+            <!-- Account ID Info -->
+            <div
+                class="bg-surface-container-lowest p-6 rounded-xl flex items-center justify-between group transition-all duration-300 hover:bg-surface-bright">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined">fingerprint</span>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label text-white-50 small text-uppercase fw-bold">Username</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary" 
-                               value="{{ user.username }}" readonly style="background-color: #0f172a !important;">
+                    <div>
+                        <p class="font-label text-[0.7rem] uppercase tracking-widest text-on-surface-variant">Account ID
+                        </p>
+                        <p class="font-body font-medium text-on-surface">{{ 'USER-%04d' | format(user.id) }}</p>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label text-white-50 small text-uppercase fw-bold">Email Address</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary" 
-                               value="{{ user.email }}" readonly style="background-color: #0f172a !important;">
+                </div>
+                <button
+                    onclick="navigator.clipboard.writeText(`{{ 'USER-%04d' | format(user.id) }}`); alert('ID copied to clipboard!')"
+                    class="text-primary hover:bg-primary/5 p-2 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-xl">content_copy</span>
+                </button>
+            </div>
+            <!-- Security Status -->
+            <div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+                        <span class="material-symbols-outlined">shield_person</span>
                     </div>
-
-                    <div class="mb-4">
-                        <label class="form-label text-white-50 small text-uppercase fw-bold">Account ID</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary" 
-                               value="{{ 'USER-%04d' | format(user.id) }}" readonly style="background-color: #0f172a !important;">
+                    <div>
+                        <p class="font-label text-[0.7rem] uppercase tracking-widest text-on-surface-variant">Security
+                        </p>
+                        <p class="font-body font-medium text-on-surface">Standard Protocol Active</p>
                     </div>
-
-                    <div class="d-grid">
-                        <a href="{{ url_for('module3.settings') }}" class="btn btn-outline-light py-2">
-                            <i class="bi bi-gear-fill me-2"></i> Edit Profile & Settings
-                        </a>
-                    </div>
-                </form>
-
+                </div>
+                <span class="material-symbols-outlined text-primary"
+                    style="font-variation-settings: 'FILL' 1;">check_circle</span>
             </div>
         </div>
+        <!-- Action Section -->
+        <section class="mt-12">
+            <a href="{{ url_for('module3.settings') }}"
+                class="w-full bg-gradient-to-br from-primary to-primary-dim text-on-primary font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 group active:scale-[0.98]">
+                <span
+                    class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">edit_square</span>
+                Edit Profile &amp; Settings
+            </a>
+            <p class="text-center text-on-surface-variant text-xs mt-6 px-12 leading-relaxed">
+                Changes to your account may take up to 24 hours to reflect across all synchronized curators.
+            </p>
+        </section>
+    </main>
+    <!-- BottomNavBar (Visible on mobile, maps to Profile) -->
+    <nav
+        class="fixed bottom-0 left-0 w-full flex justify-around items-center px-8 pb-6 pt-2 bg-[#ffffff]/80 backdrop-blur-xl rounded-t-3xl shadow-[0_-12px_40px_rgba(42,52,57,0.06)] z-50 md:hidden">
+        <a class="flex flex-col items-center justify-center text-[#566166] p-3 hover:text-[#2563EB] transition-all active:scale-90 duration-300"
+            href="{{ url_for('module3.dashboard') }}">
+            <span class="material-symbols-outlined">home</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-[#566166] p-3 hover:text-[#2563EB] transition-all active:scale-90 duration-300"
+            href="#">
+            <span class="material-symbols-outlined">search</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-[#566166] p-3 hover:text-[#2563EB] transition-all active:scale-90 duration-300"
+            href="#">
+            <span class="material-symbols-outlined">notifications</span>
+        </a>
+        <a class="flex flex-col items-center justify-center bg-[#2563EB]/10 text-[#2563EB] rounded-full p-3 transition-all active:scale-90 duration-300"
+            href="{{ url_for('module3.profile') }}">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+        </a>
+    </nav>
+</body>
 
-    </div>
-</div>
-{% endblock %}
+</html>

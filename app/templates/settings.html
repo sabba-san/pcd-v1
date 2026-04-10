@@ -1,55 +1,247 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6">
+<html class="light" lang="en">
 
-        <h3 class="fw-bold text-white mb-4">Settings</h3>
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Security &amp; Preferences</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#506076",
+                        "on-secondary-fixed": "#314055",
+                        "on-primary": "#f8f7ff",
+                        "surface-tint": "#0053db",
+                        "outline": "#717c82",
+                        "inverse-primary": "#618bff",
+                        "surface-container-high": "#e1e9ee",
+                        "error-container": "#fe8983",
+                        "surface-container-highest": "#d9e4ea",
+                        "on-background": "#2a3439",
+                        "inverse-on-surface": "#9a9d9f",
+                        "primary": "#0053db",
+                        "tertiary-dim": "#465467",
+                        "on-tertiary": "#f7f9ff",
+                        "on-primary-container": "#0048bf",
+                        "primary-dim": "#0048c1",
+                        "tertiary-fixed": "#cfdef5",
+                        "on-tertiary-container": "#414f62",
+                        "secondary-dim": "#44546a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#fff7f6",
+                        "on-surface-variant": "#566166",
+                        "primary-container": "#dbe1ff",
+                        "on-secondary-container": "#435368",
+                        "on-tertiary-fixed-variant": "#4a596c",
+                        "secondary-container": "#d3e4fe",
+                        "surface-dim": "#cfdce3",
+                        "secondary-fixed-dim": "#c5d6f0",
+                        "primary-fixed": "#dbe1ff",
+                        "error-dim": "#4e0309",
+                        "tertiary": "#526073",
+                        "surface-container-low": "#f0f4f7",
+                        "error": "#9f403d",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-error-container": "#752121",
+                        "surface": "#f7f9fb",
+                        "on-secondary-fixed-variant": "#4d5d73",
+                        "tertiary-container": "#cfdef5",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-fixed-variant": "#0050d4",
+                        "surface-container": "#e8eff3",
+                        "on-surface": "#2a3439",
+                        "background": "#f7f9fb",
+                        "outline-variant": "#a9b4b9",
+                        "on-secondary": "#f7f9ff",
+                        "primary-fixed-dim": "#c7d3ff",
+                        "inverse-surface": "#0b0f10",
+                        "on-tertiary-fixed": "#2e3d4e",
+                        "tertiary-fixed-dim": "#c1d0e6",
+                        "surface-variant": "#d9e4ea",
+                        "on-primary-fixed": "#003798"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
 
-        <!-- Flash messages handled by base.html Toasts -->
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
 
-        <div class="card border-0 shadow-lg mb-4" style="background-color: #334155;">
-            <div class="card-header bg-transparent border-secondary py-3">
-                <h5 class="mb-0 text-white fw-bold"><i class="bi bi-shield-lock-fill me-2 text-warning"></i>Security
-                </h5>
+        .tonal-shadow {
+            box-shadow: 0 12px 40px rgba(42, 52, 57, 0.06);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface min-h-screen">
+    <!-- TopAppBar -->
+    <header class="w-full top-0 sticky z-50 bg-[#f7f9fb] dark:bg-slate-900 transition-colors">
+        <div class="flex items-center justify-between px-6 py-4 w-full">
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('module3.profile') }}"
+                    class="hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors p-2 flex items-center justify-center active:scale-95 duration-150">
+                    <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">arrow_back</span>
+                </a>
+                <h1 class="font-['Inter'] font-semibold text-lg tracking-tight text-on-surface">Security &amp;
+                    Preferences</h1>
             </div>
-            <div class="card-body p-4">
-                <form action="{{ url_for('module3.change_password') }}" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label text-white-50 small">Current Password</label>
-                        <input type="password" name="current_password" class="form-control" required>
+            <div class="relative group">
+                <button
+                    class="hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors p-2 flex items-center justify-center active:scale-95 duration-150">
+                    <span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+                </button>
+                <div class="absolute right-0 top-full pt-2 w-48 z-50 hidden group-hover:block">
+                    <div
+                        class="bg-surface-container-lowest rounded-xl shadow-[0_12px_40px_rgba(42,52,57,0.1)] py-2 border border-outline-variant/20 overflow-hidden">
+                        <a href="{{ url_for('module3.dashboard') }}"
+                            class="block px-5 py-3 text-sm font-medium text-on-surface hover:bg-surface-container hover:text-primary transition-colors flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[18px]">dashboard</span> Dashboard
+                        </a>
+                        <a href="{{ url_for('module3.profile') }}"
+                            class="block px-5 py-3 text-sm font-medium text-on-surface hover:bg-surface-container hover:text-primary transition-colors flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[18px]">person</span> Profile
+                        </a>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label text-white-50 small">New Password</label>
-                        <input type="password" name="new_password" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-white-50 small">Confirm New Password</label>
-                        <input type="password" name="confirm_password" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold">Update Password</button>
-                </form>
+                </div>
             </div>
         </div>
-
-        <div class="card border-0 shadow-lg" style="background-color: #1e293b;">
-            <div class="card-header bg-transparent border-secondary py-3">
-                <h5 class="mb-0 text-white fw-bold"><i class="bi bi-sliders me-2 text-info"></i>Preferences</h5>
+    </header>
+    <main class="max-w-md mx-auto px-6 pt-8 pb-20 space-y-12">
+        <!-- Flash messages rendering (to support the backend endpoints flash messages) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="space-y-4 mb-6">
+            {% for category, message in messages %}
+            <div
+                class="p-4 rounded-xl tonal-shadow {% if category == 'error' or category == 'danger' %}bg-error-container text-on-error-container{% elif category == 'success' %}bg-primary-container text-on-primary-container{% else %}bg-secondary-container text-on-secondary-container{% endif %}">
+                <p class="font-sm font-medium">{{ message }}</p>
             </div>
-            <div class="card-body p-4">
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="emailNotif" checked>
-                    <label class="form-check-label text-white" for="emailNotif">Email Notifications</label>
-                    <div class="text-white-50 small">Receive updates on defect status changes.</div>
-                </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="darkMode" checked disabled>
-                    <label class="form-check-label text-white" for="darkMode">Dark Mode</label>
-                    <div class="text-white-50 small">Enabled by default in this version.</div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
+        {% endif %}
+        {% endwith %}
 
-    </div>
-</div>
-{% endblock %}
+        <!-- Security Section -->
+        <section class="space-y-6">
+            <header>
+                <span class="text-[0.75rem] font-bold uppercase tracking-[0.05em] text-on-surface-variant">Account
+                    Security</span>
+                <h2 class="text-2xl font-bold tracking-tight mt-1">Update Password</h2>
+            </header>
+            <form action="{{ url_for('module3.change_password') }}" method="POST">
+                <div class="bg-surface-container-lowest p-6 rounded-xl tonal-shadow space-y-6">
+                    <div class="space-y-4">
+                        <!-- Input: Current Password -->
+                        <div class="space-y-1.5">
+                            <label class="text-[0.75rem] font-semibold text-on-surface-variant px-1">Current
+                                Password</label>
+                            <div class="relative">
+                                <input name="current_password" required
+                                    class="w-full bg-surface-container-lowest border-0 border-b-2 border-outline-variant/20 focus:border-primary focus:ring-0 px-1 py-3 text-on-surface transition-all placeholder:text-outline-variant/50"
+                                    placeholder="••••••••" type="password" />
+                            </div>
+                        </div>
+                        <!-- Input: New Password -->
+                        <div class="space-y-1.5">
+                            <label class="text-[0.75rem] font-semibold text-on-surface-variant px-1">New
+                                Password</label>
+                            <div class="relative">
+                                <input name="new_password" required
+                                    class="w-full bg-surface-container-lowest border-0 border-b-2 border-outline-variant/20 focus:border-primary focus:ring-0 px-1 py-3 text-on-surface transition-all placeholder:text-outline-variant/50"
+                                    placeholder="••••••••" type="password" />
+                            </div>
+                        </div>
+                        <!-- Input: Confirm New Password -->
+                        <div class="space-y-1.5">
+                            <label class="text-[0.75rem] font-semibold text-on-surface-variant px-1">Confirm New
+                                Password</label>
+                            <div class="relative">
+                                <input name="confirm_password" required
+                                    class="w-full bg-surface-container-lowest border-0 border-b-2 border-outline-variant/20 focus:border-primary focus:ring-0 px-1 py-3 text-on-surface transition-all placeholder:text-outline-variant/50"
+                                    placeholder="••••••••" type="password" />
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="w-full py-4 bg-gradient-to-br from-primary to-primary-dim text-on-primary rounded-xl font-bold text-[0.75rem] uppercase tracking-wider active:scale-[0.98] transition-transform tonal-shadow">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </section>
+        <!-- Preferences Section -->
+        <section class="space-y-6">
+            <header>
+                <span
+                    class="text-[0.75rem] font-bold uppercase tracking-[0.05em] text-on-surface-variant">Personalization</span>
+                <h2 class="text-2xl font-bold tracking-tight mt-1">Preferences</h2>
+            </header>
+            <div class="space-y-3">
+                <!-- Preference Item 1 -->
+                <div class="flex items-center justify-between p-5 bg-surface-container-lowest rounded-xl tonal-shadow">
+                    <div class="space-y-0.5">
+                        <p class="font-semibold text-on-surface">Email Notifications</p>
+                        <p class="text-sm text-on-surface-variant">Receive updates via email</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input checked="" class="sr-only peer" type="checkbox" />
+                        <div
+                            class="w-12 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary">
+                        </div>
+                    </label>
+                </div>
+                <!-- Preference Item 2 -->
+                <div class="flex items-center justify-between p-5 bg-surface-container-lowest rounded-xl tonal-shadow">
+                    <div class="space-y-0.5">
+                        <p class="font-semibold text-on-surface">Two-Factor Auth</p>
+                        <p class="text-sm text-on-surface-variant">Enhanced login security</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input class="sr-only peer" type="checkbox" />
+                        <div
+                            class="w-12 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary">
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </section>
+        <!-- Decorative Curator Element -->
+        <div class="pt-8 pb-12 flex flex-col items-center justify-center text-center space-y-4 opacity-40">
+            <div class="w-12 h-[1px] bg-outline-variant"></div>
+            <p class="text-[0.65rem] uppercase tracking-[0.2em] text-on-surface-variant">DLP Advisor 2025 </p>
+        </div>
+    </main>
+</body>
+
+</html>
